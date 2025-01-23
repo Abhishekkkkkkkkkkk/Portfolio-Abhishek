@@ -102,7 +102,7 @@ To configure Firebase for this project, follow these steps:
 5. **Structure the Firestore Collections:**
    - Configure the collections as shown in the following images:
 
-   ![Firestore Collection Structure](https://github.com/user-attachments/assets/38580122-08a4-4499-a8fd-0f253652a239)
+   ![Firestore Collection Structure](https://i.postimg.cc/5ypDcG3X/fire1.png)
    ![Firestore Data Example](https://github.com/user-attachments/assets/d563d7ad-f1ab-46ff-8185-640dcebd0363)
 
 6. **Update Firebase Configuration Files:**
