@@ -15,7 +15,7 @@ My name is Abhishek Kumar, and I am excited to share with you my portfolio websi
 - SweetAlert2
 
 ### Website Link:
-[https://www.eki.my.id/](https://www.eki.my.id/)
+[https:///](https://)
 
 **Note:** If you use this project, please provide proper credit. Thank you! 🙏
 
@@ -34,7 +34,7 @@ Ensure you have the following installed:
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/EkiZR/Portofolio_V5.git
+   git clone https://github.com/Abhishekkkkkkkkkkk/Portfolio-Abhishek
    ```
 
 2. **Install dependencies:**
