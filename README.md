@@ -106,9 +106,9 @@ To configure Firebase for this project, follow these steps:
    ![Firestore Data Example](https://github.com/user-attachments/assets/d563d7ad-f1ab-46ff-8185-640dcebd0363)
 
 6. **Update Firebase Configuration Files:**
-   - Open `firebase.js` and `firebase-comment.js` files.
+   - Open `firebase.js` file.
    - Replace the `firebaseConfig` content with your Firebase project configuration.
 
 ---
 
-That's it! Your Portfolio V5 project should now be set up and ready to use. 🎉
+That's it! Your Portfolio project should now be set up and ready to use. 🎉

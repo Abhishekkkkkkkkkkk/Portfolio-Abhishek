@@ -1,18 +1,18 @@
 #!/bin/bash
 
-# Pastikan script dijalankan sebagai root
+# Ensure the script is run as root
 if [ "$(id -u)" != "0" ]; then
-    echo "Script harus dijalankan dengan sudo"
+    echo "The script must be run with sudo"
     exit 1
 fi
 
-# Fungsi untuk membaca input dengan timeout
+# Function to read input with a timeout
 get_input() {
     local prompt="$1"
     local default="$2"
     local input
     
-    # Gunakan /dev/tty untuk memastikan input bisa dibaca meski melalui pipe
+    # Use /dev/tty to ensure input can be read even when piped
     exec < /dev/tty
     read -p "$prompt" input
     
@@ -23,27 +23,27 @@ get_input() {
     fi
 }
 
-# Minta input IP dan domain dengan cara yang lebih robust
-user_ip=$(get_input "Masukkan IP address (contoh: 192.168.1.1): ")
-user_domain=$(get_input "Masukkan nama domain (contoh: smkeki.sch.id): ")
+# Prompt for IP and domain input in a robust way
+user_ip=$(get_input "Enter the IP address (e.g., 192.168.1.1): ")
+user_domain=$(get_input "Enter the domain name (e.g., smkeki.sch.id): ")
 
-# Minta input untuk password MySQL dan phpMyAdmin
-mysql_root_password=$(get_input "Masukkan password untuk root MySQL: ")
-phpmyadmin_password=$(get_input "Masukkan password untuk phpMyAdmin: ")
+# Prompt for MySQL and phpMyAdmin passwords
+mysql_root_password=$(get_input "Enter the password for MySQL root user: ")
+phpmyadmin_password=$(get_input "Enter the password for phpMyAdmin: ")
 
-# Validasi input
+# Validate input
 if [ -z "$user_ip" ] || [ -z "$user_domain" ] || [ -z "$mysql_root_password" ] || [ -z "$phpmyadmin_password" ]; then
-    echo "IP address, domain, MySQL password, dan phpMyAdmin password tidak boleh kosong. Jalankan ulang script."
+    echo "IP address, domain, MySQL password, and phpMyAdmin password cannot be empty. Please rerun the script."
     exit 1
 fi
 
-# Tambah repository universe
+# Add the universe repository
 add-apt-repository universe -y
 
-# Update dengan timeout dan error handling
+# Update with timeout and error handling
 export DEBIAN_FRONTEND=noninteractive
 
-# Set konfigurasi otomatis untuk MySQL dan phpMyAdmin
+# Set automatic configuration for MySQL and phpMyAdmin
 echo "mysql-server mysql-server/root_password password $mysql_root_password" | debconf-set-selections
 echo "mysql-server mysql-server/root_password_again password $mysql_root_password" | debconf-set-selections
 echo "phpmyadmin phpmyadmin/dbconfig-install boolean true" | debconf-set-selections
@@ -51,11 +51,11 @@ echo "phpmyadmin phpmyadmin/mysql/admin-pass password $mysql_root_password" | de
 echo "phpmyadmin phpmyadmin/mysql/app-pass password $phpmyadmin_password" | debconf-set-selections
 echo "phpmyadmin phpmyadmin/reconfigure-webserver multiselect apache2" | debconf-set-selections
 
-# Perbaikan proses update
+# Fix update process
 apt-get clean
 apt-get update -y
 
-# Install paket dengan timeout dan error handling
+# Install packages with timeout and error handling
 apt-get install -y \
     bind9 \
     apache2 \
@@ -63,13 +63,13 @@ apt-get install -y \
     apache2-utils \
     phpmyadmin \
     samba \
-    || { echo "Instalasi paket gagal. Periksa koneksi internet dan repository."; exit 1; }
+    || { echo "Package installation failed. Check your internet connection and repository."; exit 1; }
 
-# Nonaktifkan update otomatis dengan cara aman
+# Disable automatic updates safely
 systemctl disable apt-daily.timer
 systemctl disable apt-daily-upgrade.timer
 
-# Konfigurasi DNS
+# Configure DNS
 mkdir -p /etc/bind
 cat > /etc/resolv.conf <<EOL
 nameserver $user_ip
@@ -78,7 +78,7 @@ search $user_domain
 options edns0 trust-ad
 EOL
 
-# Konfigurasi zona Bind9
+# Configure Bind9 zones
 reversed_ip=$(echo "$user_ip" | awk -F. '{print $3"."$2"."$1}')
 
 cat > /etc/bind/named.conf.default-zones <<EOL
@@ -115,7 +115,7 @@ zone "$reversed_ip.in-addr.arpa" {
  };
 EOL
 
-# Konfigurasi file zona
+# Configure zone file
 cat > /etc/bind/smk.db <<EOL
 \$TTL    604800
 @       IN      SOA     ns.$user_domain. root.$user_domain. (
@@ -136,7 +136,7 @@ ntp     IN      CNAME   ns
 proxy   IN      CNAME   ns
 EOL
 
-# Konfigurasi file PTR
+# Configure PTR file
 octet=$(echo "$user_ip" | awk -F. '{print $4}')
 cat > /etc/bind/smk.ip <<EOL
 @       IN      SOA     ns.$user_domain. root.$user_domain. (
@@ -150,7 +150,7 @@ cat > /etc/bind/smk.ip <<EOL
 $octet  IN      PTR     ns.$user_domain.
 EOL
 
-# Konfigurasi Apache
+# Configure Apache
 mkdir -p /etc/apache2/sites-available
 mkdir -p /var/www
 
@@ -165,55 +165,55 @@ cat > /etc/apache2/sites-available/000-default.conf <<EOL
 </VirtualHost>
 EOL
 
-# Buat index.php
+# Create index.php
 cat > /var/www/index.php <<EOL
 <!DOCTYPE html>
 <html>
 <body>
-    <h1>Selamat Datang di Server $user_domain</h1>
+    <h1>Welcome to $user_domain Server</h1>
     <?php phpinfo(); ?>
 </body>
 </html>
 EOL
 
-# Set izin akses untuk /var/www
+# Set access permissions for /var/www
 chmod 777 /var/www/ -R
 
-# Tambah user Samba dengan metode yang lebih robust
-echo "Tambah user Samba (username: tamu)"
-useradd tamu
-echo "Masukkan password untuk user tamu:"
-passwd tamu
+# Add Samba user in a robust way
+echo "Adding Samba user (username: guest)"
+useradd guest
+echo "Enter password for guest user:"
+passwd guest
 
-# Backup file konfigurasi samba
+# Backup Samba configuration file
 cp /etc/samba/smb.conf /etc/samba/smb.conf.backup
 
-# Tambahkan konfigurasi www share di akhir file
+# Add www share configuration at the end of the file
 cat >> /etc/samba/smb.conf <<EOL
 
 [www]
 path = /var/www/
 browseable = yes
 writeable = yes
-valid users = tamu
+valid users = guest
 admin users = root
 EOL
 
-# Set password Samba untuk user tamu
-smbpasswd -a tamu
+# Set Samba password for the guest user
+smbpasswd -a guest
 
-echo "Menambahkan konfigurasi phpMyAdmin ke apache2.conf..."
+echo "Adding phpMyAdmin configuration to apache2.conf..."
 echo "Include /etc/phpmyadmin/apache.conf" >> /etc/apache2/apache2.conf
 
-# Aktifkan modul Apache
+# Enable Apache modules
 a2ensite 000-default.conf
 a2enmod rewrite
 a2enmod ssl
 
-# Restart layanan
+# Restart services
 systemctl restart bind9 || true
 systemctl restart apache2 || true
 systemctl restart smbd || true
 
-echo "==== Konfigurasi Selesai ===="
+echo "==== Configuration Complete ===="
 echo "Domain: $user_domain"
