@@ -57,7 +57,7 @@ const EducationSection = () => (
             <p className="text-white inline ml-2">B.Tech in Computer Science</p>
             <br />
             <p className="text-[#a855f7] font-bold inline">Marks:</p>
-            <p className="text-white inline ml-2">8 CGPA</p>
+            <p className="text-white inline ml-2">8.10 CGPA</p>
             <br />
             <p className="text-[#a855f7] font-bold inline">Year:</p>
             <p className="text-white inline ml-2">2020-2024</p>
