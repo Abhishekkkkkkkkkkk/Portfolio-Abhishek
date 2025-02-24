@@ -142,20 +142,26 @@ const Home = () => {
 
   // Lottie configuration
   const lottieOptions = {
-    src: "https://lottie.host/58753882-bb6a-49f5-a2c0-950eda1e135a/NLbpVqGegK.lottie",
-    loop: true,
-    autoplay: true,
-    rendererSettings: {
-      preserveAspectRatio: 'xMidYMid slice',
-      progressiveLoad: true,
-    },
-    style: { width: "100%", height: "100%" },
-    className: `w-full h-full transition-all duration-500 ${
-      isHovering 
-        ? "scale-[180%] sm:scale-[160%] md:scale-[150%] lg:scale-[145%] rotate-2" 
-        : "scale-[175%] sm:scale-[155%] md:scale-[145%] lg:scale-[140%]"
-    }`
-  };
+  src: "https://lottie.host/1bb94344-2870-4d98-8596-559d80895d2a/ITRCj4WzQ1.lottie",
+  loop: true,
+  autoplay: true,
+  rendererSettings: {
+    preserveAspectRatio: 'xMidYMid slice', // This ensures the animation scales while maintaining its aspect ratio
+    progressiveLoad: true,
+  },
+  style: { 
+    width: "100%", // Ensures the animation takes up full width
+    height: "100%", // Ensures the animation takes up full height
+    maxWidth: "600px", // Limits max width for larger screens
+    maxHeight: "600px", // Limits max height for larger screens
+    objectFit: "contain", // Ensures it maintains the aspect ratio
+  },
+  className: `w-full h-full transition-all duration-500 ${
+    isHovering
+      ? "scale-[180%] sm:scale-[160%] md:scale-[150%] lg:scale-[145%] rotate-2"
+      : "scale-[175%] sm:scale-[155%] md:scale-[145%] lg:scale-[140%]"
+  }`
+};
 
   return (
     <div className="min-h-screen bg-[#030014] overflow-hidden" id="Home">
