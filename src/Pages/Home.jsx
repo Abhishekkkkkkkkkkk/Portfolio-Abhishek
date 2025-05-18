@@ -237,7 +237,7 @@ const Home = () => {
             >
               <div className="bg-gray-800 backdrop-blur-xl p-6 rounded-lg shadow-md border border-white/10">
                 <h2 className="text-xl font-semibold text-gray-300 mb-4">
-                  📊 My LeetCode Stats
+                  📊 My LeetCode Profile
                 </h2>
                 <a
                   href="https://leetcode.com/Abhi_1_2_3"
