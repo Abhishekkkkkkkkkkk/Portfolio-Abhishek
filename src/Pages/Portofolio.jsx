@@ -107,7 +107,9 @@ function a11yProps(index) {
 }
 
 const techStacks = [
+  { icon: "c.svg", language: "C" },
   { icon: "c++.svg", language: "C++" },
+  { icon: "java.svg", language: "JAVA" },
   { icon: "html.svg", language: "HTML" },
   { icon: "css.svg", language: "CSS" },
   { icon: "javascript.svg", language: "JavaScript" },

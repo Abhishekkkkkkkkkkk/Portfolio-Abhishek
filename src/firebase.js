@@ -3,7 +3,7 @@ import { getFirestore } from "firebase/firestore"
 import { collection, addDoc, getDocs } from "@firebase/firestore"; // Perbarui ini
 
 
-// Your web app's Firebase configuration
+// Web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyBWEHPxamFi51u1wt_rybJ5MwLyN3mb3T0",
   authDomain: "my-portfolio-a37dd.firebaseapp.com",
