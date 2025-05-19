@@ -46,119 +46,98 @@ const EducationSection = () => (
     {/* Left Side - Education Section */}
     <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-full hover:shadow-2xl transition-all duration-300">
       <h3 className="text-xl font-semibold text-[#6366f1]">Education</h3>
-      <div className="mt-4 space-y-6">
-        {/* Education Cards */}
-        <div className="relative bg-gray-700 p-4 rounded-lg shadow-md hover:bg-slate-900 hover:scale-105 transition-all duration-300 group">
-          <div className="relative">
-            <p className="text-[#a855f7] font-bold inline">Collage Name:</p>
-            <p className="text-white inline ml-2">Chameli Devi Group of Institutions, Indore</p>
-            <br />
-            <p className="text-[#a855f7] font-bold inline">Course:</p>
-            <p className="text-white inline ml-2">B.Tech in Computer Science</p>
-            <br />
-            <p className="text-[#a855f7] font-bold inline">Marks:</p>
-            <p className="text-white inline ml-2">8.10 CGPA</p>
-            <br />
-            <p className="text-[#a855f7] font-bold inline">Year:</p>
-            <p className="text-white inline ml-2">2020-2024</p>
-          </div>
-        </div>
+      <div className="mt-6 pl-8 border-l-2 border-gray-400 space-y-6 relative">
+        {[
+          {
+            title: "Chameli Devi Group of Institutions, Indore",
+            course: "B.Tech in Computer Science",
+            marks: "8.10 CGPA",
+            year: "2020-2024",
+          },
+          {
+            title: "Bihar School Examination Board, Patna",
+            course: "12th",
+            marks: "72.6%",
+            year: "2018-2020",
+          },
+          {
+            title: "Bihar School Examination Board, Patna",
+            course: "10th",
+            marks: "65%",
+            year: "2017-2018",
+          },
+        ].map((edu, index) => (
+          <div key={index} className="relative">
+            {/* Timeline Dot */}
+            <div className="absolute -left-[40.5px] top-0 w-4 h-4 bg-[#6366f1] border-2 border-white rounded-full z-10"></div>
 
-        <div className="relative bg-gray-700 p-4 rounded-lg shadow-md hover:bg-slate-900 hover:scale-105 transition-all duration-300 group">
-          <div className="relative">
-            <p className="text-[#a855f7] font-bold inline">Board Name:</p>
-            <p className="text-white inline ml-2">Bihar School Examination Board, Patna</p>
-            <br />
-            <p className="text-[#a855f7] font-bold inline">Course:</p>
-            <p className="text-white inline ml-2">12th</p>
-            <br />
-            <p className="text-[#a855f7] font-bold inline">Marks:</p>
-            <p className="text-white inline ml-2">72.6%</p>
-            <br />
-            <p className="text-[#a855f7] font-bold inline">Year:</p>
-            <p className="text-white inline ml-2">2018-2020</p>
+            {/* Hoverable Card */}
+            <div className="bg-gray-700 p-4 rounded-lg shadow-md hover:bg-slate-900 hover:scale-105 transition-all duration-300 group">
+              <p className="text-[#a855f7] font-bold inline">College/Board:</p>
+              <p className="text-white inline ml-2">{edu.title}</p>
+              <br />
+              <p className="text-[#a855f7] font-bold inline">Course:</p>
+              <p className="text-white inline ml-2">{edu.course}</p>
+              <br />
+              <p className="text-[#a855f7] font-bold inline">Marks:</p>
+              <p className="text-white inline ml-2">{edu.marks}</p>
+              <br />
+              <p className="text-[#a855f7] font-bold inline">Year:</p>
+              <p className="text-white inline ml-2">{edu.year}</p>
+            </div>
           </div>
-        </div>
-
-        <div className="relative bg-gray-700 p-4 rounded-lg shadow-md hover:bg-slate-900 hover:scale-105 transition-all duration-300 group">
-          <div className="relative">
-            <p className="text-[#a855f7] font-bold inline">Board Name:</p>
-            <p className="text-white inline ml-2">Bihar School Examination Board, Patna</p>
-            <br />
-            <p className="text-[#a855f7] font-bold inline">Course:</p>
-            <p className="text-white inline ml-2">10th</p>
-            <br />
-            <p className="text-[#a855f7] font-bold inline">Marks:</p>
-            <p className="text-white inline ml-2">65%</p>
-            <br />
-            <p className="text-[#a855f7] font-bold inline">Year:</p>
-            <p className="text-white inline ml-2">2017-2018</p>
-          </div>
-        </div>
+        ))}
       </div>
     </div>
 
     {/* Right Side - Experience Section */}
     <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-full hover:shadow-2xl transition-all duration-300">
       <h3 className="text-xl font-semibold text-[#6366f1]">Experience</h3>
-      <div className="mt-4 space-y-6">
-        {/* Experience Cards */}
-        <div className="relative bg-gray-700 p-4 rounded-lg shadow-md hover:bg-slate-900 hover:scale-105 transition-all duration-300 group">
-          <div className="relative">
-            <p className="text-[#a855f7] font-bold inline">Company Name:</p>
-            <p className="text-white inline ml-2">Innobyte Service</p>
-            <br />
-            <p className="text-[#a855f7] font-bold inline">Duration:</p>
-            <p className="text-white inline ml-2">1 Month || Remote</p>
-            <br />
-            <p className="text-[#a855f7] font-bold inline">Role:</p>
-            <p className="text-white inline ml-2">Web Developer Intern</p>
-            <br />
-            <p className="text-[#a855f7] font-bold inline">Year:</p>
-            <p className="text-white inline ml-2">2024</p>
-          </div>
-        </div>
+      <div className="mt-6 pl-8 border-l-2 border-gray-400 space-y-6 relative">
+        {[
+          {
+            company: "Innobyte Service",
+            duration: "1 Month || Remote",
+            role: "Web Developer Intern",
+            year: "2024",
+          },
+          {
+            company: "Oasis Infobyte",
+            duration: "1 Month || Remote",
+            role: "Web Developer",
+            year: "2023",
+          },
+          {
+            company: "Bharat Intern",
+            duration: "1 Month || Remote",
+            role: "Web Developer Intern",
+            year: "2023",
+          },
+        ].map((exp, index) => (
+          <div key={index} className="relative">
+            {/* Timeline Dot */}
+            <div className="absolute -left-[40.5px] top-0 w-4 h-4 bg-[#6366f1] border-2 border-white rounded-full z-10"></div>
 
-        <div className="relative bg-gray-700 p-4 rounded-lg shadow-md hover:bg-slate-900 hover:scale-105 transition-all duration-300 group">
-          <div className="relative">
-            <p className="text-[#a855f7] font-bold inline">Company Name:</p>
-            <p className="text-white inline ml-2">Oasis Infobyte</p>
-            <br />
-            <p className="text-[#a855f7] font-bold inline">Duration:</p>
-            <p className="text-white inline ml-2">1 Month || Remote</p>
-            <br />
-            <p className="text-[#a855f7] font-bold inline">Role:</p>
-            <p className="text-white inline ml-2">Web Developer</p>
-            <br />
-            <p className="text-[#a855f7] font-bold inline">Year:</p>
-            <p className="text-white inline ml-2">2023</p>
+            {/* Hoverable Card */}
+            <div className="bg-gray-700 p-4 rounded-lg shadow-md hover:bg-slate-900 hover:scale-105 transition-all duration-300 group">
+              <p className="text-[#a855f7] font-bold inline">Company Name:</p>
+              <p className="text-white inline ml-2">{exp.company}</p>
+              <br />
+              <p className="text-[#a855f7] font-bold inline">Duration:</p>
+              <p className="text-white inline ml-2">{exp.duration}</p>
+              <br />
+              <p className="text-[#a855f7] font-bold inline">Role:</p>
+              <p className="text-white inline ml-2">{exp.role}</p>
+              <br />
+              <p className="text-[#a855f7] font-bold inline">Year:</p>
+              <p className="text-white inline ml-2">{exp.year}</p>
+            </div>
           </div>
-        </div>
-
-        <div className="relative bg-gray-700 p-4 rounded-lg shadow-md hover:bg-slate-900 hover:scale-105 transition-all duration-300 group">
-          <div className="relative">
-            <p className="text-[#a855f7] font-bold inline">Company Name:</p>
-            <p className="text-white inline ml-2">Bharat Intern</p>
-            <br />
-            <p className="text-[#a855f7] font-bold inline">Duration:</p>
-            <p className="text-white inline ml-2">1 Month || Remote</p>
-            <br />
-            <p className="text-[#a855f7] font-bold inline">Role:</p>
-            <p className="text-white inline ml-2">Web Developer Intern</p>
-            <br />
-            <p className="text-[#a855f7] font-bold inline">Year:</p>
-            <p className="text-white inline ml-2">2023</p>
-          </div>
-        </div>
+        ))}
       </div>
     </div>
   </div>
 );
-
-
-
-
-
 
 const AboutPage = () => {
   useEffect(() => {
