@@ -1,5 +1,11 @@
 import React, { useEffect, memo } from "react";
-import { FileText, Code, Sparkles } from "lucide-react";
+import {
+  FileText,
+  Code,
+  Sparkles,
+  GraduationCap,
+  Briefcase,
+} from "lucide-react";
 import AOS from "aos";
 import "aos/dist/aos.css";
 
@@ -45,7 +51,10 @@ const EducationSection = () => (
   <div className="flex flex-col lg:flex-row gap-8">
     {/* Left Side - Education Section */}
     <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-full hover:shadow-2xl transition-all duration-300">
-      <h3 className="text-xl font-semibold text-[#6366f1]">Education</h3>
+      <h3 className="text-xl font-semibold text-[#6366f1] flex items-center gap-2">
+        <GraduationCap className="w-7 h-7 text-[#a855f7]" />
+        Education
+      </h3>
       <div className="mt-6 pl-8 border-l-2 border-gray-400 space-y-6 relative">
         {[
           {
@@ -92,7 +101,10 @@ const EducationSection = () => (
 
     {/* Right Side - Experience Section */}
     <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-full hover:shadow-2xl transition-all duration-300">
-      <h3 className="text-xl font-semibold text-[#6366f1]">Experience</h3>
+      <h3 className="text-xl font-semibold text-[#6366f1] flex items-center gap-2">
+        <Briefcase className="w-6 h-6 text-[#a855f7]" />
+        Experience
+      </h3>
       <div className="mt-6 pl-8 border-l-2 border-gray-400 space-y-6 relative">
         {[
           {
@@ -202,7 +214,7 @@ const AboutPage = () => {
 
             <div className="flex flex-col lg:flex-row items-center lg:items-start gap-4 lg:gap-4 lg:px-0 w-full">
               <a
-                href="https://drive.google.com/file/d/1CRwqz8IdDyl8gTffUoFFYU_-qIpEom48/view?usp=drivesdk"
+                href="Abhishek_CV.pdf"
                 className="w-full lg:w-auto"
               >
                 <button
