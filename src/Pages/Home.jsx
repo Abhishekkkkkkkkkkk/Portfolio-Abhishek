@@ -87,7 +87,7 @@ const TYPING_SPEED = 100;
 const ERASING_SPEED = 50;
 const PAUSE_DURATION = 2000;
 const WORDS = ["Problem Solver", "Tech Enthusiast"];
-const TECH_STACK = ["Java", "JavaScript", "React.js", "Next.js"];
+const TECH_STACK = ["Java", "Springboot", "JavaScript", "React.js", "MySQL"];
 const SOCIAL_LINKS = [
   { icon: Github, link: "https://github.com/Abhishekkkkkkkkkkk" },
   { icon: Linkedin, link: "https://www.linkedin.com/in/abhishek2k24/" },
@@ -187,8 +187,7 @@ const Home = () => {
                   data-aos="fade-up"
                   data-aos-delay="1000"
                 >
-                  Creating Innovative, Functional, and User-Friendly Websites
-                  for Digital Solutions.
+                  Turning ideas into reliable, scalable, and user-focused digital products through end-to-end software development.
                 </p>
 
                 {/* Tech Stack */}

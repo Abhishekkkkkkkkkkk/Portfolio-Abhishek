@@ -107,24 +107,47 @@ function a11yProps(index) {
 }
 
 const techStacks = [
-  { icon: "c.svg", language: "C" },
-  { icon: "c++.svg", language: "C++" },
+  // Programming Languages 
   { icon: "java.svg", language: "JAVA" },
+  { icon: "c++.svg", language: "C++" },
   { icon: "javascript.svg", language: "JavaScript" },
+  { icon: "c.svg", language: "C" },
+
+
+  // Fronted Stack
   { icon: "html.svg", language: "HTML" },
   { icon: "css.svg", language: "CSS" },
   { icon: "bootstrap.svg", language: "Bootstrap" },
   { icon: "tailwind.svg", language: "Tailwind CSS" },
   { icon: "reactjs.svg", language: "React JS" },
   { icon: "nextjs.svg", language: "Next JS" },
+  { icon: "MUI.svg", language: "Material UI" },
+
+  // Backend Stack 
+  { icon: "spring-boot.svg", language: "Spring Boot" },
+  { icon: "spring-boot.svg", language: "Spring MVC" },
+  { icon: "spring-boot.svg", language: "SpringSecurity" },
+  { icon: "hibernate-icon.svg", language: "Hibernet" },
+  { icon: "jpa.svg", language: "JPA" },
   { icon: "nodejs.svg", language: "Node JS" },
   { icon: "expressjs.svg", language: "Express JS" },
+  { icon: "rest-api.svg", language: "Rest API" },
+  { icon: "jwt.svg", language: "JWT" },
+
+  // Databases 
   { icon: "mongodb.svg", language: "MongoDB" },
   { icon: "mysql.svg", language: "My SQL" },
   { icon: "firebase.svg", language: "Firebase" },
+
+  // Tools & Plateforms 
   { icon: "github.svg", language: "Github" },
+  { icon: "postman.svg", language: "Postman" },
+  { icon: "maven.svg", language: "Maven" },
+  { icon: "vscode.svg", language: "VS Code" },
+  { icon: "docker.svg", language: "Docker" },
+  { icon: "ci-cd.svg", language: "CI/CD" },
   { icon: "vite.svg", language: "Vite" },
-  { icon: "MUI.svg", language: "Material UI" },
+  { icon: "vite.svg", language: "AWS" },
   { icon: "vercel.svg", language: "Vercel" },
   { icon: "netlify.svg", language: "Netlify" },
   { icon: "canva.svg", language: "Canva" },
