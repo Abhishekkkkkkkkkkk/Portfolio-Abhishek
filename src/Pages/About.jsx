@@ -86,17 +86,7 @@ const About = () => {
               className="text-base sm:text-lg lg:text-xl text-gray-400 leading-relaxed lg:w-[45rem]"
               data-aos="fade-right"
             >
-              I’m a Software Developer with 1.5+ years of experience building
-              clean, scalable, and user-centric web applications. I primarily
-              work as a Java Full Stack Developer, using Java, JavaScript,
-              Spring Boot, React.js, and Next.js to deliver high-quality,
-              production-ready solutions. I have hands-on experience across the
-              full stack, including developing RESTful APIs, integrating MySQL
-              and MongoDB, and implementing secure authentication and
-              authorization using JWT and OAuth. With a strong foundation in
-              Data Structures & Algorithms and a commitment to continuous
-              learning, I enjoy solving complex problems, collaborating with
-              teams, and building software that creates real impact.
+              I’m a Software Developer with 1.6+ years of experience building clean, scalable, and user-centric web applications. I primarily work as a Java Full Stack Developer, using Java, JavaScript, Spring Boot, React.js, and Next.js to deliver high-quality, production-ready solutions. I have hands-on experience across the full stack, including developing RESTful APIs, integrating MySQL and MongoDB, and implementing secure authentication and authorization using JWT and OAuth. With a strong foundation in Data Structures & Algorithms and a commitment to continuous learning, I enjoy solving complex problems, collaborating with teams, and building software that creates real impact.
             </p>
 
             {/* Buttons */}
@@ -106,17 +96,17 @@ const About = () => {
                 href="/Abhishek_CV.pdf"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full lg:w-auto"
+                className="relative z-20 inline-block"
               >
-                <button className="w-full lg:w-auto px-6 py-3 rounded-lg bg-gradient-to-r from-[#6366f1] to-[#a855f7] flex items-center justify-center gap-2 shadow-lg hover:scale-105 transition">
+                <button className="relative z-20 cursor-pointer px-6 py-3 rounded-lg bg-gradient-to-r from-[#6366f1] to-[#a855f7] flex items-center gap-2 shadow-lg hover:scale-105 transition">
                   <FileText className="w-5 h-5" />
                   Download CV
                 </button>
               </a>
 
               {/* View Projects */}
-              <a href="#Portofolio" className="w-full lg:w-auto">
-                <button className="w-full lg:w-auto px-6 py-3 rounded-lg border border-[#a855f7]/50 text-[#a855f7] flex items-center justify-center gap-2 hover:bg-[#a855f7]/10 transition">
+              <a href="#Portofolio" className="relative z-20 inline-block">
+                <button className="relative z-20 cursor-pointer px-6 py-3 rounded-lg border border-[#a855f7]/50 text-[#a855f7] flex items-center gap-2 hover:bg-[#a855f7]/10 transition">
                   <Code className="w-5 h-5" />
                   View Projects
                 </button>
