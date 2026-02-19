@@ -86,7 +86,7 @@ const About = () => {
               className="text-base sm:text-lg lg:text-xl text-gray-400 leading-relaxed lg:w-[45rem]"
               data-aos="fade-right"
             >
-              I’m a Software Developer with 1.6+ years of experience building clean, scalable, and user-centric web applications. I primarily work as a Java Full Stack Developer, using Java, JavaScript, Spring Boot, React.js, and Next.js to deliver high-quality, production-ready solutions. I have hands-on experience across the full stack, including developing RESTful APIs, integrating MySQL and MongoDB, and implementing secure authentication and authorization using JWT and OAuth. With a strong foundation in Data Structures & Algorithms and a commitment to continuous learning, I enjoy solving complex problems, collaborating with teams, and building software that creates real impact.
+              I’m a Software Developer with 2+ years of experience building clean, scalable, and user-centric web applications. I primarily work as a Java Full Stack Developer, using Java, JavaScript, Spring Boot, React.js, and Next.js to deliver high-quality, production-ready solutions. I have hands-on experience across the full stack, including developing RESTful APIs, integrating MySQL and MongoDB, and implementing secure authentication and authorization using JWT and OAuth. With a strong foundation in Data Structures & Algorithms and a commitment to continuous learning, I enjoy solving complex problems, collaborating with teams, and building software that creates real impact.
             </p>
 
             {/* Buttons */}
