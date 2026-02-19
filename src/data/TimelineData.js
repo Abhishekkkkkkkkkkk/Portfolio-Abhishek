@@ -39,7 +39,7 @@ export const experienceData = [
   {
     jobTitle: "Full Stack Software Developer",
     company: "SOFREGO PRIVATE LIMITED",
-    duration: "Aug 2024 - Present",
+    duration: "Jan 2024 - Present",
     location: "Pune, Maharashtra",
     responsibilities: [
       "Designed, developed, and maintained scalable full-stack applications using Java (Spring Boot, Spring MVC, Spring Security) and modern frontend frameworks such as React.js and Next.js.",
@@ -75,31 +75,5 @@ export const experienceData = [
     ],
     impact:
       "Contributed to the successful delivery of secure, scalable, and high-performing applications, improving system reliability and user experience across multiple projects.",
-  },
-  {
-    jobTitle: "Web Developer",
-    company: "COREMAGIX SOFTWARE",
-    duration: "Feb 2024 – Jul 2024",
-    timeline: "Internship",
-    location: "Pune, Maharashtra",
-    responsibilities: [
-      "Developed and maintained modern, responsive, production-ready web interfaces aligned with business and user requirements.",
-      "Translated UI/UX designs and stakeholder requirements into clean, scalable, and reusable frontend code to support business and product goals.",
-      "Led the redesign and optimization of a live website to enhance user experience (UX), responsiveness, visual appeal, and accessibility across devices.",
-      "Improved website performance, SEO, and asset loading speed by optimizing code, implementing best practices, and refining layouts for visual consistency.",
-      "Ensured cross-browser compatibility, accessibility benchmarking, debugging, testing, and deployment readiness in an agile team environment supporting enterprise-grade digital solutions.",
-    ],
-    technologies: [
-      "HTML5",
-      "CSS3",
-      "JavaScript(ES6+)",
-      "SCSS",
-      "React.js",
-      "Bootstrap",
-      "Talwind CSS",
-      "SEO Optimization",
-    ],
-    impact:
-      "Led the frontend redesign and optimization of a production website by architecting scalable React components and implementing modern web best practices to improve performance, accessibility, and cross-device UX.",
   },
 ];

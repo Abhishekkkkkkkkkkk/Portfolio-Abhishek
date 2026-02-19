@@ -120,9 +120,9 @@ const About = () => {
       </div>
 
       {/* ===== Education & Experience Section ===== */}
-      <h2 className="text-4xl font-bold text-center mb-20">
+      {/* <h2 className="text-4xl font-bold text-center mb-20">
         Education & Experience
-      </h2>
+      </h2> */}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-20">
         <Timeline
