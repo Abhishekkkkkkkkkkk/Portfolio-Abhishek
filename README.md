@@ -14,7 +14,7 @@
 
 <br/>
 
-![Portfolio Preview](https://krabhishek.vercel.app/og-preview.png)
+![Portfolio Preview](https://img.sanishtech.com/u/6a2f81994d9ad1b4238aafa803b1fcad.png)
 
 </div>
 
