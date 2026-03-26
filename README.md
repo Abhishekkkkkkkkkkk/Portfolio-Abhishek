@@ -14,7 +14,7 @@
 
 <br/>
 
-![Portfolio Preview](https://img.sanishtech.com/u/9c2e2baf2b104625072288b35fd273af.png)
+![Portfolio Preview](https://img.sanishtech.com/u/9c2e2baf2b104625072288b35fd273af.png))
 
 </div>
 
