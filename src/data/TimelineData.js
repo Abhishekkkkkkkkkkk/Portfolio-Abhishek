@@ -8,8 +8,8 @@ export const educationData = [
     location: "Indore, Madhya Pradesh",
     highlights: [
       "CGPA: 8.10",
-      "Studied Data Structures, Algorithms, DBMS, OS",
-      "Completed academic and practical coursework in CSE",
+      "Studied core subjects including Data Structures, Algorithms, Database Management Systems (DBMS), and Operating Systems.",
+      "Gained both academic knowledge and practical experience through coursework and projects in the CSE domain.",
     ],
   },
   {
@@ -21,7 +21,8 @@ export const educationData = [
     location: "Patna, Bihar",
     highlights: [
       "Percentage: 71.6%",
-      "Focused on Physics, Chemistry, and Mathematics",
+      "Focused on core subjects including Physics, Chemistry, and Mathematics.",
+      "Developed strong analytical and problem-solving skills through academic coursework.",
     ],
   },
   {
@@ -31,7 +32,11 @@ export const educationData = [
     qualification: "Secondary (Class X)",
     board: "Bihar School Examination Board, Patna",
     location: "Patna, Bihar",
-    highlights: ["Percentage: 65.2%", "Built strong academic fundamentals"],
+    highlights: [
+      "Percentage: 65.2%", 
+      "Built a strong academic foundation across key subjects.",
+      "Demonstrated consistent performance and discipline in studies.",
+    ],
   },
 ];
 

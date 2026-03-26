@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, memo } from "react";
 import { db, collection } from "../firebase";
 import { getDocs } from "firebase/firestore";
 import PropTypes from "prop-types";
@@ -14,67 +14,29 @@ import TechStackIcon from "../components/TechStackIcon";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import Certificate from "../components/Certificate";
-import { Code, Award, Boxes } from "lucide-react";
+import BlogCard from "../components/BlogCard";
+import FeaturedBlogCard from "../components/FeaturedBlogCard";
+import NoteCard from "../components/NoteCard";
+import { Code, Award, Boxes, ChevronDown, ChevronUp, Sparkles, BookOpen, FileText } from "lucide-react";
 
-// Separate ShowMore/ShowLess button component
-const ToggleButton = ({ onClick, isShowingMore }) => (
+/* ─── Toggle Button ─── */
+const ToggleButton = memo(({ onClick, isShowingMore }) => (
   <button
     onClick={onClick}
-    className="
-      px-3 py-1.5
-      text-slate-300 
-      hover:text-white 
-      text-sm 
-      font-medium 
-      transition-all 
-      duration-300 
-      ease-in-out
-      flex 
-      items-center 
-      gap-2
-      bg-white/5 
-      hover:bg-white/10
-      rounded-md
-      border 
-      border-white/10
-      hover:border-white/20
-      backdrop-blur-sm
-      group
-      relative
-      overflow-hidden
-    "
+    className="group flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold
+      border border-white/10 bg-white/5 text-gray-400
+      hover:border-[#6366f1]/50 hover:bg-[#6366f1]/10 hover:text-white
+      transition-all duration-300 hover:scale-105 backdrop-blur-sm"
   >
-    <span className="relative z-10 flex items-center gap-2">
-      {isShowingMore ? "See Less" : "See More"}
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="16"
-        height="16"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className={`
-          transition-transform 
-          duration-300 
-          ${
-            isShowingMore
-              ? "group-hover:-translate-y-0.5"
-              : "group-hover:translate-y-0.5"
-          }
-        `}
-      >
-        <polyline
-          points={isShowingMore ? "18 15 12 9 6 15" : "6 9 12 15 18 9"}
-        ></polyline>
-      </svg>
-    </span>
-    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-purple-500/50 transition-all duration-300 group-hover:w-full"></span>
+    {isShowingMore ? (
+      <>Show Less <ChevronUp className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform" /></>
+    ) : (
+      <>Show More <ChevronDown className="w-4 h-4 group-hover:translate-y-0.5 transition-transform" /></>
+    )}
   </button>
-);
+));
 
+/* ─── Tab Panel ─── */
 function TabPanel({ children, value, index, ...other }) {
   return (
     <div
@@ -86,7 +48,7 @@ function TabPanel({ children, value, index, ...other }) {
     >
       {value === index && (
         <Box sx={{ p: { xs: 1, sm: 3 } }}>
-          <Typography>{children}</Typography>
+          <Typography component="div">{children}</Typography>
         </Box>
       )}
     </div>
@@ -106,181 +68,197 @@ function a11yProps(index) {
   };
 }
 
+/* ─── Tech Stack Data ─── */
 const techStacks = [
-  // Programming Languages 
-  { icon: "java.svg", language: "JAVA" },
-  { icon: "c++.svg", language: "C++" },
-  { icon: "javascript.svg", language: "JavaScript" },
-  { icon: "c.svg", language: "C" },
-
-
-  // Fronted Stack
-  { icon: "html.svg", language: "HTML" },
-  { icon: "css.svg", language: "CSS" },
-  { icon: "bootstrap.svg", language: "Bootstrap" },
-  { icon: "tailwind.svg", language: "Tailwind CSS" },
-  { icon: "reactjs.svg", language: "React JS" },
-  { icon: "nextjs.svg", language: "Next JS" },
-  { icon: "MUI.svg", language: "Material UI" },
-
-  // Backend Stack 
-  { icon: "spring-boot.svg", language: "Spring Boot" },
-  { icon: "spring-boot.svg", language: "Spring MVC" },
-  { icon: "spring-boot.svg", language: "SpringSecurity" },
+  { icon: "java.svg",           language: "JAVA" },
+  { icon: "c++.svg",            language: "C++" },
+  { icon: "javascript.svg",     language: "JavaScript" },
+  { icon: "c.svg",              language: "C" },
+  { icon: "html.svg",           language: "HTML" },
+  { icon: "css.svg",            language: "CSS" },
+  { icon: "bootstrap.svg",      language: "Bootstrap" },
+  { icon: "tailwind.svg",       language: "Tailwind CSS" },
+  { icon: "reactjs.svg",        language: "React JS" },
+  { icon: "nextjs.svg",         language: "Next JS" },
+  { icon: "MUI.svg",            language: "Material UI" },
+  { icon: "spring-boot.svg",    language: "Spring Boot" },
+  { icon: "spring-boot.svg",    language: "Spring MVC" },
+  { icon: "spring-boot.svg",    language: "Spring Security" },
   { icon: "hibernate-icon.svg", language: "Hibernet" },
-  { icon: "jpa.svg", language: "JPA" },
-  { icon: "nodejs.svg", language: "Node JS" },
-  { icon: "expressjs.svg", language: "Express JS" },
-  { icon: "rest-api.svg", language: "Rest API" },
-  { icon: "jwt.svg", language: "JWT" },
-
-  // Databases 
-  { icon: "mongodb.svg", language: "MongoDB" },
-  { icon: "mysql.svg", language: "My SQL" },
-  { icon: "firebase.svg", language: "Firebase" },
-
-  // Tools & Plateforms 
-  { icon: "github.svg", language: "Github" },
-  { icon: "postman.svg", language: "Postman" },
-  { icon: "maven.svg", language: "Maven" },
-  { icon: "vscode.svg", language: "VS Code" },
-  { icon: "docker.svg", language: "Docker" },
-  { icon: "ci-cd.svg", language: "CI/CD" },
-  { icon: "vite.svg", language: "Vite" },
-  { icon: "vite.svg", language: "AWS" },
-  { icon: "vercel.svg", language: "Vercel" },
-  { icon: "netlify.svg", language: "Netlify" },
-  { icon: "canva.svg", language: "Canva" },
+  { icon: "jpa.svg",            language: "JPA" },
+  { icon: "nodejs.svg",         language: "Node JS" },
+  { icon: "expressjs.svg",      language: "Express JS" },
+  { icon: "rest-api.svg",       language: "Rest API" },
+  { icon: "jwt.svg",            language: "JWT" },
+  { icon: "mongodb.svg",        language: "MongoDB" },
+  { icon: "mysql.svg",          language: "My SQL" },
+  { icon: "firebase.svg",       language: "Firebase" },
+  { icon: "github.svg",         language: "Github" },
+  { icon: "postman.svg",        language: "Postman" },
+  { icon: "maven.svg",          language: "Maven" },
+  { icon: "vscode.svg",         language: "VS Code" },
+  { icon: "docker.svg",         language: "Docker" },
+  { icon: "ci-cd.svg",          language: "CI/CD" },
+  { icon: "vite.svg",           language: "Vite" },
+  { icon: "aws-logo.svg",       language: "AWS" },
+  { icon: "vercel.svg",         language: "Vercel" },
+  { icon: "netlify.svg",        language: "Netlify" },
+  { icon: "canva.svg",          language: "Canva" },
 ];
 
+const BG_CYCLE = ["bg1", "bg2", "bg3", "bg4", "bg5", "bg6"];
+
+/* ─── Section Label ─── */
+const SectionLabel = memo(({ count, label }) => (
+  <div className="flex items-center gap-2 mb-6" data-aos="fade-right">
+    <div className="h-px flex-1 bg-gradient-to-r from-transparent to-[#6366f1]/30" />
+    <span className="text-xs font-mono text-gray-600 tracking-widest uppercase px-3 py-1 rounded-full border border-white/10 bg-white/5">
+      {count} {label}
+    </span>
+    <div className="h-px w-8 bg-[#6366f1]/30" />
+  </div>
+));
+
+/* ─── Filter Bar ─── */
+const BLOG_CATEGORIES  = ["All", "Java", "Spring Boot", "React", "DSA", "System Design", "JavaScript"];
+const NOTES_CATEGORIES = ["All", "Java", "Spring Boot", "DSA", "System Design", "React", "JavaScript", "MySQL"];
+
+const FilterBar = memo(({ categories, active, onChange }) => (
+  <div className="flex flex-wrap gap-2 mb-6" data-aos="fade-up">
+    {categories.map((cat) => (
+      <button
+        key={cat}
+        onClick={() => onChange(cat)}
+        className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 border
+          ${active === cat
+            ? "border-[#6366f1]/50 bg-[#6366f1]/15 text-[#a78bfa]"
+            : "border-white/10 bg-white/5 text-gray-500 hover:border-white/20 hover:text-gray-300"
+          }`}
+      >
+        {cat}
+      </button>
+    ))}
+  </div>
+));
+
+/* ─── Main Component ─── */
 export default function FullWidthTabs() {
   const theme = useTheme();
   const [value, setValue] = useState(0);
   const [projects, setProjects] = useState([]);
   const [certificates, setCertificates] = useState([]);
+  const [blogs, setBlogs] = useState([]);
+  const [notes, setNotes] = useState([]);
   const [showAllProjects, setShowAllProjects] = useState(false);
   const [showAllCertificates, setShowAllCertificates] = useState(false);
+  const [showAllBlogs, setShowAllBlogs] = useState(false);
+  const [showAllNotes, setShowAllNotes] = useState(false);
+  const [blogFilter, setBlogFilter] = useState("All");
+  const [notesFilter, setNotesFilter] = useState("All");
   const isMobile = window.innerWidth < 768;
   const initialItems = isMobile ? 4 : 6;
 
   useEffect(() => {
-    // Initialize AOS once
-    AOS.init({
-      once: false, // This will make animations occur only once
-    });
+    AOS.init({ once: false, duration: 700, easing: "ease-out-cubic" });
   }, []);
 
   const fetchData = useCallback(async () => {
     try {
-      const projectCollection = collection(db, "projects");
-      const certificateCollection = collection(db, "certificates");
-
-      const [projectSnapshot, certificateSnapshot] = await Promise.all([
-        getDocs(projectCollection),
-        getDocs(certificateCollection),
+      const [projectSnap, certSnap, blogSnap, notesSnap] = await Promise.all([
+        getDocs(collection(db, "projects")),
+        getDocs(collection(db, "certificates")),
+        getDocs(collection(db, "blogs")),
+        getDocs(collection(db, "notes")),
       ]);
 
-      const projectData = projectSnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-        TechStack: doc.data().TechStack || [],
-      }));
-
-      const certificateData = certificateSnapshot.docs.map((doc) => doc.data());
+      const projectData  = projectSnap.docs.map((doc) => ({ id: doc.id, ...doc.data(), TechStack: doc.data().TechStack || [] }));
+      const certData     = certSnap.docs.map((doc) => doc.data());
+      const blogData     = blogSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      const notesData    = notesSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 
       setProjects(projectData);
-      setCertificates(certificateData);
+      setCertificates(certData);
+      setBlogs(blogData);
+      setNotes(notesData);
 
-      // Store in localStorage
-      localStorage.setItem("projects", JSON.stringify(projectData));
-      localStorage.setItem("certificates", JSON.stringify(certificateData));
+      localStorage.setItem("projects",     JSON.stringify(projectData));
+      localStorage.setItem("certificates", JSON.stringify(certData));
+      localStorage.setItem("blogs",        JSON.stringify(blogData));
+      localStorage.setItem("notes",        JSON.stringify(notesData));
     } catch (error) {
       console.error("Error fetching data:", error);
     }
   }, []);
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  useEffect(() => { fetchData(); }, [fetchData]);
 
-  const handleChange = (event, newValue) => {
-    setValue(newValue);
-  };
+  const handleChange = (event, newValue) => setValue(newValue);
 
   const toggleShowMore = useCallback((type) => {
-    if (type === "projects") {
-      setShowAllProjects((prev) => !prev);
-    } else {
-      setShowAllCertificates((prev) => !prev);
-    }
+    if (type === "projects")     setShowAllProjects((p) => !p);
+    else if (type === "certificates") setShowAllCertificates((p) => !p);
+    else if (type === "blogs")   setShowAllBlogs((p) => !p);
+    else                         setShowAllNotes((p) => !p);
   }, []);
 
-  const displayedProjects = showAllProjects
-    ? projects
-    : projects.slice(0, initialItems);
-  const displayedCertificates = showAllCertificates
-    ? certificates
-    : certificates.slice(0, initialItems);
+  /* Filtered data */
+  const filteredBlogs = blogFilter === "All"
+    ? blogs
+    : blogs.filter((b) => b.tags?.some((t) => t.toLowerCase().includes(blogFilter.toLowerCase())));
+
+  const filteredNotes = notesFilter === "All"
+    ? notes
+    : notes.filter((n) => n.subject === notesFilter || n.tags?.some((t) => t.toLowerCase().includes(notesFilter.toLowerCase())));
+
+  const featuredBlog  = filteredBlogs.find((b) => b.featured);
+  const regularBlogs  = filteredBlogs.filter((b) => !b.featured);
+  const featuredNote  = filteredNotes.find((n) => n.featured);
+  const regularNotes  = filteredNotes.filter((n) => !n.featured);
+
+  const displayedProjects      = showAllProjects      ? projects      : projects.slice(0, initialItems);
+  const displayedCertificates  = showAllCertificates  ? certificates  : certificates.slice(0, initialItems);
+  const displayedRegularBlogs  = showAllBlogs         ? regularBlogs  : regularBlogs.slice(0, initialItems);
+  const displayedRegularNotes  = showAllNotes         ? regularNotes  : regularNotes.slice(0, initialItems);
+
+  const TAB_CONFIG = [
+    { icon: Code,      label: "Projects",     count: projects.length },
+    { icon: Award,     label: "Certificates", count: certificates.length },
+    { icon: Boxes,     label: "Tech Stack",   count: techStacks.length },
+    { icon: BookOpen,  label: "Blog",         count: blogs.length },
+    { icon: FileText,  label: "Notes",        count: notes.length },
+  ];
 
   return (
-    <div
-      className="md:px-[10%] px-[5%] w-full sm:mt-0 mt-[3rem] bg-[#030014] overflow-hidden"
-      id="Portofolio"
-    >
-      {/* Header section - unchanged */}
-      <div
-        className="text-center pb-10"
-        data-aos="fade-up"
-        data-aos-duration="1000"
-      >
-        <h2 className="inline-block text-3xl md:text-5xl font-bold text-center mx-auto text-transparent bg-clip-text bg-gradient-to-r from-[#6366f1] to-[#a855f7]">
-          <span
-            style={{
-              color: "#6366f1",
-              backgroundImage:
-                "linear-gradient(45deg, #6366f1 10%, #a855f7 93%)",
-              WebkitBackgroundClip: "text",
-              backgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-            }}
-          >
-            Portfolio Showcase
-          </span>
+    <div className="relative md:px-[10%] px-[5%] w-full sm:mt-0 mt-[3rem] bg-[#030014] overflow-hidden" id="Portofolio">
+
+      {/* Background orbs */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] rounded-full bg-[#6366f1]/6 blur-[130px]" />
+        <div className="absolute bottom-1/4 right-0 w-[400px] h-[400px] rounded-full bg-[#a855f7]/6 blur-[100px]" />
+      </div>
+
+      {/* ── Header ── */}
+      <div className="relative text-center pb-14" data-aos="fade-up" data-aos-duration="800">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#6366f1]/30 bg-[#6366f1]/10 text-[#a78bfa] text-xs font-semibold uppercase tracking-widest mb-5">
+          <Sparkles className="w-3.5 h-3.5" />
+          My Work
+        </div>
+        <h2 className="text-4xl md:text-6xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#6366f1] via-[#818cf8] to-[#a855f7]">
+          Portfolio Showcase
         </h2>
-        <p className="text-slate-400 max-w-2xl mx-auto text-sm md:text-base mt-2">
-          Explore my journey through projects, certifications, and technical
-          expertise. Each section represents a milestone in my continuous
-          learning path.
+        <p className="text-gray-500 max-w-xl mx-auto text-sm md:text-base mt-4 leading-relaxed">
+          Projects, certifications, tech stack, blog articles and notes —
+          each a milestone in my continuous learning journey.
         </p>
+        <div className="flex justify-center mt-6">
+          <div className="h-px w-24 bg-gradient-to-r from-transparent via-[#6366f1]/60 to-transparent" />
+        </div>
       </div>
 
       <Box sx={{ width: "100%" }}>
-        {/* AppBar and Tabs section - unchanged */}
-        <AppBar
-          position="static"
-          elevation={0}
-          sx={{
-            bgcolor: "transparent",
-            border: "1px solid rgba(255, 255, 255, 0.1)",
-            borderRadius: "20px",
-            position: "relative",
-            overflow: "hidden",
-            "&::before": {
-              content: '""',
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background:
-                "linear-gradient(180deg, rgba(139, 92, 246, 0.03) 0%, rgba(59, 130, 246, 0.03) 100%)",
-              backdropFilter: "blur(10px)",
-              zIndex: 0,
-            },
-          }}
-          className="md:px-4"
-        >
-          {/* Tabs remain unchanged */}
+        {/* ── Tab Bar ── */}
+        <div className="relative rounded-2xl border border-white/10 bg-white/4 backdrop-blur-xl overflow-hidden mb-2" data-aos="fade-up" data-aos-delay="100">
+          <div className="absolute inset-0 bg-gradient-to-b from-[#6366f1]/4 to-transparent pointer-events-none" />
           <Tabs
             value={value}
             onChange={handleChange}
@@ -288,135 +266,92 @@ export default function FullWidthTabs() {
             indicatorColor="secondary"
             variant="fullWidth"
             sx={{
-              // Existing styles remain unchanged
-              minHeight: "70px",
+              minHeight: "72px",
+              position: "relative",
+              zIndex: 1,
               "& .MuiTab-root": {
-                fontSize: { xs: "0.9rem", md: "1rem" },
-                fontWeight: "600",
-                color: "#94a3b8",
+                fontSize: { xs: "0.65rem", md: "0.85rem" },
+                fontWeight: "700",
+                color: "#64748b",
                 textTransform: "none",
-                transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-                padding: "20px 0",
-                zIndex: 1,
-                margin: "8px",
-                borderRadius: "12px",
+                transition: "all 0.35s cubic-bezier(0.4, 0, 0.2, 1)",
+                padding: "16px 0",
+                margin: "8px 3px",
+                borderRadius: "14px",
+                letterSpacing: "0.01em",
+                minWidth: 0,
                 "&:hover": {
-                  color: "#ffffff",
-                  backgroundColor: "rgba(139, 92, 246, 0.1)",
-                  transform: "translateY(-2px)",
-                  "& .lucide": {
-                    transform: "scale(1.1) rotate(5deg)",
-                  },
+                  color: "#e2e8f0",
+                  backgroundColor: "rgba(99, 102, 241, 0.08)",
+                  transform: "translateY(-1px)",
                 },
                 "&.Mui-selected": {
                   color: "#fff",
-                  background:
-                    "linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(59, 130, 246, 0.2))",
-                  boxShadow: "0 4px 15px -3px rgba(139, 92, 246, 0.2)",
-                  "& .lucide": {
-                    color: "#a78bfa",
-                  },
+                  background: "linear-gradient(135deg, rgba(99,102,241,0.25), rgba(168,85,247,0.15))",
+                  boxShadow: "0 4px 20px -4px rgba(99,102,241,0.3), inset 0 1px 0 rgba(255,255,255,0.1)",
+                  "& .tab-icon": { color: "#a78bfa" },
                 },
               },
-              "& .MuiTabs-indicator": {
-                height: 0,
-              },
-              "& .MuiTabs-flexContainer": {
-                gap: "8px",
-              },
+              "& .MuiTabs-indicator": { height: 0 },
+              "& .MuiTabs-flexContainer": { gap: "2px" },
             }}
           >
-            <Tab
-              icon={
-                <Code className="mb-2 w-5 h-5 transition-all duration-300" />
-              }
-              label="Projects"
-              {...a11yProps(0)}
-            />
-            <Tab
-              icon={
-                <Award className="mb-2 w-5 h-5 transition-all duration-300" />
-              }
-              label="Certificates"
-              {...a11yProps(1)}
-            />
-            <Tab
-              icon={
-                <Boxes className="mb-2 w-5 h-5 transition-all duration-300" />
-              }
-              label="Tech Stack"
-              {...a11yProps(2)}
-            />
+            {TAB_CONFIG.map((tab, i) => (
+              <Tab
+                key={tab.label}
+                icon={
+                  <div className="flex flex-col items-center gap-0.5">
+                    <tab.icon className="tab-icon w-4 h-4 sm:w-5 sm:h-5 transition-all duration-300" />
+                    {tab.count > 0 && (
+                      <span className="text-[9px] font-mono text-gray-600 tabular-nums">{tab.count}</span>
+                    )}
+                  </div>
+                }
+                label={tab.label}
+                {...a11yProps(i)}
+              />
+            ))}
           </Tabs>
-        </AppBar>
+        </div>
 
         <SwipeableViews
           axis={theme.direction === "rtl" ? "x-reverse" : "x"}
           index={value}
           onChangeIndex={setValue}
         >
+          {/* ── Projects ── */}
           <TabPanel value={value} index={0} dir={theme.direction}>
+            <SectionLabel count={projects.length} label="Projects" />
             <div className="container mx-auto flex justify-center items-center overflow-hidden">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 2xl:grid-cols-3 gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 2xl:grid-cols-3 gap-6">
                 {displayedProjects.map((project, index) => (
-                  <div
-                    key={project.id || index}
-                    data-aos={
-                      index % 3 === 0
-                        ? "fade-up-right"
-                        : index % 3 === 1
-                        ? "fade-up"
-                        : "fade-up-left"
-                    }
-                    data-aos-duration={
-                      index % 3 === 0
-                        ? "1000"
-                        : index % 3 === 1
-                        ? "1200"
-                        : "1000"
-                    }
+                  <div key={project.id || index}
+                    data-aos={index % 3 === 0 ? "fade-up-right" : index % 3 === 1 ? "fade-up" : "fade-up-left"}
+                    data-aos-duration={index % 3 === 1 ? "1200" : "1000"}
+                    data-aos-delay={index * 50}
                   >
-                    <CardProject
-                      Img={project.Img}
-                      Title={project.Title}
-                      Description={project.Description}
-                      Link={project.Link}
-                      id={project.id}
-                    />
+                    <CardProject Img={project.Img} Title={project.Title} Description={project.Description} Link={project.Link} id={project.id} />
                   </div>
                 ))}
               </div>
             </div>
             {projects.length > initialItems && (
-              <div className="mt-6 w-full flex justify-start">
-                <ToggleButton
-                  onClick={() => toggleShowMore("projects")}
-                  isShowingMore={showAllProjects}
-                />
+              <div className="mt-8 w-full flex justify-center">
+                <ToggleButton onClick={() => toggleShowMore("projects")} isShowingMore={showAllProjects} />
               </div>
             )}
           </TabPanel>
 
+          {/* ── Certificates ── */}
           <TabPanel value={value} index={1} dir={theme.direction}>
+            <SectionLabel count={certificates.length} label="Certificates" />
             <div className="container mx-auto flex justify-center items-center overflow-hidden">
-              <div className="grid grid-cols-1 md:grid-cols-3 md:gap-5 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                 {displayedCertificates.map((certificate, index) => (
-                  <div
-                    key={index}
-                    data-aos={
-                      index % 3 === 0
-                        ? "fade-up-right"
-                        : index % 3 === 1
-                        ? "fade-up"
-                        : "fade-up-left"
-                    }
-                    data-aos-duration={
-                      index % 3 === 0
-                        ? "1000"
-                        : index % 3 === 1
-                        ? "1200"
-                        : "1000"
-                    }
+                  <div key={index}
+                    data-aos={index % 3 === 0 ? "fade-up-right" : index % 3 === 1 ? "fade-up" : "fade-up-left"}
+                    data-aos-duration={index % 3 === 1 ? "1200" : "1000"}
+                    data-aos-delay={index * 50}
                   >
                     <Certificate ImgSertif={certificate.Img} />
                   </div>
@@ -424,47 +359,177 @@ export default function FullWidthTabs() {
               </div>
             </div>
             {certificates.length > initialItems && (
-              <div className="mt-6 w-full flex justify-start">
-                <ToggleButton
-                  onClick={() => toggleShowMore("certificates")}
-                  isShowingMore={showAllCertificates}
-                />
+              <div className="mt-8 w-full flex justify-center">
+                <ToggleButton onClick={() => toggleShowMore("certificates")} isShowingMore={showAllCertificates} />
               </div>
             )}
           </TabPanel>
 
+          {/* ── Tech Stack ── */}
           <TabPanel value={value} index={2} dir={theme.direction}>
-            <div className="container mx-auto flex justify-center items-center overflow-hidden pb-[5%]">
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 lg:gap-8 gap-5">
-                {techStacks.map((stack, index) => (
-                  <div
-                    key={index}
-                    data-aos={
-                      index % 3 === 0
-                        ? "fade-up-right"
-                        : index % 3 === 1
-                        ? "fade-up"
-                        : "fade-up-left"
-                    }
-                    data-aos-duration={
-                      index % 3 === 0
-                        ? "1000"
-                        : index % 3 === 1
-                        ? "1200"
-                        : "1000"
-                    }
-                  >
-                    <TechStackIcon
-                      TechStackIcon={stack.icon}
-                      Language={stack.language}
-                    />
-                  </div>
-                ))}
+            <SectionLabel count={techStacks.length} label="Technologies" />
+            {[
+              { label: "Languages",         range: [0, 4] },
+              { label: "Frontend",          range: [4, 11] },
+              { label: "Backend",           range: [11, 20] },
+              { label: "Databases",         range: [20, 23] },
+              { label: "Tools & Platforms", range: [23, 34] },
+            ].map(({ label, range }) => (
+              <div key={label} className="mb-8">
+                <div className="flex items-center gap-3 mb-4" data-aos="fade-right">
+                  <span className="text-[11px] font-mono text-[#6366f1]/70 uppercase tracking-[0.2em]">{label}</span>
+                  <div className="h-px flex-1 bg-gradient-to-r from-[#6366f1]/20 to-transparent" />
+                </div>
+                <div className="flex flex-wrap gap-4">
+                  {techStacks.slice(range[0], range[1]).map((stack, index) => (
+                    <div key={index} data-aos="fade-up" data-aos-duration="700" data-aos-delay={index * 40}>
+                      <TechStackIcon TechStackIcon={stack.icon} Language={stack.language} />
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            ))}
+          </TabPanel>
+
+          {/* ── Blog ── */}
+          <TabPanel value={value} index={3} dir={theme.direction}>
+            <SectionLabel count={filteredBlogs.length} label="Articles" />
+            <FilterBar categories={BLOG_CATEGORIES} active={blogFilter} onChange={(cat) => { setBlogFilter(cat); setShowAllBlogs(false); }} />
+
+            {filteredBlogs.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
+                <span className="text-5xl">📭</span>
+                <p className="text-gray-500 text-sm">No articles found for this category.</p>
+              </div>
+            ) : (
+              <>
+                {featuredBlog && (
+                  <div className="mb-6" data-aos="fade-up">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="h-px flex-1 bg-gradient-to-r from-transparent to-[#6366f1]/20" />
+                      <span className="text-[11px] font-mono text-gray-600 uppercase tracking-widest">Featured</span>
+                      <div className="h-px flex-1 bg-gradient-to-l from-transparent to-[#6366f1]/20" />
+                    </div>
+                    <FeaturedBlogCard id={featuredBlog.id} title={featuredBlog.title} description={featuredBlog.description} tags={featuredBlog.tags} date={featuredBlog.date} readTime={featuredBlog.readTime} views={featuredBlog.views} coverEmoji={featuredBlog.coverEmoji} coverImg={featuredBlog.coverImg} />
+                  </div>
+                )}
+
+                {regularBlogs.length > 0 && (
+                  <>
+                    <div className="flex items-center gap-3 mb-5" data-aos="fade-right">
+                      <div className="h-px flex-1 bg-gradient-to-r from-transparent to-[#6366f1]/20" />
+                      <span className="text-[11px] font-mono text-gray-600 uppercase tracking-widest">{regularBlogs.length} Articles</span>
+                      <div className="h-px flex-1 bg-gradient-to-l from-transparent to-[#6366f1]/20" />
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                      {displayedRegularBlogs.map((blog, index) => (
+                        <div key={blog.id}
+                          data-aos={index % 3 === 0 ? "fade-up-right" : index % 3 === 1 ? "fade-up" : "fade-up-left"}
+                          data-aos-duration="900" data-aos-delay={index * 60}
+                        >
+                          <BlogCard id={blog.id} title={blog.title} description={blog.description} tags={blog.tags} date={blog.date} readTime={blog.readTime} views={blog.views} coverEmoji={blog.coverEmoji} coverImg={blog.coverImg} bgClass={BG_CYCLE[index % 6]} />
+                        </div>
+                      ))}
+                    </div>
+                    {regularBlogs.length > initialItems && (
+                      <div className="mt-8 w-full flex justify-center">
+                        <ToggleButton onClick={() => toggleShowMore("blogs")} isShowingMore={showAllBlogs} />
+                      </div>
+                    )}
+                  </>
+                )}
+              </>
+            )}
+          </TabPanel>
+
+          {/* ── Notes ── */}
+          <TabPanel value={value} index={4} dir={theme.direction}>
+            <SectionLabel count={filteredNotes.length} label="Notes" />
+            <FilterBar categories={NOTES_CATEGORIES} active={notesFilter} onChange={(cat) => { setNotesFilter(cat); setShowAllNotes(false); }} />
+
+            {filteredNotes.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
+                <span className="text-5xl">📂</span>
+                <p className="text-gray-500 text-sm">No notes found for this subject.</p>
+              </div>
+            ) : (
+              <>
+                {/* Featured note */}
+                {featuredNote && (
+                  <div className="mb-6" data-aos="fade-up">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="h-px flex-1 bg-gradient-to-r from-transparent to-[#6366f1]/20" />
+                      <span className="text-[11px] font-mono text-gray-600 uppercase tracking-widest">Featured</span>
+                      <div className="h-px flex-1 bg-gradient-to-l from-transparent to-[#6366f1]/20" />
+                    </div>
+                    {/* Featured note uses same grid slot but full-width card */}
+                    <div className="max-w-sm">
+                      <NoteCard
+                        id={featuredNote.id}
+                        title={featuredNote.title}
+                        description={featuredNote.description}
+                        subject={featuredNote.subject}
+                        tags={featuredNote.tags}
+                        pdfUrl={featuredNote.pdfUrl}
+                        coverEmoji={featuredNote.coverEmoji}
+                        pages={featuredNote.pages}
+                        date={featuredNote.date}
+                        featured={true}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Notes grid */}
+                {regularNotes.length > 0 && (
+                  <>
+                    <div className="flex items-center gap-3 mb-5" data-aos="fade-right">
+                      <div className="h-px flex-1 bg-gradient-to-r from-transparent to-[#6366f1]/20" />
+                      <span className="text-[11px] font-mono text-gray-600 uppercase tracking-widest">{regularNotes.length} Notes</span>
+                      <div className="h-px flex-1 bg-gradient-to-l from-transparent to-[#6366f1]/20" />
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                      {displayedRegularNotes.map((note, index) => (
+                        <div key={note.id}
+                          data-aos={index % 3 === 0 ? "fade-up-right" : index % 3 === 1 ? "fade-up" : "fade-up-left"}
+                          data-aos-duration="900"
+                          data-aos-delay={index * 60}
+                        >
+                          <NoteCard
+                            id={note.id}
+                            title={note.title}
+                            description={note.description}
+                            subject={note.subject}
+                            tags={note.tags}
+                            pdfUrl={note.pdfUrl}
+                            coverEmoji={note.coverEmoji}
+                            pages={note.pages}
+                            date={note.date}
+                            featured={false}
+                          />
+                        </div>
+                      ))}
+                    </div>
+
+                    {regularNotes.length > initialItems && (
+                      <div className="mt-8 w-full flex justify-center">
+                        <ToggleButton onClick={() => toggleShowMore("notes")} isShowingMore={showAllNotes} />
+                      </div>
+                    )}
+                  </>
+                )}
+              </>
+            )}
           </TabPanel>
         </SwipeableViews>
       </Box>
+
+      <style>{`
+        #Portofolio ::-webkit-scrollbar { width: 4px; }
+        #Portofolio ::-webkit-scrollbar-track { background: transparent; }
+        #Portofolio ::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.3); border-radius: 2px; }
+      `}</style>
     </div>
   );
 }
