@@ -297,7 +297,7 @@ const About = () => {
           <Counter end={2} suffix="+" label="Years Experience" />
           <Counter end={15} suffix="+" label="Projects Built" />
           <Counter end={500} suffix="+" label="DSA Problems" />
-          <Counter end={5} suffix="+" label="Technologies" />
+          <Counter end={10} suffix="+" label="Technologies" />
         </div>
       </div>
 
