@@ -10,11 +10,9 @@
 
 <br/>
 
-> A fully redesigned, feature-rich personal portfolio built with React.js, Tailwind CSS, Firebase, and Google Drive storage - featuring a cinematic welcome screen, blog system, notes viewer, premium animations, and a polished dark UI.
+> A fully redesigned, modular personal portfolio built with React.js, Tailwind CSS, Firebase, and Google Drive storage. Features a cinematic welcome screen, structured blog/notes system, premium GPU-accelerated animations, developer mini-games, and a polished dark-glass UI.
 
 <br/>
-
-![Portfolio Preview](https://img.sanishtech.com/u/9c2e2baf2b104625072288b35fd273af.png))
 
 </div>
 
@@ -24,83 +22,78 @@
 
 | Feature | Description |
 |---|---|
-| 📝 Blog System | Write & publish articles from Firebase with category filters, cover images, and full HTML rendering |
-| 📄 Notes Section | Upload PDF notes to Google Drive and view them in a built-in modal viewer |
-| 🎬 Welcome Screen | Cinematic loading screen with particle mesh, glitch text, progress bar and spring animations |
-| 🎨 Premium UI | Complete redesign - glassmorphism, glow effects, shine sweeps, and skeleton loaders throughout |
-| 📊 Stat Counters | Animated scroll-triggered counters on the About page |
-| 🎉 Fun Section | Matrix code rain background, live availability status, and interactive developer stat cards |
-| 🔔 Portal Modals | All modals (PDF viewer, Certificate) render via `createPortal` - no overflow issues |
-| 📱 Mobile Fixed | Fixed navbar overlap, badge overflow, and tab layout on all screen sizes |
+| 🏗️ **Clean Architecture** | Decoupled codebase separating page sections, layouts, standalone routed views, and centralized configuration services |
+| 👾 **Syntax Invaders Game** | High-performance HTML5 Canvas arcade shooter. Blast descending bugs with semicolon lasers (;) complete with levels, particle bursts, and retro synthesizer audio |
+| 🎴 **Dev Stack Matcher** | Interactive memory matching card game integrated side-by-side with your LeetCode Stats card inside the Hero section |
+| 📝 **Blog System** | Write and publish articles from Firebase with category filters, cover images, reading time calculations, and full HTML rendering |
+| 📄 **Notes Section** | Built-in modal PDF viewer displaying study notes hosted on Google Drive |
+| 🎬 **Welcome Screen** | Optimized loading screen with particle mesh, typewriter URL chip, progress bar, and spring animations |
+| 🎨 **Premium UI** | Polished dark glassmorphism, glow borders, sweep transitions, and skeleton layout loaders |
+| ⚡ **GPU Animations Fix** | Fixed scroll lag by shifting the infinite scroll background loop onto throttled browser repaint cycles |
+| 📦 **Legacy Peer Resolution** | Added `.npmrc` configuration to resolve npm peer conflicts automatically on remote hosts like Vercel |
 
 ---
 
-## ✨ Features
+## ✨ Core Features
 
-- 📱 Fully **responsive** design across all screen sizes
-- 🎨 Premium **dark UI** with glassmorphism, glow, and shine effects
-- 🌀 Smooth **animations** with AOS & Framer Motion
-- 🎬 **Cinematic welcome screen** with particle field and glitch effects
-- 💼 **Project showcase** with hover effects and detail pages
-- 📝 **Blog system** powered by Firebase Firestore
-- 📄 **Notes viewer** with Google Drive PDF storage
-- 🏆 **Certificates** gallery with fullscreen modal viewer
-- 🛠️ **Tech stack** categorized into 5 sections
-- 📬 **Contact form** with focus glow effects and fun animated section
-- ⚡ Fast performance with **Vite** bundler
-
----
-
-## 🛠️ Tech Stack
-
-| Category | Technology |
-|---|---|
-| Frontend Framework | React.js |
-| Styling | Tailwind CSS |
-| Animations | Framer Motion, AOS |
-| UI Components | Material UI, Lucide React |
-| Backend / Database | Firebase Firestore |
-| File Storage | Google Drive (PDFs) |
-| Alerts | SweetAlert2 |
-| Deployment | Vercel |
+- 📱 **Mobile-First Responsive Layout** optimized across all standard screen sizes.
+- 🎨 **Glassmorphism Dark UI** utilizing tailwind color ranges, subtle shadows, and borders.
+- 🌀 **GPU-Accelerated Animations** powered by AOS and Framer Motion transitions.
+- 🎬 **Loading Screen** with a throttled particle generator that finishes loading within 1 second for low bounce rates.
+- 💼 **Project Detail Subpages** providing a lock popup if code repositories are private.
+- 📬 **Contact Form** validated using SweetAlert2 popup messages.
 
 ---
 
 ## 📁 Project Structure
 
+The project has been organized into a professional React architecture:
+
 ```
 Portfolio-Abhishek/
-├── public/
-│   └── assets/            ← Tech stack SVG icons
+├── public/                ← Static assets (favicons, PDFs, tech stack SVG icons)
 ├── src/
-│   ├── components/
-│   │   ├── BlogCard.jsx         ← Blog post card
-│   │   ├── FeaturedBlogCard.jsx ← Featured blog card
-│   │   ├── NoteCard.jsx         ← Notes card with PDF viewer
-│   │   ├── CardProject.jsx      ← Project card
-│   │   ├── Certificate.jsx      ← Certificate with modal
-│   │   ├── TechStackIcon.jsx    ← Tech stack icon card
-│   │   ├── SocialLinks.jsx      ← Social media links panel
-│   │   ├── ProjectDetail.jsx    ← Project detail page
-│   │   ├── Navbar.jsx           ← Navigation bar
-│   │   └── Background.jsx       ← Animated background
-│   ├── Pages/
-│   │   ├── Home.jsx             ← Hero section
-│   │   ├── About.jsx            ← About me section
-│   │   ├── Portofolio.jsx       ← Portfolio showcase (5 tabs)
-│   │   ├── Contact.jsx          ← Contact form + fun section
-│   │   ├── BlogDetail.jsx       ← Full blog article page
-│   │   └── WelcomeScreen.jsx    ← Cinematic loading screen
-│   ├── data/
-│   │   └── timelineData.js      ← Education & experience data
-│   ├── firebase.js              ← Firebase configuration
-│   ├── App.jsx                  ← Routes & layout
-│   └── main.jsx                 ← Entry point
-├── .env
-├── index.html
-├── tailwind.config.js
-├── package.json
-└── vite.config.js
+│   ├── assets/            ← Component-level static icons and images
+│   ├── constants/         ← Global layout configs and navigation items
+│   │   └── navigation.js
+│   ├── data/              ← Timelines and structured developer profiles
+│   │   └── TimelineData.js
+│   ├── services/          # Services & API Configurations
+│   │   └── firebase.js    ← Initialized Firebase and Firestore client
+│   ├── layouts/           # Page structural framing components
+│   │   ├── Navbar.jsx     ← Top navigation component with corrected anchors
+│   │   ├── Footer.jsx     ← Footnote copyright and navigation panel
+│   │   └── Background.jsx ← GPU-optimized particle background wrapper
+│   ├── sections/          # Scrollable sections of the landing page (/)
+│   │   ├── Home.jsx       ← Hero panel with memory game & stats
+│   │   ├── About.jsx      ← Intro, skill tags, timeline, and Syntax Invaders
+│   │   ├── Portfolio.jsx  ← Showcases, certificates, tech tabs, blog, and notes
+│   │   └── Contact.jsx    ← Forms and social link buttons
+│   ├── pages/             # Standalone Routed Page Views
+│   │   ├── WelcomeScreen.jsx ← Welcome loader/splash view
+│   │   ├── ProjectDetail.jsx ← Details page for `/project/:id`
+│   │   ├── BlogDetail.jsx    ← Article view for `/blog/:id`
+│   │   └── ThankYou.jsx      ← Success redirect page
+│   ├── components/        # Reusable Atomic UI Blocks
+│   │   ├── games/         # Premium Mini-Games
+│   │   │   ├── MemoryGame.jsx     ← Card-matching stack game
+│   │   │   └── SyntaxInvaders.jsx ← Bug-shooter retro arcade game
+│   │   ├── BlogCard.jsx
+│   │   ├── CardProject.jsx
+│   │   ├── Certificate.jsx
+│   │   ├── EducationTimelineItem.jsx
+│   │   ├── ExperienceTimelineItem.jsx
+│   │   ├── FeaturedBlogCard.jsx
+│   │   ├── NoteCard.jsx
+│   │   └── TechStackIcon.jsx
+│   ├── App.jsx            ← React routing and layouts composer
+│   └── main.jsx           ← Entry point mount file
+├── .env.example           ← Environment keys template configuration
+├── .npmrc                 ← Legacy peer dependencies configuration
+├── index.html             ← Landing HTML template with JSON-LD SEO schema
+├── tailwind.config.js     ← Tailwind rules & styling overrides
+├── package.json           ← Project modules and dependency scripts
+└── vite.config.js         ← Vite compilation instructions
 ```
 
 ---
@@ -108,205 +101,129 @@ Portfolio-Abhishek/
 ## ⚙️ Getting Started
 
 ### Prerequisites
-
-- [Node.js](https://nodejs.org/) v18 or above
-- npm (comes with Node.js)
+- [Node.js](https://nodejs.org/) v18.0.0 or higher
+- npm (Node Package Manager)
 
 ### Installation
 
-**1. Clone the repository:**
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/Abhishekkkkkkkkkkk/Portfolio-Abhishek
+   cd Portfolio-Abhishek
+   ```
 
-```bash
-git clone https://github.com/Abhishekkkkkkkkkkk/Portfolio-Abhishek
-cd Portfolio-Abhishek
-```
+2. **Install dependencies:**
+   The repository contains a `.npmrc` file that automatically enables `--legacy-peer-deps` resolution. Standard installation will execute without peer errors:
+   ```bash
+   npm install
+   ```
 
-**2. Install dependencies:**
+3. **Configure Environment Variables:**
+   Create a `.env` file in the root directory by copying the template:
+   ```bash
+   cp .env.example .env
+   ```
+   *Fill in your Firebase config keys in the `.env` file (these files are automatically ignored in `.gitignore`).*
 
-```bash
-npm install
-```
-
-> If you run into peer dependency conflicts:
-> ```bash
-> npm install --legacy-peer-deps
-> ```
-
-**3. Configure Firebase** (see [Firebase Setup](#-firebase-setup) below)
-
-**4. Start the development server:**
-
-```bash
-npm run dev
-```
-
-Open `http://localhost:5173` in your browser.
+4. **Start the development server:**
+   ```bash
+   npm run dev
+   ```
+   Open `http://localhost:5173` in your browser.
 
 ---
 
 ## 🔥 Firebase Setup
 
 ### Step 1 — Create a Firebase Project
+1. Go to the [Firebase Console](https://console.firebase.google.com/).
+2. Click **Add project** and create a new project.
 
-1. Go to [Firebase Console](https://console.firebase.google.com/)
-2. Click **Add project** and follow the setup steps
+### Step 2 — Enable Cloud Firestore Database
+1. Navigate to **Firestore Database** in the left menu.
+2. Click **Create database** and select your regional location.
+3. Apply the following read-only rules to allow public access to your portfolio content:
+   ```javascript
+   rules_version = '2';
+   service cloud.firestore {
+     match /databases/{database}/documents {
+       match /{document=**} {
+         allow read: if true;
+         allow write: if false; // Restrict writes to Firebase Console only
+       }
+     }
+   }
+   ```
 
-### Step 2 — Enable Firestore
-
-1. Navigate to **Firestore Database**
-2. Click **Create database** → choose a region
-
-### Step 3 — Get Your Config
-
-1. Go to **Project Settings → Your apps**
-2. Register a Web App (`</>`)
-3. Copy the `firebaseConfig` object
-
-### Step 4 — Update `firebase.js`
-
-```js
-const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
-};
-```
-
-### Step 5 — Firestore Rules
-
-```
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if true;
-    }
-  }
-}
-```
-
-> ⚠️ Secure your rules before deploying to production.
+### Step 3 — Register a Web App
+1. Under **Project Settings**, register a new web application (`</>`).
+2. Copy the credentials (API key, Auth Domain, Project ID, App ID, etc.) into your local `.env` file.
 
 ---
 
-## 🗄️ Firestore Collections
+## 🗄️ Firestore Collections Schema
 
-### `projects`
+Set up the following collections in your Firestore database to populate your portfolio showcase:
+
+### `projects` (Collection)
 | Field | Type | Description |
 |---|---|---|
-| `Title` | string | Project name |
-| `Description` | string | Short description |
-| `Img` | string | Cover image URL |
-| `Link` | string | Live demo URL |
-| `Github` | string | GitHub URL or `"Private"` |
-| `TechStack` | array | List of technologies |
-| `Features` | array | List of key features |
+| `Title` | string | Name of the project |
+| `Description` | string | Summary paragraph |
+| `Img` | string | Screenshot URL |
+| `Link` | string | Live demo site URL |
+| `Github` | string | Repository link (or `"Private"`) |
+| `TechStack` | array | e.g. `["React.js", "Spring Boot"]` |
+| `Features` | array | e.g. `["Secure REST Endpoints", "PDF Generation"]` |
 
-### `certificates`
+### `certificates` (Collection)
 | Field | Type | Description |
 |---|---|---|
-| `Img` | string | Certificate image URL |
+| `Img` | string | Image URL of the certificate |
 
-### `blogs`
+### `blogs` (Collection)
 | Field | Type | Description |
 |---|---|---|
-| `title` | string | Article title |
-| `description` | string | Short summary |
-| `content` | string | Full HTML content |
+| `title` | string | Post title |
+| `description` | string | Summary text |
+| `content` | string | Full article content (supports HTML tags) |
 | `tags` | array | e.g. `["Java", "Spring Boot"]` |
-| `date` | string | e.g. `"Jan 2025"` |
-| `readTime` | string | e.g. `"8 min read"` |
-| `views` | string | e.g. `"1.2k views"` |
-| `coverEmoji` | string | e.g. `"🚀"` |
-| `coverImg` | string | Cover image URL (optional) |
-| `featured` | boolean | Show as featured post |
+| `date` | string | Publication date (e.g. `"Jun 2026"`) |
+| `readTime` | string | reading speed indicator |
+| `views` | string | integer or string views counts |
+| `coverEmoji` | string | display emoji (e.g. `"☕"`) |
+| `featured` | boolean | Set `true` to display inside the featured blog header slot |
 
-### `notes`
+### `notes` (Collection)
 | Field | Type | Description |
 |---|---|---|
 | `title` | string | Notes title |
-| `description` | string | Short description |
-| `subject` | string | e.g. `"Java"` |
-| `tags` | array | e.g. `["Java", "OOP"]` |
-| `pdfUrl` | string | Google Drive PDF URL |
-| `coverEmoji` | string | e.g. `"☕"` |
-| `pages` | string | e.g. `"45 pages"` |
-| `date` | string | e.g. `"Jan 2025"` |
-| `featured` | boolean | Show as featured note |
+| `description` | string | Notes description |
+| `subject` | string | Subject filter category (e.g., `"Java"`) |
+| `tags` | array | e.g. `["OOP", "Multithreading"]` |
+| `pdfUrl` | string | Google Drive PDF share link in `/preview` format |
+| `coverEmoji` | string | display emoji (e.g. `"📚"`) |
+| `pages` | string | page counts metadata |
+| `date` | string | date metadata |
+| `featured` | boolean | Set `true` to showcase in notes view |
 
 ---
 
-## ☁️ Google Drive Setup (for Notes PDFs)
+## 🚀 Vercel Deployment Settings
 
-1. Upload your PDF files to Google Drive
-2. Right-click the file → click on **Share**
-3. Change access to **Anyone with the link**
-4. Copy the shareable link
+When importing this project onto Vercel, apply the following project configuration settings:
 
-Example link:
-
-```
-https://drive.google.com/file/d/FILE_ID/view?usp=sharing
-```
-
-5. Convert it into a direct preview link:
-
-```
-https://drive.google.com/file/d/FILE_ID/preview
-```
-
-6. Use this link as `pdfUrl` in your Firestore `notes` collection
-
-> ✅ This allows seamless PDF viewing inside your app without external redirects.
-
----
-
-## 📦 Production Build
-
-```bash
-npm run build
-```
-
-Output will be in the `dist/` folder. Deploy to Vercel, Netlify, or any static host.
-
----
-
-## 🚀 Deployment
-
-1. Push your code to GitHub
-2. Import the repository on [vercel.com](https://vercel.com/)
-3. Set any required environment variables
-4. Click **Deploy**
-
----
-
-## 🐛 Troubleshooting
-
-| Issue | Fix |
-|---|---|
-| `npm install` fails | Use `npm install --legacy-peer-deps` |
-| Firebase errors | Double-check `firebaseConfig` values in `firebase.js` |
-| Page not found on refresh | Add `vercel.json` with SPA rewrites |
-| PDF not loading in modal | Ensure Google Drive link is in `/preview` format and file is public |
-| Animations not working | Ensure `AOS.init()` is called in the component's `useEffect` |
-| Badge overflowing on mobile | Make sure `StatusBadge` is inside `hidden lg:block` wrapper |
-
----
-
-## 📄 License
-
-This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
-
-> 🙏 If you use this project as a base or reference, please provide proper credit. It means a lot!
+1. **Root Directory**: Ensure this is set to the project root **`./`** (leave default/blank). Do NOT set the Root Directory to `dist`.
+2. **Build Settings**: Vercel will auto-detect the **Vite** preset:
+   - Build Command: `vite build`
+   - Output Directory: `dist`
+3. **Environment Variables**: Navigate to **Settings** > **Environment Variables** in the Vercel dashboard and add all the keys from your `.env` file (e.g. `VITE_FIREBASE_API_KEY`, etc.) so the live site can connect to your database.
 
 ---
 
 ## 🙋‍♂️ Author
 
-**Abhishek Kumar** — Full Stack Developer
+**Abhishek Kumar** — Java Full Stack Developer
 
 [![Portfolio](https://img.shields.io/badge/Portfolio-krabhishek.vercel.app-6366f1?style=flat-square&logo=vercel)](https://krabhishek.vercel.app/)
 [![GitHub](https://img.shields.io/badge/GitHub-Abhishekkkkkkkkkkk-black?style=flat-square&logo=github)](https://github.com/Abhishekkkkkkkkkkk)
