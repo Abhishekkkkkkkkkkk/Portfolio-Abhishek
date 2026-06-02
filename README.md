@@ -45,6 +45,20 @@
 
 ---
 
+## 🛠️ Complete Tech Stack
+
+Here is the complete list of technologies, languages, databases, and development tools used across this full-stack portfolio:
+
+| Category | Technologies |
+| :--- | :--- |
+| **Languages** | Java, JavaScript, TypeScript, C++, C, HTML5, CSS3 |
+| **Frontend Frameworks & UI** | React.js, Next.js, Redux Toolkit, Tailwind CSS, Material UI (MUI), Bootstrap, SCSS |
+| **Backend Systems & Security** | Spring Boot, Spring MVC, Spring Security, RESTful APIs, JWT (JSON Web Tokens), OAuth 2.0, Node.js, Express.js |
+| **Databases & ORM** | Cloud Firestore (Firebase), MySQL, MongoDB, Hibernate / JPA |
+| **DevOps, Tools & Hosting** | Git, GitHub, Maven, Docker, CI/CD, Postman, Vite, Vercel, Netlify, Firebase Hosting, VS Code, Canva |
+
+---
+
 ## 📁 Project Structure
 
 The project has been organized into a professional React architecture:
