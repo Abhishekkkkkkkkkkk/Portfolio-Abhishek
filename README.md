@@ -45,17 +45,23 @@
 
 ---
 
-## 🛠️ Complete Tech Stack
+## 🛠️ Project Tech Stack
 
-Here is the complete list of technologies, languages, databases, and development tools used across this full-stack portfolio:
+The technologies, frameworks, and libraries used to build and deploy this portfolio website are:
 
-| Category | Technologies |
-| :--- | :--- |
-| **Languages** | Java, JavaScript, TypeScript, C++, C, HTML5, CSS3 |
-| **Frontend Frameworks & UI** | React.js, Next.js, Redux Toolkit, Tailwind CSS, Material UI (MUI), Bootstrap, SCSS |
-| **Backend Systems & Security** | Spring Boot, Spring MVC, Spring Security, RESTful APIs, JWT (JSON Web Tokens), OAuth 2.0, Node.js, Express.js |
-| **Databases & ORM** | Cloud Firestore (Firebase), MySQL, MongoDB, Hibernate / JPA |
-| **DevOps, Tools & Hosting** | Git, GitHub, Maven, Docker, CI/CD, Postman, Vite, Vercel, Netlify, Firebase Hosting, VS Code, Canva |
+| Component / Layer | Technology / Library | Description |
+| :--- | :--- | :--- |
+| **Frontend Core** | **React.js** (v18.3) | Core JavaScript UI library |
+| **Build & Bundler** | **Vite** (v6.3) | Dev server and optimized production bundler |
+| **Styling & Layout** | **Tailwind CSS** (v3.4) & CSS | Responsive styling utilities & custom animation keyframes |
+| **UI Components** | **Material UI** (MUI v6) | Tab panels and custom design themes |
+| **Icon Set** | **Lucide React** | Modern SVG design icons |
+| **Navigation & Tabs** | **React Router DOM** & **React Swipeable Views** | Client-side routing and mobile-friendly tab swipe controllers |
+| **Animations** | **Framer Motion** & **AOS** | Entrance sweeps, modal popups, and scroll-fade triggers |
+| **Database & Caching** | **Firebase Cloud Firestore** | Fetches dynamic projects, blogs, and notes (with `localStorage` caching) |
+| **Form Alerts** | **SweetAlert2** | Interactive form submission alerts |
+| **PDF Storage** | **Google Drive** | Hosts and renders study notes PDFs via `/preview` embeds |
+| **Hosting & Deploy** | **Vercel** | Automated CI/CD branch deployments |
 
 ---
 
