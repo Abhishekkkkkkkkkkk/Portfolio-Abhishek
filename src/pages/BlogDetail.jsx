@@ -556,7 +556,7 @@ const BlogDetail = () => {
           if (payload.new && payload.new.views_count !== undefined) {
             setViews(payload.new.views_count);
             const extVal = getFileExtension(payload.new.categories?.[0]).val;
-            const fName = `${payload.new.slug.replace(/-/g, "_")}.${extVal}`;
+            const fName = `${(payload.new.slug || payload.new.id || "").replace(/-/g, "_")}.${extVal}`;
             setTerminalLogs(prev => [
               ...prev,
               `[Sys]: Realtime sync event received. views_count updated to ${payload.new.views_count} for ${fName}`
@@ -660,7 +660,7 @@ const BlogDetail = () => {
           `  - settings.json`,
           ...allBlogs.map(b => {
             const extVal = getFileExtension(b.categories?.[0]).val;
-            return `  - ${b.slug.replace(/-/g, "_")}.${extVal}`;
+            return `  - ${(b.slug || b.id || "").replace(/-/g, "_")}.${extVal}`;
           })
         ]);
         break;
@@ -809,7 +809,7 @@ const BlogDetail = () => {
   useEffect(() => {
     if (!blog) return;
     const extVal = getFileExtension(blog.categories?.[0]).val;
-    const filename = `${blog.slug.replace(/-/g, "_")}.${extVal}`;
+    const filename = `${(blog.slug || blog.id || "").replace(/-/g, "_")}.${extVal}`;
     setTerminalLogs([
       `[Sys]: Initializing Dracula Workspace v1.0.0...`,
       `[Sys]: Loading file workspace/${blog.categories?.[0]?.toLowerCase()?.replace(/\s+/g, "-") || "general"}/${filename}...`,
@@ -845,7 +845,7 @@ const BlogDetail = () => {
   });
 
   const ext = getFileExtension(blog?.categories?.[0] || (id === "readme" ? "Workspace" : "Java"));
-  const activeFilename = id === "readme" ? "README.md" : (blog ? `${blog.slug.replace(/-/g, "_")}.${ext.val}` : `${id.replace(/-/g, "_")}.${ext.val}`);
+  const activeFilename = id === "readme" ? "README.md" : (blog ? `${(blog.slug || blog.id || "").replace(/-/g, "_")}.${ext.val}` : `${(id || "").replace(/-/g, "_")}.${ext.val}`);
 
   return (
     <>
@@ -929,7 +929,7 @@ const BlogDetail = () => {
                                 style={{ textDecoration: "none" }}
                               >
                                 <span className={`text-[11px] ${isCurrentFile ? currentTheme.textAccent : "text-indigo-400/80"}`}>{itemExt.icon}</span>
-                                <span className="truncate">{b.slug.replace(/-/g, "_")}.{itemExt.val}</span>
+                                <span className="truncate">{(b.slug || b.id || "").replace(/-/g, "_")}.{itemExt.val}</span>
                               </Link>
                             );
                           })}
@@ -1026,8 +1026,8 @@ const BlogDetail = () => {
                   const blogItem = allBlogs.find(b => b.id === tabId || b.slug === tabId);
                   const tabExt = getFileExtension(blogItem?.categories?.[0] || "Java");
                   const tabName = blogItem 
-                    ? `${blogItem.slug.replace(/-/g, "_")}.${tabExt.val}` 
-                    : `${tabId.replace(/-/g, "_")}.md`;
+                    ? `${(blogItem.slug || blogItem.id || "").replace(/-/g, "_")}.${tabExt.val}` 
+                    : `${(tabId || "").replace(/-/g, "_")}.md`;
                     
                   return (
                     <div 

@@ -697,7 +697,7 @@ export default function FullWidthTabs() {
                                         style={{ textDecoration: "none" }}
                                       >
                                         <span className="text-[11px] text-indigo-400/80">{ext.icon}</span>
-                                        <span className="truncate">{b.slug.replace(/-/g, "_")}.{ext.val}</span>
+                                        <span className="truncate">{(b.slug || b.id || "").replace(/-/g, "_")}.{ext.val}</span>
                                       </Link>
                                     );
                                   })}
