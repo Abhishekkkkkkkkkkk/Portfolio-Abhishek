@@ -11,8 +11,8 @@ import WelcomeScreen from "./pages/WelcomeScreen";
 import Footer from "./layouts/Footer";
 import { AnimatePresence } from "framer-motion";
 
-const ProjectDetails = React.lazy(() => import("./Pages/ProjectDetail"));
-const BlogDetail = React.lazy(() => import("./Pages/BlogDetail"));
+const ProjectDetails = React.lazy(() => import("./pages/ProjectDetail"));
+const BlogDetail = React.lazy(() => import("./pages/BlogDetail"));
 
 /* ─── Landing Page ─── */
 const LandingPage = ({ showWelcome, setShowWelcome }) => {
