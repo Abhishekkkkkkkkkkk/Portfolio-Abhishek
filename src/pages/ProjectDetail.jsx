@@ -5,7 +5,7 @@ import {
   ChevronRight, Layers, Globe, Package, Cpu, Code,
   Layout, Sparkles, CheckCircle2, Lock,
 } from "lucide-react";
-import Swal from "sweetalert2";
+
 
 /* ─── Tech icon map ─── */
 const TECH_ICONS = {
@@ -59,29 +59,28 @@ const StatCard = memo(({ icon: Icon, value, label, color }) => (
   </div>
 ));
 
-/* ─── Github handler ─── */
-const handleGithubClick = (githubLink) => {
-  if (githubLink === "Private") {
-    Swal.fire({
-      icon: "info",
-      title: "Source Code Private",
-      text: "This repository is private and not publicly accessible.",
-      confirmButtonText: "Got it",
-      confirmButtonColor: "#6366f1",
-      background: "#0a0a1a",
-      color: "#e2e8f0",
-    });
-    return false;
-  }
-  return true;
-};
-
 /* ─── Main Component ─── */
 const ProjectDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [project, setProject] = useState(null);
   const [imgLoaded, setImgLoaded] = useState(false);
+
+  const handleGithubClick = async (githubLink, e) => {
+    if (githubLink === "Private") {
+      e.preventDefault();
+      const Swal = (await import("sweetalert2")).default;
+      Swal.fire({
+        icon: "info",
+        title: "Source Code Private",
+        text: "This repository is private and not publicly accessible.",
+        confirmButtonText: "Got it",
+        confirmButtonColor: "#6366f1",
+        background: "#0a0a1a",
+        color: "#e2e8f0",
+      });
+    }
+  };
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -96,6 +95,34 @@ const ProjectDetails = () => {
       });
     }
   }, [id]);
+
+  useEffect(() => {
+    if (!project) return;
+
+    // Update Meta Tags dynamically for SEO
+    document.title = `${project.Title} | Abhishek Kumar`;
+
+    const updateMeta = (selector, name, property, value) => {
+      let el = document.querySelector(selector);
+      if (!el) {
+        el = document.createElement("meta");
+        if (name) el.setAttribute("name", name);
+        if (property) el.setAttribute("property", property);
+        document.head.appendChild(el);
+      }
+      el.setAttribute("content", value);
+    };
+
+    const descriptionText = project.Description || `Explore ${project.Title}, a project developed by Abhishek Kumar specializing in Java, Spring Boot, React, and modern web architectures.`;
+    const keywordsText = `${(project.TechStack || []).join(", ")}, ${project.Title}, Abhishek Kumar, Java Full Stack Developer, portfolio project`;
+
+    updateMeta('meta[name="description"]', 'description', null, descriptionText);
+    updateMeta('meta[property="og:title"]', null, 'og:title', `${project.Title} | Abhishek Kumar`);
+    updateMeta('meta[property="og:description"]', null, 'og:description', descriptionText);
+    updateMeta('meta[name="twitter:title"]', 'twitter:title', null, `${project.Title} | Abhishek Kumar`);
+    updateMeta('meta[name="twitter:description"]', 'twitter:description', null, descriptionText);
+    updateMeta('meta[name="keywords"]', 'keywords', null, keywordsText);
+  }, [project]);
 
   /* Loading state */
   if (!project) {
@@ -207,7 +234,7 @@ const ProjectDetails = () => {
                 href={project.Github}
                 target="_blank"
                 rel="noopener noreferrer"
-                onClick={(e) => !handleGithubClick(project.Github) && e.preventDefault()}
+                onClick={(e) => handleGithubClick(project.Github, e)}
                 className="group relative inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm border border-white/10 bg-white/5 text-gray-300 hover:border-[#6366f1]/50 hover:bg-[#6366f1]/10 hover:text-white hover:scale-105 transition-all duration-300 overflow-hidden"
               >
                 <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />

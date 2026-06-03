@@ -7,6 +7,15 @@ import {
 import { supabase } from "../services/supabase";
 import { TagBadge } from "../components/BlogCard";
 
+// Modular VS Code Components
+import ActivityBar from "../components/vscode/ActivityBar";
+import SidebarExplorer from "../components/vscode/SidebarExplorer";
+import EditorTabs from "../components/vscode/EditorTabs";
+import Breadcrumbs from "../components/vscode/Breadcrumbs";
+import QuickOpen from "../components/vscode/QuickOpen";
+import BottomPanel from "../components/vscode/BottomPanel";
+import StatusBar from "../components/vscode/StatusBar";
+
 /* ── Strip trailing " views" if stored as "1.2k views" in Firestore ── */
 const cleanViews = (v) => (v ? String(v).replace(/\s*views$/i, "").trim() : null);
 
@@ -190,6 +199,25 @@ const BlogDetail = () => {
     return localStorage.getItem("settings-theme") || "dracula";
   });
 
+  // VS Code Layout and Control States
+  const [activeView, setActiveView] = useState("explorer");
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [quickOpenOpen, setQuickOpenOpen] = useState(false);
+  const [activePanelTab, setActivePanelTab] = useState("terminal");
+  const [panelHeight, setPanelHeight] = useState("normal");
+
+  // Monitor Ctrl+P/Cmd+P key bindings for Quick Open palette
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "p") {
+        e.preventDefault();
+        setQuickOpenOpen(prev => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   // VS Code Multi-Tab Workspace configurations
   const [openTabs, setOpenTabs] = useState(() => {
     try {
@@ -288,10 +316,35 @@ const BlogDetail = () => {
   
   const currentTheme = THEME_MAP[themeName] || THEME_MAP.dracula;
 
-  // Auto-scroll terminal to bottom
+
+
   useEffect(() => {
-    terminalEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [terminalLogs]);
+    if (!blog) return;
+
+    // Update Meta Tags dynamically for SEO
+    document.title = `${blog.title} | Abhishek Kumar`;
+
+    const updateMeta = (selector, name, property, value) => {
+      let el = document.querySelector(selector);
+      if (!el) {
+        el = document.createElement("meta");
+        if (name) el.setAttribute("name", name);
+        if (property) el.setAttribute("property", property);
+        document.head.appendChild(el);
+      }
+      el.setAttribute("content", value);
+    };
+
+    const descriptionText = blog.description || `Read "${blog.title}" on Abhishek Kumar's developer blog - covering deep understanding of software engineering, Spring Boot, Java, and computer science.`;
+    const keywordsText = `${(blog.tags || []).join(", ")}, ${(blog.categories || []).join(", ")}, ${blog.title}, Abhishek Kumar blog, Java Full Stack developer`;
+
+    updateMeta('meta[name="description"]', 'description', null, descriptionText);
+    updateMeta('meta[property="og:title"]', null, 'og:title', `${blog.title} | Abhishek Kumar`);
+    updateMeta('meta[property="og:description"]', null, 'og:description', descriptionText);
+    updateMeta('meta[name="twitter:title"]', 'twitter:title', null, `${blog.title} | Abhishek Kumar`);
+    updateMeta('meta[name="twitter:description"]', 'twitter:description', null, descriptionText);
+    updateMeta('meta[name="keywords"]', 'keywords', null, keywordsText);
+  }, [blog]);
 
   /* Fetch blog & list */
   useEffect(() => {
@@ -452,6 +505,178 @@ const BlogDetail = () => {
           }
         } catch (e) {
           console.error("Failed to load list in settings mode:", e);
+        }
+      })();
+      return;
+    }
+
+    if (id === "about_me") {
+      const mockAboutMe = {
+        id: "about_me",
+        slug: "about_me",
+        title: "ABOUT_ME.md",
+        description: "Abhishek's Software Engineering Journey, 3+ YOE Java Full Stack Developer & Blog Philosophy",
+        coverEmoji: "👨‍💻",
+        categories: ["Workspace"],
+        tags: ["Bio", "Experience", "Philosophy"],
+        featured: false,
+        views: 1250,
+        bookmarks: 0,
+        readTime: "5 min read",
+        date: "Jun 3, 2026",
+        content: `
+          <div class="prose prose-invert max-w-none font-sans text-gray-300 leading-relaxed text-[13.5px]">
+            <!-- Premium Profile Card -->
+            <div class="about-card p-6 mb-8 relative overflow-hidden">
+              <div class="absolute -right-10 -top-10 w-36 h-36 rounded-full bg-[#bd93f9]/10 blur-3xl pointer-events-none"></div>
+              <div class="absolute -left-10 -bottom-10 w-36 h-36 rounded-full bg-[#8be9fd]/5 blur-3xl pointer-events-none"></div>
+              
+              <div class="flex flex-col sm:flex-row items-center gap-6 relative z-10">
+                <div class="w-20 h-20 rounded-2xl border border-[#bd93f9]/30 bg-gradient-to-tr from-[#121226] via-[#1a1a36] to-[#bd93f9]/20 flex items-center justify-center text-4xl shadow-lg shrink-0 relative group">
+                  <div class="absolute inset-0 bg-[#bd93f9]/10 rounded-2xl blur-md opacity-50 group-hover:opacity-100 transition-opacity"></div>
+                  <span class="relative z-10">👨‍💻</span>
+                </div>
+                
+                <div class="min-w-0 flex-1 text-center sm:text-left">
+                  <span class="px-2 py-0.5 rounded-full bg-[#bd93f9]/10 border border-[#bd93f9]/20 text-[9px] text-[#bd93f9] font-mono font-bold uppercase tracking-wider">// Profile.status = "Senior Engineer"</span>
+                  <h1 class="text-2xl font-black text-white font-mono mt-1 tracking-tight">Abhishek</h1>
+                  <p class="text-xs text-gray-400 font-mono mt-1">Java Full Stack Developer | 3+ YOE</p>
+                  
+                  <div class="flex flex-wrap justify-center sm:justify-start gap-2 mt-4 font-mono text-[10px] text-gray-400">
+                    <span class="px-2.5 py-1 rounded-lg bg-white/5 border border-white/5 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-[#bd93f9]"></span> Experience: 3+ Years</span>
+                    <span class="px-2.5 py-1 rounded-lg bg-white/5 border border-white/5 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-[#8be9fd]"></span> Stack: Spring & React</span>
+                    <span class="px-2.5 py-1 rounded-lg bg-white/5 border border-white/5 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-[#50fa7b]"></span> Focus: Clear Roadmaps</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Intro Quote -->
+            <p class="text-gray-400 leading-relaxed mb-6 italic text-[13px] border-l-2 border-indigo-500/40 pl-4 font-mono">
+              "An engineer's journey is not measured by the lines of code they write, but by the paths of understanding they pave for themselves and others."
+            </p>
+
+            <!-- Story Timeline -->
+            <div class="about-timeline-wrapper">
+              
+              <!-- Learning Philosophy -->
+              <div class="about-timeline-node">
+                <h2 id="learning-philosophy" class="text-[13.5px] font-bold text-[#bd93f9] font-mono mt-0 mb-2 flex items-center gap-2">
+                  # My Learning Philosophy
+                </h2>
+                <div class="text-[12.5px] text-gray-400 leading-relaxed">
+                  My journey into blogging is deeply connected to my journey of learning. Ever since I was a child, I have been fascinated by science, technology, and understanding how things work. I was always the kind of person who asked questions, explored new ideas, and tried to understand the logic behind everything. This natural curiosity became even stronger when I started my college life as a Computer Science student.
+                </div>
+              </div>
+
+              <!-- Endless Ocean of CS -->
+              <div class="about-timeline-node">
+                <h2 id="endless-ocean" class="text-[13.5px] font-bold text-[#8be9fd] font-mono mt-0 mb-2 flex items-center gap-2">
+                  # The Endless Ocean of Software Development
+                </h2>
+                <div class="text-[12.5px] text-gray-400 leading-relaxed">
+                  The world of software development introduced me to an endless ocean of knowledge. Every day, I discovered new programming languages, frameworks, tools, technologies, and concepts. Instead of being overwhelmed, I became excited by the opportunity to learn something new. Throughout my career as a Java Full Stack Developer, I have found that this excitement is what turns a regular coder into a builder of scalable platforms.
+                </div>
+              </div>
+
+              <!-- Roadmap Habit -->
+              <div class="about-timeline-node">
+                <h2 id="roadmap-habit" class="text-[13.5px] font-bold text-[#ff79c6] font-mono mt-0 mb-2 flex items-center gap-2">
+                  # The Habit of Creating Roadmaps
+                </h2>
+                <div class="text-[12.5px] text-gray-400 leading-relaxed">
+                  One habit that shaped my entire learning journey was creating structured roadmaps and learning paths. Whenever I decide to learn a new technology, I never jump directly into tutorials or random videos. I first spend time researching the subject, understanding what needs to be learned, identifying prerequisites, finding the best resources, and creating a proper roadmap for myself. This approach helped me learn faster, build stronger fundamentals, and avoid the confusion that many beginners often face.
+                </div>
+                
+                <!-- Roadmap Flow Graphic -->
+                <div class="about-roadmap-flow mt-4">
+                  <div class="about-roadmap-flow-step">
+                    <span class="text-xs text-[#bd93f9] font-bold block mb-1">1. Research</span>
+                    <span class="text-[9px] text-gray-500 block font-mono">Prerequisites & Concepts</span>
+                  </div>
+                  <div class="about-roadmap-flow-step">
+                    <span class="text-xs text-[#8be9fd] font-bold block mb-1">2. Map Path</span>
+                    <span class="text-[9px] text-gray-500 block font-mono">Create structured goals</span>
+                  </div>
+                  <div class="about-roadmap-flow-step">
+                    <span class="text-xs text-[#ff79c6] font-bold block mb-1">3. Deep Dive</span>
+                    <span class="text-[9px] text-gray-500 block font-mono">Official docs & source code</span>
+                  </div>
+                  <div class="about-roadmap-flow-step">
+                    <span class="text-xs text-[#50fa7b] font-bold block mb-1">4. Share</span>
+                    <span class="text-[9px] text-gray-500 block font-mono">Simplify for the community</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Internet is the Library -->
+              <div class="about-timeline-node">
+                <h2 id="free-library" class="text-[13.5px] font-bold text-[#f1fa8c] font-mono mt-0 mb-2 flex items-center gap-2">
+                  # Self-Taught & The Free Internet Library
+                </h2>
+                <div class="text-[12.5px] text-gray-400 leading-relaxed">
+                  One thing that surprises many people is that throughout my entire learning journey, I have never spent money on expensive courses or paid learning programs. I strongly believe that the internet is the largest library ever created. Almost everything you need to learn is already available online if you know how to search and explore properly.
+                  <br /><br />
+                  Whether it is official documentation, technical articles, open-source projects, research papers, books, developer communities, blogs, tutorials, conference talks, or real-world codebases, there is an incredible amount of free knowledge available. The challenge is not finding information—the challenge is finding the right information and organizing it into a meaningful learning path. 
+                  <br /><br />
+                  Over the years, I developed the habit of learning directly from official documentation, technical blogs, books, and practical implementation. Instead of looking for shortcuts, I focus on understanding concepts from their original sources. This not only improves my knowledge but also helps me develop the ability to learn independently.
+                </div>
+              </div>
+
+              <!-- Why I Write Blogs -->
+              <div class="about-timeline-node">
+                <h2 id="why-write-blogs" class="text-[13.5px] font-bold text-[#50fa7b] font-mono mt-0 mb-2 flex items-center gap-2">
+                  # Why I Write Blogs
+                </h2>
+                <div class="text-[12.5px] text-gray-400 leading-relaxed">
+                  As I continued learning, I realized that many students and developers struggle not because they lack talent, but because they lack a clear learning direction. They often find scattered information, incomplete explanations, or overly complex content that makes learning difficult.
+                  <br /><br />
+                  That realization inspired me to start writing blogs.
+                  <br /><br />
+                  For me, blogging is not simply about publishing articles. It is about creating the kind of content that I wish I had when I started learning. Before writing any blog, I spend considerable time researching the topic, reading documentation, exploring multiple resources, understanding practical use cases, and identifying the most important concepts that readers should know. My goal is to transform complex technical topics into simple, structured, and easy-to-understand content.
+                </div>
+              </div>
+
+              <!-- Simplicity Principle -->
+              <div class="about-timeline-node">
+                <h2 id="simplicity-principle" class="text-[13.5px] font-bold text-[#ff79c6] font-mono mt-0 mb-2 flex items-center gap-2">
+                  # Deep Understanding Through Simplicity
+                </h2>
+                <div class="text-[12.5px] text-gray-400 leading-relaxed">
+                  Every blog I write is built around one principle: **deep understanding through simplicity**.
+                  I don't believe in writing content that merely scratches the surface. Instead, I focus on explaining the "why," "how," and "when" behind concepts. I break complicated topics into smaller sections, organize them logically, and present them in a way that both beginners and experienced developers can follow.
+                  <br /><br />
+                  Whether the topic is programming, web development, system design, software engineering, computer science fundamentals, databases, frameworks, or emerging technologies, I aim to make the learning process easier and more accessible.
+                  <br /><br />
+                  My blogs are not just collections of information. They are the result of extensive research, continuous learning, practical experience, and a genuine passion for sharing knowledge. Writing helps me learn better, think deeper, and contribute back to the developer community that has helped me grow throughout my journey.
+                  <br /><br />
+                  I don't write blogs simply to share information. I write blogs to simplify complexity, document knowledge, create structured learning paths, and help others learn faster than I did. Because in the end, knowledge becomes truly valuable only when it is shared.
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Footer -->
+            <div class="mt-8 border-t border-white/5 pt-4 text-center">
+              <span class="text-xs text-gray-600 font-mono italic">// Thank you for exploring my journey. Let's compile something great.</span>
+            </div>
+          </div>
+        `
+      };
+      setBlog(mockAboutMe);
+      setViews(1250);
+      setLoading(false);
+
+      (async () => {
+        try {
+          const { data: listData } = await supabase
+            .from("blogs")
+            .select("id, title, categories, slug, published_date, views_count");
+          if (listData) {
+            setAllBlogs(listData);
+          }
+        } catch (e) {
+          console.error("Failed to load list in about_me mode:", e);
         }
       })();
       return;
@@ -847,6 +1072,20 @@ const BlogDetail = () => {
   const ext = getFileExtension(blog?.categories?.[0] || (id === "readme" ? "Workspace" : "Java"));
   const activeFilename = id === "readme" ? "README.md" : (blog ? `${(blog.slug || blog.id || "").replace(/-/g, "_")}.${ext.val}` : `${(id || "").replace(/-/g, "_")}.${ext.val}`);
 
+  let language = "Markdown";
+  if (id === "settings") {
+    language = "JSON";
+  } else if (blog) {
+    const primaryCat = blog.categories?.[0] || "Java";
+    if (primaryCat.toLowerCase().includes("spring")) {
+      language = "Spring/Java";
+    } else if (primaryCat.toLowerCase().includes("java")) {
+      language = "Java";
+    } else if (primaryCat.toLowerCase().includes("cpp") || primaryCat.toLowerCase().includes("c++") || primaryCat.toLowerCase().includes("dsa")) {
+      language = "C++";
+    }
+  }
+
   return (
     <>
       <ReadingProgress />
@@ -875,185 +1114,99 @@ const BlogDetail = () => {
             </div>
             <div className="truncate mx-4 font-semibold text-gray-400">abhishek-portfolio &mdash; workspace/blog/{activeFilename}</div>
             <div className="flex items-center gap-3 shrink-0">
-              <span className="text-gray-600 hidden sm:inline uppercase">{ext.val} editor</span>
+              <span className="text-gray-600 hidden sm:inline uppercase text-[9px] tracking-wider">{language} editor</span>
               <span className="px-1.5 py-0.5 rounded bg-white/5 text-gray-500 font-bold uppercase text-[9px] tracking-wide border border-white/5">Git: main</span>
             </div>
           </div>
 
-          <div className="flex flex-col md:flex-row min-h-[600px]">
+          <div className="flex flex-row min-h-[600px] items-stretch">
             
-            {/* ─── IDE Sidebar File Explorer ─── */}
-            <aside className={`w-full md:w-60 border-r border-white/5 flex flex-col font-mono text-[12px] shrink-0 ${currentTheme.bgSidebar}`}>
-              <div className="flex items-center justify-between px-4 py-2 bg-[#08080c] border-b border-white/5 text-gray-400 font-bold uppercase tracking-wider text-[10px]">
-                <span>Explorer</span>
-              </div>
-              
-              <div className="p-3 space-y-1 overflow-y-auto max-h-[220px] md:max-h-[500px]">
-                <div className="text-gray-400 font-bold flex items-center gap-1 py-1">
-                  <span>📂</span>
-                  <span>workspace/</span>
-                </div>
-                
-                {/* Categories and files tree */}
-                {Object.keys(categoriesMap).map((catName) => {
-                  const catBlogs = categoriesMap[catName] || [];
-                  const folderSlug = catName.toLowerCase().replace(/[^a-z0-9]+/g, "-");
-                  const isOpen = expandedFolders[folderSlug];
-                  
-                  return (
-                    <div key={catName} className="pl-3">
-                      <button 
-                        onClick={() => toggleFolder(folderSlug)}
-                        className="w-full text-left flex items-center gap-1.5 py-1 text-gray-400 hover:text-white hover:bg-white/5 px-1.5 rounded transition-all"
-                      >
-                        <span>{isOpen ? "📂" : "📁"}</span>
-                        <span>{folderSlug}/</span>
-                        <span className="text-[10px] text-gray-600 font-bold ml-auto">({catBlogs.length})</span>
-                      </button>
-                      
-                      {/* Folder files */}
-                      {isOpen && (
-                        <div className="pl-3 border-l border-white/5 ml-1.5 space-y-0.5 mt-0.5">
-                          {catBlogs.map((b) => {
-                            const itemExt = getFileExtension(b.categories?.[0]);
-                            const isCurrentFile = b.id === id || b.slug === id;
-                            return (
-                              <Link 
-                                key={b.id} 
-                                to={`/blog/${b.slug || b.id}`}
-                                className={`w-full text-left flex items-center gap-1.5 py-1 px-2 rounded transition-all truncate
-                                  ${isCurrentFile 
-                                    ? `font-bold ${currentTheme.textAccent} ${currentTheme.bgAccentAlpha}` 
-                                    : "text-gray-500 hover:text-white hover:bg-white/5"
-                                  }`}
-                                style={{ textDecoration: "none" }}
-                              >
-                                <span className={`text-[11px] ${isCurrentFile ? currentTheme.textAccent : "text-indigo-400/80"}`}>{itemExt.icon}</span>
-                                <span className="truncate">{(b.slug || b.id || "").replace(/-/g, "_")}.{itemExt.val}</span>
-                              </Link>
-                            );
-                          })}
-                          {catBlogs.length === 0 && (
-                            <span className="text-gray-700 italic block pl-5 py-0.5">(empty)</span>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-                
-                {/* Readme and Config file entries */}
-                <div className="pl-3 pt-2 mt-2 border-t border-white/5">
-                  <Link
-                    to="/blog/readme"
-                    className={`w-full text-left flex items-center gap-1.5 py-1 px-2 rounded transition-all truncate
-                      ${id === "readme" 
-                        ? `font-bold ${currentTheme.textAccent} ${currentTheme.bgAccentAlpha}` 
-                        : "text-gray-500 hover:text-white hover:bg-white/5"
-                      }`}
-                    style={{ textDecoration: "none" }}
-                  >
-                    <span className={`text-[11px] ${id === "readme" ? currentTheme.textAccent : "text-indigo-400/80"}`}>📝</span>
-                    <span>README.md</span>
-                  </Link>
-                  <Link
-                    to="/blog/settings"
-                    className={`w-full text-left flex items-center gap-1.5 py-1 px-2 rounded transition-all truncate
-                      ${id === "settings" 
-                        ? `font-bold ${currentTheme.textAccent} ${currentTheme.bgAccentAlpha}` 
-                        : "text-gray-500 hover:text-white hover:bg-white/5"
-                      }`}
-                    style={{ textDecoration: "none" }}
-                  >
-                    <span className={`text-[11px] ${id === "settings" ? currentTheme.textAccent : "text-indigo-400/80"}`}>⚙️</span>
-                    <span>settings.json</span>
-                  </Link>
-                </div>
-              </div>
-            </aside>
+            {/* ─── IDE Activity Bar ─── */}
+            {/* ─── IDE Activity Bar ─── */}
+            <ActivityBar
+              activeView={activeView}
+              setActiveView={setActiveView}
+              sidebarOpen={sidebarOpen}
+              setSidebarOpen={setSidebarOpen}
+              onSettingsClick={() => {
+                if (!openTabs.includes("settings")) {
+                  setOpenTabs(prev => [...prev, "settings"]);
+                }
+                navigate("/blog/settings");
+              }}
+              onProfileClick={() => {
+                if (!openTabs.includes("about_me")) {
+                  setOpenTabs(prev => [...prev, "about_me"]);
+                }
+                navigate("/blog/about_me");
+              }}
+              currentTheme={currentTheme}
+            />
+
+            {/* ─── IDE Sidebar File Explorer & Outline ─── */}
+            {sidebarOpen && (
+              <SidebarExplorer
+                allBlogs={allBlogs}
+                activeFileId={id}
+                categoriesMap={categoriesMap}
+                expandedFolders={expandedFolders}
+                toggleFolder={toggleFolder}
+                getFileExtension={getFileExtension}
+                currentTheme={currentTheme}
+                headings={headings}
+                activeHeadingId={activeId}
+                onFileSelect={(fileId) => {
+                  if (!openTabs.includes(fileId)) {
+                    setOpenTabs(prev => [...prev, fileId]);
+                  }
+                  navigate(`/blog/${fileId}`);
+                }}
+                activeView={activeView}
+                onGitCommit={(msg) => {
+                  setTerminalLogs(prev => [
+                    ...prev,
+                    `[Git]: Committing changes...`,
+                    `[Git]: Added file ABOUT_ME.md`,
+                    `[Git]: Committed successfully with message: "${msg}"`
+                  ]);
+                }}
+              />
+            )}
 
             {/* ─── IDE Main Editor Pane ─── */}
-            <main className={`flex-1 flex flex-col min-w-0 ${currentTheme.bgMain}`}>
+            <main className={`flex-1 flex flex-col min-w-0 ${currentTheme.bgMain} relative`}>
               
+              {/* Floating Quick Open Palette (Ctrl+P) */}
+              <QuickOpen
+                isOpen={quickOpenOpen}
+                onClose={() => setQuickOpenOpen(false)}
+                allBlogs={allBlogs}
+                onFileSelect={(fileId) => {
+                  if (!openTabs.includes(fileId)) {
+                    setOpenTabs(prev => [...prev, fileId]);
+                  }
+                  navigate(`/blog/${fileId}`);
+                }}
+                getFileExtension={getFileExtension}
+              />
+
               {/* Editor File Tab Bar */}
-              <div className={`flex border-b border-white/5 overflow-x-auto scrollbar-none shrink-0 font-mono text-[11px] ${currentTheme.bgHeader}`}>
-                {openTabs.map((tabId) => {
-                  const isActive = tabId === id;
-                  
-                  if (tabId === "readme") {
-                    return (
-                      <div 
-                        key="readme"
-                        className={`flex items-center gap-2 px-4 py-2 border-r border-white/5 shrink-0 cursor-pointer transition-all ${
-                          isActive
-                            ? `font-bold border-t-2 ${currentTheme.tabActive} ${currentTheme.borderAccent}`
-                            : `${currentTheme.tabInactive} opacity-60 hover:opacity-100 hover:text-white`
-                        }`}
-                        onClick={() => navigate("/blog/readme")}
-                      >
-                        <span className={isActive ? currentTheme.textAccent : ""}>📝</span>
-                        <span>README.md</span>
-                      </div>
-                    );
-                  }
-                  
-                  if (tabId === "settings") {
-                    return (
-                      <div 
-                        key="settings"
-                        className={`flex items-center gap-2 px-4 py-2 border-r border-white/5 shrink-0 cursor-pointer transition-all ${
-                          isActive
-                            ? `font-bold border-t-2 ${currentTheme.tabActive} ${currentTheme.borderAccent}`
-                            : `${currentTheme.tabInactive} opacity-60 hover:opacity-100 hover:text-white`
-                        }`}
-                        onClick={() => navigate("/blog/settings")}
-                      >
-                        <span className={isActive ? currentTheme.textAccent : ""}>⚙️</span>
-                        <span>settings.json</span>
-                        <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleCloseTab("settings");
-                          }}
-                          className="ml-1 text-gray-600 hover:text-white transition-colors"
-                        >
-                          &times;
-                        </button>
-                      </div>
-                    );
-                  }
-                  
-                  const blogItem = allBlogs.find(b => b.id === tabId || b.slug === tabId);
-                  const tabExt = getFileExtension(blogItem?.categories?.[0] || "Java");
-                  const tabName = blogItem 
-                    ? `${(blogItem.slug || blogItem.id || "").replace(/-/g, "_")}.${tabExt.val}` 
-                    : `${(tabId || "").replace(/-/g, "_")}.md`;
-                    
-                  return (
-                    <div 
-                      key={tabId}
-                      className={`flex items-center gap-2 px-4 py-2 border-r border-white/5 shrink-0 cursor-pointer transition-all ${
-                        isActive
-                          ? `font-bold border-t-2 ${currentTheme.tabActive} ${currentTheme.borderAccent}`
-                          : `${currentTheme.tabInactive} opacity-60 hover:opacity-100 hover:text-white`
-                      }`}
-                      onClick={() => navigate(`/blog/${tabId}`)}
-                    >
-                      <span className={isActive ? currentTheme.textAccent : "text-indigo-400/80"}>{tabExt.icon}</span>
-                      <span>{tabName}</span>
-                      <button 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleCloseTab(tabId);
-                        }}
-                        className="ml-1 text-gray-600 hover:text-white transition-colors"
-                      >
-                        &times;
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
+              <EditorTabs
+                openTabs={openTabs}
+                activeTabId={id}
+                allBlogs={allBlogs}
+                onTabSelect={(tabId) => navigate(`/blog/${tabId}`)}
+                onTabClose={handleCloseTab}
+                getFileExtension={getFileExtension}
+                currentTheme={currentTheme}
+              />
+
+              {/* Breadcrumbs Path */}
+              <Breadcrumbs
+                activeTabId={id}
+                blog={blog}
+                getFileExtension={getFileExtension}
+              />
 
               {/* Editor Reading Frame */}
               <div className="flex-1 flex min-h-0 relative overflow-y-auto max-h-[500px] md:max-h-[650px]">
@@ -1131,57 +1284,27 @@ const BlogDetail = () => {
                 </div>
               </div>
 
-              {/* ─── Bottom Terminal CLI Panel ─── */}
-              <div className="rounded-none border-t border-white/5 bg-[#07070a] font-mono text-[12px] shrink-0">
-                <div className="flex items-center justify-between px-3 py-1.5 bg-[#0a0a0f] border-b border-white/5 text-[10px] text-gray-500 select-none">
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                    <span>bash terminal</span>
-                  </div>
-                  <span>Console Log</span>
-                </div>
-                
-                {/* Output log pane */}
-                <div className="p-4 h-[110px] overflow-y-auto space-y-1 scrollbar-thin scrollbar-thumb-white/5 text-left select-text">
-                  {terminalLogs.map((log, idx) => {
-                    let colorClass = "text-gray-500";
-                    if (log.startsWith("[Sys]")) colorClass = `${currentTheme.textAccent}`;
-                    else if (log.startsWith("[Compiler]")) colorClass = "text-[#50fa7b]";
-                    else if (log.startsWith("[User]")) colorClass = "text-[#8be9fd]";
-                    else if (log.startsWith(">")) colorClass = "text-white";
-                    return (
-                      <div key={idx} className={`${colorClass} leading-relaxed`}>{log}</div>
-                    );
-                  })}
-                  <div ref={terminalEndRef} />
-                </div>
+              {/* Bottom Interactive Panels (Problems/Terminal/Output) */}
+              <BottomPanel
+                terminalLogs={terminalLogs}
+                terminalInput={terminalInput}
+                setTerminalInput={setTerminalInput}
+                onSubmit={handleTerminalSubmit}
+                currentTheme={currentTheme}
+                terminalEndRef={terminalEndRef}
+                activePanelTab={activePanelTab}
+                setActivePanelTab={setActivePanelTab}
+                panelHeight={panelHeight}
+                setPanelHeight={setPanelHeight}
+              />
 
-                {/* Input command box */}
-                <form onSubmit={handleTerminalSubmit} className="flex items-center border-t border-white/5 bg-black/30 px-3 py-1.5 font-mono text-xs">
-                  <span className="text-[#50fa7b] shrink-0 mr-1.5">guest@abhishek-portfolio:~$</span>
-                  <input
-                    type="text"
-                    value={terminalInput}
-                    onChange={(e) => setTerminalInput(e.target.value)}
-                    placeholder="Type 'help' to show available shell commands..."
-                    className="flex-1 bg-transparent text-white border-none outline-none focus:ring-0 font-mono text-xs p-0 m-0"
-                  />
-                </form>
-              </div>
-
-              {/* Editor bottom status bar */}
-              <div className="flex items-center justify-between px-4 py-1.5 bg-[#0b0b12] border-t border-white/5 text-[10px] font-mono text-gray-600 select-none shrink-0">
-                <div className="flex items-center gap-3">
-                  <span className="text-[#50fa7b] font-bold">SUCCESS</span>
-                  <span>workspace/{blog ? blog.slug : id}</span>
-                  <span>UTF-8</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span>Line count: {headings.length} headings</span>
-                  <span>Spaces: 4</span>
-                  <span>Ln 1, Col 1</span>
-                </div>
-              </div>
+              {/* Status Bar */}
+              <StatusBar
+                activeTabId={id}
+                blog={blog}
+                headingsCount={headings.length}
+                currentTheme={currentTheme}
+              />
 
             </main>
           </div>
@@ -1191,6 +1314,78 @@ const BlogDetail = () => {
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+        /* Premium About Me styles */
+        .about-card {
+          background: linear-gradient(135deg, rgba(30, 30, 54, 0.4) 0%, rgba(15, 15, 30, 0.7) 100%);
+          border: 1px solid rgba(189, 147, 249, 0.2);
+          box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border-radius: 16px;
+        }
+        .about-timeline-wrapper {
+          position: relative;
+          padding-left: 28px;
+          margin: 32px 0;
+        }
+        .about-timeline-wrapper::before {
+          content: '';
+          position: absolute;
+          left: 6px;
+          top: 8px;
+          bottom: 8px;
+          width: 2px;
+          background: linear-gradient(to bottom, #bd93f9, #8be9fd, #ff79c6, #f1fa8c, #50fa7b);
+          border-radius: 1px;
+        }
+        .about-timeline-node {
+          position: relative;
+          margin-bottom: 30px;
+        }
+        .about-timeline-node::before {
+          content: '';
+          position: absolute;
+          left: -28px;
+          top: 6px;
+          width: 14px;
+          height: 14px;
+          border-radius: 50%;
+          background: #0d0d16;
+          border: 3px solid #bd93f9;
+          transition: all 0.3s ease;
+          box-shadow: 0 0 8px #bd93f9;
+        }
+        .about-timeline-node:nth-child(2)::before { border-color: #8be9fd; box-shadow: 0 0 8px #8be9fd; }
+        .about-timeline-node:nth-child(3)::before { border-color: #ff79c6; box-shadow: 0 0 8px #ff79c6; }
+        .about-timeline-node:nth-child(4)::before { border-color: #f1fa8c; box-shadow: 0 0 8px #f1fa8c; }
+        .about-timeline-node:nth-child(5)::before { border-color: #50fa7b; box-shadow: 0 0 8px #50fa7b; }
+        
+        .about-timeline-node:hover::before {
+          transform: scale(1.3);
+        }
+        
+        .about-roadmap-flow {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+          gap: 12px;
+          margin: 24px 0;
+        }
+        .about-roadmap-flow-step {
+          background: rgba(255, 255, 255, 0.02);
+          border: 1px dashed rgba(255, 255, 255, 0.1);
+          border-radius: 10px;
+          padding: 16px 12px;
+          text-align: center;
+          position: relative;
+          transition: all 0.3s ease;
+        }
+        .about-roadmap-flow-step:hover {
+          background: rgba(189, 147, 249, 0.05);
+          border-style: solid;
+          border-color: rgba(189, 147, 249, 0.3);
+          transform: translateY(-3px);
+        }
 
         .blog-prose { font-family: 'JetBrains Mono', monospace; color: #a9b2c3; line-height: 1.8; }
         .blog-prose .hero { display: none; } /* Hide duplicate heroes */

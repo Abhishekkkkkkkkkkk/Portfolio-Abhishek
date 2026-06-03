@@ -3,7 +3,6 @@ import {
   User, Mail, MessageSquare, Send, Sparkles,
   Coffee, Zap, Code2, Music, Moon, Sun,
 } from "lucide-react";
-import Swal from "sweetalert2";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import SocialLinks from "../components/SocialLinks";
@@ -220,6 +219,7 @@ const ContactPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+    const Swal = (await import("sweetalert2")).default;
     Swal.fire({
       title: "Sending Message...",
       html: "Please wait while we send your message",

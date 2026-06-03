@@ -1,0 +1,6 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+
+# Sitemap Location
+Sitemap: https://krabhishek.vercel.app/sitemap.xml

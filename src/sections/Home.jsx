@@ -63,7 +63,8 @@ const ParticleField = memo(() => {
     resize();
     window.addEventListener("resize", resize);
 
-    for (let i = 0; i < 60; i++) {
+    const particleCount = window.innerWidth < 768 ? 20 : 60;
+    for (let i = 0; i < particleCount; i++) {
       particles.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,

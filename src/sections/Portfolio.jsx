@@ -1,6 +1,15 @@
-import React, { useEffect, useState, useCallback, memo } from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState, useCallback, memo, useRef } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../services/supabase";
+
+// Modular VS Code Components
+import ActivityBar from "../components/vscode/ActivityBar";
+import SidebarExplorer from "../components/vscode/SidebarExplorer";
+import EditorTabs from "../components/vscode/EditorTabs";
+import Breadcrumbs from "../components/vscode/Breadcrumbs";
+import QuickOpen from "../components/vscode/QuickOpen";
+import BottomPanel from "../components/vscode/BottomPanel";
+import StatusBar from "../components/vscode/StatusBar";
 import PropTypes from "prop-types";
 import SwipeableViews from "react-swipeable-views";
 import { useTheme } from "@mui/material/styles";
@@ -144,7 +153,164 @@ const FilterBar = memo(({ categories, active, onChange }) => (
 /* ─── Main Component ─── */
 export default function FullWidthTabs() {
   const theme = useTheme();
+  const navigate = useNavigate();
   const [value, setValue] = useState(0);
+
+  // VS Code Layout and Control States for Blog Tab
+  const [activeView, setActiveView] = useState("explorer");
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [quickOpenOpen, setQuickOpenOpen] = useState(false);
+  const [activePanelTab, setActivePanelTab] = useState("terminal");
+  const [panelHeight, setPanelHeight] = useState("normal");
+  const [openTabs, setOpenTabs] = useState(() => {
+    try {
+      const saved = localStorage.getItem("workspace-open-tabs");
+      const parsed = saved ? JSON.parse(saved) : ["readme"];
+      return parsed.includes("readme") ? parsed : ["readme", ...parsed];
+    } catch (e) {
+      return ["readme"];
+    }
+  });
+
+  // Watch openTabs changes
+  useEffect(() => {
+    localStorage.setItem("workspace-open-tabs", JSON.stringify(openTabs));
+  }, [openTabs]);
+
+  // Monitor Ctrl+P/Cmd+P key bindings for Quick Open palette on homepage
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (value === 3 && (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "p") {
+        e.preventDefault();
+        setQuickOpenOpen(prev => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [value]);
+
+  const [themeName, setThemeName] = useState(() => {
+    return localStorage.getItem("settings-theme") || "dracula";
+  });
+
+  const [terminalLogs, setTerminalLogs] = useState([
+    "[Sys]: Initializing Workspace README.md...",
+    "[Sys]: Port 5173 is online.",
+    "[Compiler]: Ready. Type 'help' to see CLI commands."
+  ]);
+  const [terminalInput, setTerminalInput] = useState("");
+  const terminalEndRef = useRef(null);
+
+
+
+  const handleTerminalSubmit = async (e) => {
+    e.preventDefault();
+    if (!terminalInput.trim()) return;
+
+    const cmdLine = terminalInput.trim();
+    const args = cmdLine.split(/\s+/);
+    const cmd = args[0].toLowerCase();
+    
+    setTerminalLogs(prev => [...prev, `> ${cmdLine}`]);
+    setTerminalInput("");
+
+    switch (cmd) {
+      case "help":
+        setTerminalLogs(prev => [
+          ...prev,
+          `[Sys]: Available shell commands:`,
+          `  help                 - Show list of shell commands`,
+          `  clear                - Clear terminal screen`,
+          `  ls                   - List files in workspace`,
+          `  cat <filename>       - Print content of a file`,
+          `  theme <name>         - Switch color theme (dracula, nord, monokai)`,
+          `  subscribe <email>    - Register newsletter subscription`
+        ]);
+        break;
+      case "clear":
+        setTerminalLogs([]);
+        break;
+      case "ls":
+        setTerminalLogs(prev => [
+          ...prev,
+          `[Sys]: Listing directory contents:`,
+          `  - README.md`,
+          `  - settings.json`,
+          ...blogs.map(b => {
+            const extVal = getFileExtension(b.categories?.[0]).val;
+            return `  - ${(b.slug || b.id || "").replace(/-/g, "_")}.${extVal}`;
+          })
+        ]);
+        break;
+      case "cat":
+        if (!args[1]) {
+          setTerminalLogs(prev => [...prev, `[Compiler]: Error: File argument required. Usage: cat <filename>`]);
+          break;
+        }
+        const fileArg = args[1].toLowerCase();
+        if (fileArg === "readme.md") {
+          setTerminalLogs(prev => [...prev, `[Sys]: Opened README.md.`]);
+        } else if (fileArg === "settings.json") {
+          navigate("/blog/settings");
+          setTerminalLogs(prev => [...prev, `[Sys]: Opened settings.json in editor.`]);
+        } else {
+          const nameClean = fileArg.split(".")[0].replace(/_/g, "-");
+          const matched = blogs.find(b => b.slug === nameClean || b.id === nameClean);
+          if (matched) {
+            navigate(`/blog/${matched.slug || matched.id}`);
+            setTerminalLogs(prev => [...prev, `[Sys]: Opened ${fileArg} successfully.`]);
+          } else {
+            setTerminalLogs(prev => [...prev, `[Compiler]: Error: File not found: ${args[1]}`]);
+          }
+        }
+        break;
+      case "theme":
+        if (!args[1]) {
+          setTerminalLogs(prev => [...prev, `[Compiler]: Error: Theme name required. (dracula, nord, monokai)`]);
+          break;
+        }
+        const tVal = args[1].toLowerCase();
+        if (["dracula", "nord", "monokai"].includes(tVal)) {
+          setThemeName(tVal);
+          localStorage.setItem("settings-theme", tVal);
+          setTerminalLogs(prev => [...prev, `[Sys]: Switched workbench.colorTheme to ${tVal}`]);
+        } else {
+          setTerminalLogs(prev => [...prev, `[Compiler]: Error: Theme not recognized. Try 'dracula', 'nord', or 'monokai'.`]);
+        }
+        break;
+      case "subscribe":
+        if (!args[1]) {
+          setTerminalLogs(prev => [...prev, `[Compiler]: Error: Email required. Usage: subscribe <email>`]);
+          break;
+        }
+        const email = args[1];
+        setTerminalLogs(prev => [...prev, `[Sys]: Registering subscriber ${email}...`]);
+        try {
+          const { error } = await supabase
+            .from("subscribers")
+            .insert([{ email }]);
+          if (error) {
+            if (error.code === "23505") {
+              setTerminalLogs(prev => [...prev, `[Compiler]: Info: Email is already subscribed.`]);
+            } else {
+              setTerminalLogs(prev => [...prev, `[Compiler]: Error: ${error.message}`]);
+            }
+          } else {
+            setTerminalLogs(prev => [...prev, `[Compiler]: Success: Registered ${email} successfully!`]);
+          }
+        } catch (err) {
+          setTerminalLogs(prev => [...prev, `[Compiler]: Error: Subscription registry failed.`]);
+        }
+        break;
+      default:
+        setTerminalLogs(prev => [
+          ...prev,
+          `[Compiler]: bash: command not found: ${cmd}. Type 'help' to see options.`
+        ]);
+        break;
+    }
+  };
+
   const [projects, setProjects] = useState([]);
   const [certificates, setCertificates] = useState([]);
   const [blogs, setBlogs] = useState([]);
@@ -611,6 +777,45 @@ export default function FullWidthTabs() {
           {/* ── Blog ── */}
           <TabPanel value={value} index={3} dir={theme.direction}>
             {(() => {
+              // Theme settings mapping
+              const THEME_MAP = {
+                dracula: {
+                  bgMain: "bg-[#12121e]",
+                  bgSidebar: "bg-[#0a0a0f]",
+                  bgHeader: "bg-[#0a0a0f]",
+                  textAccent: "text-[#bd93f9]",
+                  bgAccentAlpha: "bg-[#bd93f9]/10",
+                  borderAccent: "border-[#bd93f9]",
+                  accentHex: "#bd93f9",
+                  tabActive: "border-t-[#bd93f9] text-white bg-[#12121e]",
+                  tabInactive: "text-gray-500 bg-black/20"
+                },
+                nord: {
+                  bgMain: "bg-[#2e3440]",
+                  bgSidebar: "bg-[#242933]",
+                  bgHeader: "bg-[#242933]",
+                  textAccent: "text-[#88c0d0]",
+                  bgAccentAlpha: "bg-[#88c0d0]/10",
+                  borderAccent: "border-[#88c0d0]",
+                  accentHex: "#88c0d0",
+                  tabActive: "border-t-[#88c0d0] text-white bg-[#2e3440]",
+                  tabInactive: "text-gray-500 bg-black/25"
+                },
+                monokai: {
+                  bgMain: "bg-[#272822]",
+                  bgSidebar: "bg-[#1e1f1c]",
+                  bgHeader: "bg-[#1e1f1c]",
+                  textAccent: "text-[#a6e22e]",
+                  bgAccentAlpha: "bg-[#a6e22e]/10",
+                  borderAccent: "border-[#a6e22e]",
+                  accentHex: "#a6e22e",
+                  tabActive: "border-t-[#a6e22e] text-white bg-[#272822]",
+                  tabInactive: "text-gray-500 bg-black/30"
+                }
+              };
+              
+              const currentTheme = THEME_MAP[themeName] || THEME_MAP.dracula;
+
               // Group blogs by category for Explorer tree
               const categoriesMap = {
                 "Java": [],
@@ -635,11 +840,18 @@ export default function FullWidthTabs() {
                 categoriesMap[matchedFolder].push(blog);
               });
 
+              // Static outline headings representing README content segments
+              const readmeHeadings = [
+                { id: "readme-title", text: "Developer Knowledge Hub", level: "H2" },
+                { id: "readme-folders", text: "Directory Folders", level: "H3" },
+                { id: "readme-features", text: "Interactive IDE Features", level: "H3" }
+              ];
+
               return (
                 <div className="rounded-2xl border border-white/10 bg-[#0d0d16] overflow-hidden shadow-2xl text-gray-300 font-sans select-none" data-aos="fade-up">
                   
                   {/* ─── IDE Title Bar ─── */}
-                  <div className="flex items-center justify-between px-4 py-2.5 bg-[#0a0a0f] border-b border-white/5 text-[11px] font-mono text-gray-500">
+                  <div className={`flex items-center justify-between px-4 py-2.5 border-b border-white/5 text-[11px] font-mono text-gray-500 ${currentTheme.bgHeader}`}>
                     <div className="flex items-center gap-1.5 shrink-0">
                       <span className="w-3 h-3 rounded-full bg-[#ff5f56]" />
                       <span className="w-3 h-3 rounded-full bg-[#ffbd2e]" />
@@ -647,124 +859,124 @@ export default function FullWidthTabs() {
                     </div>
                     <div className="truncate mx-4 font-semibold text-gray-400">abhishek-portfolio &mdash; workspace/README.md</div>
                     <div className="flex items-center gap-3 shrink-0">
-                      <span className="text-gray-600 hidden sm:inline">Markdown</span>
+                      <span className="text-gray-600 hidden sm:inline text-[9px] uppercase tracking-wide">Markdown editor</span>
                       <span className="px-1.5 py-0.5 rounded bg-white/5 text-gray-500 font-bold uppercase text-[9px] tracking-wide border border-white/5">Git: main</span>
                     </div>
                   </div>
 
-                  <div className="flex flex-col md:flex-row min-h-[580px]">
+                  <div className="flex flex-row min-h-[580px] items-stretch">
                     
-                    {/* ─── IDE Sidebar File Explorer ─── */}
-                    <aside className="w-full md:w-60 bg-[#0a0a0f] border-r border-white/5 flex flex-col font-mono text-[12px] shrink-0">
-                      <div className="flex items-center justify-between px-4 py-2 bg-[#08080c] border-b border-white/5 text-gray-400 font-bold uppercase tracking-wider text-[10px]">
-                        <span>Explorer</span>
-                      </div>
-                      
-                      {/* File Tree */}
-                      <div className="p-3 space-y-1 overflow-y-auto max-h-[220px] md:max-h-[500px]">
-                        <div className="text-gray-400 font-bold flex items-center gap-1 py-1">
-                          <span>📂</span>
-                          <span>workspace/</span>
-                        </div>
-                        
-                        {/* Categories and files tree */}
-                        {Object.keys(categoriesMap).map((catName) => {
-                          const catBlogs = categoriesMap[catName] || [];
-                          const folderSlug = catName.toLowerCase().replace(/[^a-z0-9]+/g, "-");
-                          const isOpen = expandedFolders[folderSlug];
-                          
-                          return (
-                            <div key={catName} className="pl-3">
-                              <button 
-                                onClick={() => toggleFolder(folderSlug)}
-                                className="w-full text-left flex items-center gap-1.5 py-1 text-gray-400 hover:text-white hover:bg-white/5 px-1.5 rounded transition-all"
-                              >
-                                <span>{isOpen ? "📂" : "📁"}</span>
-                                <span>{folderSlug}/</span>
-                                <span className="text-[10px] text-gray-600 font-bold ml-auto">({catBlogs.length})</span>
-                              </button>
-                              
-                              {/* Folder files */}
-                              {isOpen && (
-                                <div className="pl-3 border-l border-white/5 ml-1.5 space-y-0.5 mt-0.5">
-                                  {catBlogs.map((b) => {
-                                    const ext = getFileExtension(b.categories?.[0]);
-                                    return (
-                                      <Link 
-                                        key={b.id} 
-                                        to={`/blog/${b.slug || b.id}`}
-                                        className="w-full text-left flex items-center gap-1.5 py-1 text-gray-500 hover:text-[#bd93f9] hover:bg-white/5 px-2 rounded transition-all truncate"
-                                        style={{ textDecoration: "none" }}
-                                      >
-                                        <span className="text-[11px] text-indigo-400/80">{ext.icon}</span>
-                                        <span className="truncate">{(b.slug || b.id || "").replace(/-/g, "_")}.{ext.val}</span>
-                                      </Link>
-                                    );
-                                  })}
-                                  {catBlogs.length === 0 && (
-                                    <span className="text-gray-700 italic block pl-5 py-0.5">(empty)</span>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
-                        
-                        {/* Readme and Config file entries */}
-                        <div className="pl-3 pt-2 mt-2 border-t border-white/5">
-                          <button
-                            onClick={() => { setBlogFilter("All"); setBlogSearch(""); }}
-                            className="w-full text-left flex items-center gap-1.5 py-1 text-[#bd93f9] hover:bg-white/5 px-2 rounded font-bold"
-                          >
-                            <span className="text-[11px]">📝</span>
-                            <span>README.md</span>
-                          </button>
-                          <div className="w-full text-left flex items-center gap-1.5 py-1 text-gray-600 px-2 rounded opacity-50 select-none">
-                            <span className="text-[11px]">⚙️</span>
-                            <span>settings.json</span>
-                          </div>
-                        </div>
-                      </div>
-                    </aside>
+                    {/* ─── IDE Activity Bar ─── */}
+                    {/* ─── IDE Activity Bar ─── */}
+                    <ActivityBar
+                      activeView={activeView}
+                      setActiveView={setActiveView}
+                      sidebarOpen={sidebarOpen}
+                      setSidebarOpen={setSidebarOpen}
+                      onSettingsClick={() => {
+                        if (!openTabs.includes("settings")) {
+                          setOpenTabs(prev => [...prev, "settings"]);
+                        }
+                        navigate("/blog/settings");
+                      }}
+                      onProfileClick={() => {
+                        if (!openTabs.includes("about_me")) {
+                          setOpenTabs(prev => [...prev, "about_me"]);
+                        }
+                        navigate("/blog/about_me");
+                      }}
+                      currentTheme={currentTheme}
+                    />
+
+                    {/* ─── IDE Sidebar File Explorer & Outline ─── */}
+                    {sidebarOpen && (
+                      <SidebarExplorer
+                        allBlogs={blogs}
+                        activeFileId="readme"
+                        categoriesMap={categoriesMap}
+                        expandedFolders={expandedFolders}
+                        toggleFolder={toggleFolder}
+                        getFileExtension={getFileExtension}
+                        currentTheme={currentTheme}
+                        headings={readmeHeadings}
+                        activeHeadingId=""
+                        onFileSelect={(fileId) => {
+                          if (!openTabs.includes(fileId)) {
+                            setOpenTabs(prev => [...prev, fileId]);
+                          }
+                          navigate(`/blog/${fileId}`);
+                        }}
+                        activeView={activeView}
+                        onGitCommit={(msg) => {
+                          setTerminalLogs(prev => [
+                            ...prev,
+                            `[Git]: Committing changes...`,
+                            `[Git]: Committed successfully with message: "${msg}"`
+                          ]);
+                        }}
+                      />
+                    )}
 
                     {/* ─── IDE Main Editor Pane ─── */}
-                    <main className="flex-1 bg-[#12121e] flex flex-col min-w-0">
+                    <main className={`flex-1 flex flex-col min-w-0 ${currentTheme.bgMain} relative`}>
                       
+                      {/* Floating Quick Open Palette (Ctrl+P) */}
+                      <QuickOpen
+                        isOpen={quickOpenOpen}
+                        onClose={() => setQuickOpenOpen(false)}
+                        allBlogs={blogs}
+                        onFileSelect={(fileId) => {
+                          if (fileId === "readme") return;
+                          if (!openTabs.includes(fileId)) {
+                            setOpenTabs(prev => [...prev, fileId]);
+                          }
+                          navigate(`/blog/${fileId}`);
+                        }}
+                        getFileExtension={getFileExtension}
+                      />
+
                       {/* Editor File Tab Bar */}
-                      <div className="flex bg-[#0a0a0f] border-b border-white/5 overflow-x-auto scrollbar-none shrink-0">
-                        <div className="flex items-center gap-2 px-4 py-2 bg-[#12121e] border-r border-white/5 text-[11px] font-mono text-white font-bold border-t-2 border-[#bd93f9] shrink-0">
-                          <span className="text-[#bd93f9]">📝</span>
-                          <span>README.md</span>
-                        </div>
-                        <Link to="/blog/hashmap-internal-working" className="flex items-center gap-2 px-4 py-2 text-[11px] font-mono text-gray-500 bg-black/20 border-r border-white/5 opacity-70 hover:opacity-100 hover:text-white cursor-pointer shrink-0 select-none" style={{ textDecoration: "none" }}>
-                          <span className="text-orange-400">☕</span>
-                          <span>HashMap.java</span>
-                        </Link>
-                        <Link to="/blog/merge-sort-deep-dive" className="flex items-center gap-2 px-4 py-2 text-[11px] font-mono text-gray-500 bg-black/20 border-r border-white/5 opacity-70 hover:opacity-100 hover:text-white cursor-pointer shrink-0 select-none" style={{ textDecoration: "none" }}>
-                          <span className="text-sky-400">⚡</span>
-                          <span>MergeSort.cpp</span>
-                        </Link>
-                      </div>
+                      <EditorTabs
+                        openTabs={openTabs}
+                        activeTabId="readme"
+                        allBlogs={blogs}
+                        onTabSelect={(tabId) => {
+                          if (tabId === "readme") return;
+                          navigate(`/blog/${tabId}`);
+                        }}
+                        onTabClose={(tabId) => {
+                          setOpenTabs(prev => prev.filter(t => t !== tabId));
+                        }}
+                        getFileExtension={getFileExtension}
+                        currentTheme={currentTheme}
+                      />
+
+                      {/* Breadcrumbs Path */}
+                      <Breadcrumbs
+                        activeTabId="readme"
+                        blog={null}
+                        getFileExtension={getFileExtension}
+                      />
 
                       {/* Editor Reading Frame */}
                       <div className="flex-1 flex min-h-0 relative overflow-y-auto">
                         
                         {/* Gutter Line Numbers */}
-                        <div className="w-12 bg-[#0d0d14] border-r border-white/5 py-4 font-mono text-[11px] text-gray-600 text-right pr-3 select-none leading-relaxed shrink-0">
+                        <div className="w-12 bg-black/20 border-r border-white/5 py-4 font-mono text-[11px] text-gray-600 text-right pr-3 select-none leading-relaxed shrink-0">
                           {Array.from({ length: 35 }).map((_, i) => (
                             <div key={i}>{i + 1}</div>
                           ))}
                         </div>
 
                         {/* Code Content Container */}
-                        <div className="flex-1 p-6 md:p-8 overflow-x-auto min-w-0">
+                        <div className="flex-1 p-6 md:p-8 overflow-x-auto min-w-0 text-left">
                           
                           {/* Virtual Markdown Header */}
                           <div className="border-b border-white/5 pb-4 mb-6">
                             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#bd93f9]/15 border border-[#bd93f9]/30 text-[#bd93f9] text-[10px] font-mono font-bold uppercase tracking-wide mb-3">
                               Workspace Document
                             </div>
-                            <h2 className="text-2xl font-black text-white font-mono tracking-tight" style={{ fontFamily: "'Sora', sans-serif" }}>
+                            <h2 id="readme-title" className="text-2xl font-black text-white font-mono tracking-tight" style={{ fontFamily: "'Sora', sans-serif" }}>
                               # Developer Knowledge Hub
                             </h2>
                             <p className="text-[13px] text-gray-400 mt-2 leading-relaxed">
@@ -781,9 +993,14 @@ export default function FullWidthTabs() {
                                   onClick={() => { setBlogFilter(cat); setShowAllBlogs(false); }}
                                   className={`px-2.5 py-1 rounded font-mono text-[11px] font-bold border transition-all duration-200
                                     ${blogFilter === cat
-                                      ? "border-[#bd93f9]/50 bg-[#bd93f9]/15 text-[#bd93f9]"
+                                      ? `border-indigo-500/50 bg-indigo-500/10 text-indigo-400`
                                       : "border-white/5 bg-white/5 text-gray-500 hover:border-white/10 hover:text-gray-300"
                                     }`}
+                                  style={{ 
+                                    borderColor: blogFilter === cat ? `${currentTheme.accentHex}80` : undefined,
+                                    color: blogFilter === cat ? currentTheme.accentHex : undefined,
+                                    backgroundColor: blogFilter === cat ? `${currentTheme.accentHex}10` : undefined
+                                  }}
                                 >
                                   {cat.toLowerCase().replace(" ", "-")}
                                 </button>
@@ -796,7 +1013,10 @@ export default function FullWidthTabs() {
                                 value={blogSearch}
                                 onChange={(e) => setBlogSearch(e.target.value)}
                                 placeholder="Find file (Ctrl+P)..."
-                                className="w-full pl-9 pr-4 py-1.5 bg-[#0a0a0f] border border-white/5 rounded text-xs text-white placeholder-gray-600 focus:outline-none focus:border-[#bd93f9]/50 focus:bg-[#0a0a0f] transition-all duration-300 font-mono"
+                                className="w-full pl-9 pr-4 py-1.5 bg-[#0a0a0f] border border-white/5 rounded text-xs text-white placeholder-gray-600 focus:outline-none focus:bg-[#0a0a0f] transition-all duration-300 font-mono"
+                                style={{
+                                  borderColor: blogSearch ? `${currentTheme.accentHex}80` : undefined
+                                }}
                               />
                               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-600" />
                               {blogSearch && (
@@ -818,23 +1038,49 @@ export default function FullWidthTabs() {
                               {filteredBlogs.map((blog) => {
                                 const ext = getFileExtension(blog.categories?.[0]);
                                 return (
-                                  <div key={blog.id} className="relative group rounded-xl border border-white/5 bg-[#0a0a0f]/80 p-4 transition-all duration-300 hover:border-[#bd93f9]/30 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-[#bd93f9]/5">
+                                  <div 
+                                    key={blog.id} 
+                                    className={`relative group rounded-xl border border-white/5 bg-[#0a0a0f]/80 p-4 transition-all duration-300 hover:border-indigo-500/30 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-indigo-500/5`}
+                                    style={{
+                                      borderColor: `rgba(255,255,255,0.05)`
+                                    }}
+                                    onMouseEnter={(e) => {
+                                      e.currentTarget.style.borderColor = `${currentTheme.accentHex}40`;
+                                      e.currentTarget.style.boxShadow = `0 10px 15px -3px ${currentTheme.accentHex}10`;
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.currentTarget.style.borderColor = `rgba(255,255,255,0.05)`;
+                                      e.currentTarget.style.boxShadow = `none`;
+                                    }}
+                                  >
                                     <Link to={`/blog/${blog.slug || blog.id}`} style={{ textDecoration: "none" }}>
-                                      <div className="flex items-start gap-3">
-                                        <div className="w-9 h-9 rounded bg-[#bd93f9]/10 flex items-center justify-center text-xl shrink-0 group-hover:scale-105 transition-transform">
+                                      <div className="flex items-start gap-3 text-left">
+                                        <div 
+                                          className="w-9 h-9 rounded flex items-center justify-center text-xl shrink-0 group-hover:scale-105 transition-transform"
+                                          style={{
+                                            backgroundColor: `${currentTheme.accentHex}15`
+                                          }}
+                                        >
                                           {blog.coverEmoji || "📝"}
                                         </div>
                                         <div className="min-w-0 flex-1">
-                                          <h4 className="text-xs font-bold text-white group-hover:text-[#bd93f9] transition-colors font-mono truncate leading-snug">
+                                          <h4 
+                                            className="text-xs font-bold text-white transition-colors font-mono truncate leading-snug"
+                                            style={{
+                                              color: "white"
+                                            }}
+                                            onMouseEnter={(e) => e.target.style.color = currentTheme.accentHex}
+                                            onMouseLeave={(e) => e.target.style.color = "white"}
+                                          >
                                             {blog.title}
                                           </h4>
                                           <p className="text-[11px] text-gray-500 line-clamp-2 mt-1 leading-relaxed">
                                             {blog.description}
                                           </p>
                                           <div className="flex items-center gap-3 mt-3 text-[9px] text-gray-600 font-mono">
-                                            <span className="text-[#bd93f9] font-bold">{blog.readTime || "6 min read"}</span>
+                                            <span style={{ color: currentTheme.accentHex }} className="font-bold">{blog.readTime || "6 min read"}</span>
                                             <span>•</span>
-                                            <span>{blog.views} views</span>
+                                            <span>{blog.views || blog.views_count || 0} views</span>
                                           </div>
                                         </div>
                                       </div>
@@ -845,58 +1091,45 @@ export default function FullWidthTabs() {
                             </div>
                           )}
 
-                          {/* ─── Mock Bash Terminal Newsletter Widget ─── */}
-                          <div className="mt-8 rounded-xl border border-white/5 bg-[#07070a] overflow-hidden font-mono text-[12px] shadow-lg">
-                            <div className="flex items-center justify-between px-3 py-1.5 bg-[#0a0a0f] border-b border-white/5 text-[10px] text-gray-500">
-                              <div className="flex items-center gap-1.5">
-                                <span className="w-2.5 h-2.5 rounded-full bg-white/5 animate-pulse" style={{ backgroundColor: "#ff5f56" }} />
-                                <span>bash terminal</span>
-                              </div>
-                              <span>UTF-8</span>
-                            </div>
-                            <div className="p-4 space-y-2 text-left">
-                              <div className="text-gray-500"># Run CLI tool to register email subscriptions</div>
-                              <div className="text-[#50fa7b]">guest@abhishek-portfolio:~$ <span className="text-white">subscribe-newsletter --email</span></div>
-                              
-                              <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-2 mt-2">
-                                <div className="flex-1 relative">
-                                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-600 font-bold">&gt;</span>
-                                  <input
-                                    type="email"
-                                    required
-                                    placeholder="developer@email.com"
-                                    value={emailInput}
-                                    onChange={(e) => setEmailInput(e.target.value)}
-                                    className="w-full bg-[#050508] border border-white/5 rounded px-7 py-1.5 text-xs text-white focus:outline-none focus:border-[#bd93f9]/50 transition-all font-mono"
-                                  />
-                                </div>
-                                <button
-                                  type="submit"
-                                  className="px-4 py-1.5 rounded bg-[#bd93f9]/20 hover:bg-[#bd93f9]/30 border border-[#bd93f9]/40 text-[#bd93f9] hover:text-white font-bold transition-all text-xs font-mono flex items-center justify-center gap-1 shrink-0"
-                                >
-                                  <span>run</span>
-                                  <span className="text-[10px] opacity-70">&crarr;</span>
-                                </button>
-                              </form>
-                            </div>
+                          {/* Collapsible Headers references inside the README */}
+                          <div id="readme-folders" className="mt-8 pt-4 border-t border-white/5 text-left font-mono">
+                            <h3 className="text-white text-xs font-bold font-mono">// Directory Folders</h3>
+                            <p className="text-gray-500 text-[11px] mt-1 leading-relaxed">
+                              The workspace contains organized notes categorizing Spring frameworks, core Java collections internals, complexity guides, and system designs.
+                            </p>
+                          </div>
+                          
+                          <div id="readme-features" className="mt-6 pt-4 border-t border-white/5 text-left font-mono">
+                            <h3 className="text-white text-xs font-bold font-mono">// Interactive IDE Features</h3>
+                            <p className="text-gray-500 text-[11px] mt-1 leading-relaxed">
+                              Use the left activity bar to search or toggling Explorer view. Command lines at the bottom panel execute mock operations.
+                            </p>
                           </div>
 
                         </div>
                       </div>
 
-                      {/* Editor status bar */}
-                      <div className="flex items-center justify-between px-4 py-1.5 bg-[#0b0b12] border-t border-white/5 text-[10px] font-mono text-gray-600 select-none shrink-0">
-                        <div className="flex items-center gap-3">
-                          <span className="text-[#bd93f9] font-bold">NORMAL</span>
-                          <span>README.md</span>
-                          <span>UTF-8</span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <span>Spaces: 4</span>
-                          <span className="hidden sm:inline">Markdown</span>
-                          <span>Ln 1, Col 1</span>
-                        </div>
-                      </div>
+                      {/* Bottom Panel */}
+                      <BottomPanel
+                        terminalLogs={terminalLogs}
+                        terminalInput={terminalInput}
+                        setTerminalInput={setTerminalInput}
+                        onSubmit={handleTerminalSubmit}
+                        currentTheme={currentTheme}
+                        terminalEndRef={terminalEndRef}
+                        activePanelTab={activePanelTab}
+                        setActivePanelTab={setActivePanelTab}
+                        panelHeight={panelHeight}
+                        setPanelHeight={setPanelHeight}
+                      />
+
+                      {/* Status Bar */}
+                      <StatusBar
+                        activeTabId="readme"
+                        blog={null}
+                        headingsCount={readmeHeadings.length}
+                        currentTheme={currentTheme}
+                      />
 
                     </main>
                   </div>
