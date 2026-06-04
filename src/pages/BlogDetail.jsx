@@ -201,7 +201,9 @@ const BlogDetail = () => {
 
   // VS Code Layout and Control States
   const [activeView, setActiveView] = useState("explorer");
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    return typeof window !== "undefined" ? window.innerWidth >= 768 : true;
+  });
   const [quickOpenOpen, setQuickOpenOpen] = useState(false);
   const [activePanelTab, setActivePanelTab] = useState("terminal");
   const [panelHeight, setPanelHeight] = useState("normal");
@@ -1105,7 +1107,7 @@ const BlogDetail = () => {
           <div className={`flex items-center justify-between px-4 py-2.5 border-b border-b-white/5 text-[11px] font-mono text-gray-500 ${currentTheme.bgHeader}`}>
             <div className="flex items-center gap-1.5 shrink-0">
               <button 
-                onClick={() => navigate("/")}
+                onClick={() => navigate("/?tab=blog", { state: { activeTab: "Blog" } })}
                 className="w-3 h-3 rounded-full bg-[#ff5f56] hover:opacity-85 transition-opacity" 
                 title="Close workspace (Go to Homepage)"
               />
@@ -1160,6 +1162,9 @@ const BlogDetail = () => {
                     setOpenTabs(prev => [...prev, fileId]);
                   }
                   navigate(`/blog/${fileId}`);
+                  if (window.innerWidth < 768) {
+                    setSidebarOpen(false);
+                  }
                 }}
                 activeView={activeView}
                 onGitCommit={(msg) => {
@@ -1186,6 +1191,9 @@ const BlogDetail = () => {
                     setOpenTabs(prev => [...prev, fileId]);
                   }
                   navigate(`/blog/${fileId}`);
+                  if (window.innerWidth < 768) {
+                    setSidebarOpen(false);
+                  }
                 }}
                 getFileExtension={getFileExtension}
               />
@@ -1234,7 +1242,7 @@ const BlogDetail = () => {
                       <p className="text-6xl">📭</p>
                       <h2 className="text-white font-black text-2xl">Article not found</h2>
                       <p className="text-gray-500 text-sm">The article you're looking for doesn't exist or was removed.</p>
-                      <button onClick={() => navigate("/")}
+                      <button onClick={() => navigate("/?tab=blog", { state: { activeTab: "Blog" } })}
                         className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border text-sm font-semibold transition-all hover:bg-white/5`} style={{ borderColor: currentTheme.accentHex, color: currentTheme.accentHex }}>
                         <ArrowLeft className="w-4 h-4" /> Exit Workspace
                       </button>

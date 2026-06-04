@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, memo, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "../services/supabase";
 
 // Modular VS Code Components
@@ -154,11 +154,17 @@ const FilterBar = memo(({ categories, active, onChange }) => (
 export default function FullWidthTabs() {
   const theme = useTheme();
   const navigate = useNavigate();
-  const [value, setValue] = useState(0);
+  const location = useLocation();
+  const [value, setValue] = useState(() => {
+    const savedTab = localStorage.getItem("portfolio-active-tab");
+    return savedTab !== null ? parseInt(savedTab, 10) : 0;
+  });
 
   // VS Code Layout and Control States for Blog Tab
   const [activeView, setActiveView] = useState("explorer");
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    return typeof window !== "undefined" ? window.innerWidth >= 768 : true;
+  });
   const [quickOpenOpen, setQuickOpenOpen] = useState(false);
   const [activePanelTab, setActivePanelTab] = useState("terminal");
   const [panelHeight, setPanelHeight] = useState("normal");
@@ -568,7 +574,24 @@ export default function FullWidthTabs() {
     fetchData();
   }, [fetchData]);
 
-  const handleChange = (event, newValue) => setValue(newValue);
+  const handleChange = (event, newValue) => {
+    setValue(newValue);
+    localStorage.setItem("portfolio-active-tab", newValue);
+  };
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get("tab") === "blog") {
+      setValue(3);
+      localStorage.setItem("portfolio-active-tab", "3");
+      setTimeout(() => {
+        const el = document.getElementById("Portfolio");
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth" });
+        }
+      }, 300);
+    }
+  }, [location]);
 
   const toggleShowMore = useCallback((type) => {
     if (type === "projects")     setShowAllProjects((p) => !p);

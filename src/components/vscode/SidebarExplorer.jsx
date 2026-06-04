@@ -1,6 +1,71 @@
 import React, { useState } from "react";
 import { ChevronDown, ChevronRight, Search, GitBranch, Play, Check, ShieldAlert, Sparkles } from "lucide-react";
 
+const getFolderSegments = (blog) => {
+  if (!blog.categories || blog.categories.length === 0) {
+    return ["Java"];
+  }
+  const firstCat = blog.categories[0];
+  if (typeof firstCat === "string" && firstCat.includes("/")) {
+    return firstCat.split("/").map(s => s.trim()).filter(Boolean);
+  }
+  return blog.categories.map(s => s.trim()).filter(Boolean);
+};
+
+const buildFileTree = (blogs) => {
+  const root = { name: "Root", key: "root", path: "", children: {}, files: [] };
+
+  const defaults = ["Java", "Spring Boot", "DSA", "System Design"];
+  defaults.forEach(folderName => {
+    const key = folderName.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    root.children[key] = {
+      name: folderName,
+      key: key,
+      path: key,
+      children: {},
+      files: []
+    };
+  });
+
+  blogs.forEach((blog) => {
+    const segments = getFolderSegments(blog);
+    let current = root;
+    let currentPath = "";
+
+    segments.forEach((seg) => {
+      let key = seg.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+      
+      if (key.includes("spring")) key = "spring-boot";
+      else if (key.includes("dsa") || key.includes("algorithm")) key = "dsa";
+      else if (key.includes("system") || key.includes("design")) key = "system-design";
+      else if (key.includes("java") && !key.includes("javascript")) key = "java";
+
+      currentPath = currentPath ? `${currentPath}/${key}` : key;
+
+      let displayName = seg;
+      if (key === "spring-boot") displayName = "Spring Boot";
+      else if (key === "dsa") displayName = "DSA";
+      else if (key === "system-design") displayName = "System Design";
+      else if (key === "java") displayName = "Java";
+
+      if (!current.children[key]) {
+        current.children[key] = {
+          name: displayName,
+          key: key,
+          path: currentPath,
+          children: {},
+          files: [],
+        };
+      }
+      current = current.children[key];
+    });
+
+    current.files.push(blog);
+  });
+
+  return root;
+};
+
 const SidebarExplorer = ({
   allBlogs,
   activeFileId,
@@ -24,6 +89,73 @@ const SidebarExplorer = ({
   // Git commit states
   const [commitMsg, setCommitMsg] = useState("");
   const [gitStatus, setGitStatus] = useState("modified"); // "modified" or "committed"
+
+  const renderFolderNode = (node) => {
+    return Object.keys(node.children).map((key) => {
+      const child = node.children[key];
+      const isFolderOpen = !!expandedFolders[child.path];
+      
+      const countFiles = (n) => {
+        let count = n.files.length;
+        Object.keys(n.children).forEach(k => {
+          count += countFiles(n.children[k]);
+        });
+        return count;
+      };
+      
+      const totalFilesCount = countFiles(child);
+
+      return (
+        <div key={child.path} className="pl-3">
+          <button
+            onClick={() => toggleFolder(child.path)}
+            className="w-full text-left flex items-center gap-1.5 py-0.5 text-gray-400 hover:text-white hover:bg-white/5 px-1.5 rounded transition-all font-mono"
+          >
+            {isFolderOpen ? (
+              <ChevronDown className="w-3 h-3 text-gray-500" />
+            ) : (
+              <ChevronRight className="w-3 h-3 text-gray-500" />
+            )}
+            <span>{isFolderOpen ? "📂" : "📁"}</span>
+            <span className="truncate">{child.name}</span>
+            <span className="text-[10px] text-gray-600 font-bold ml-auto shrink-0">
+              ({totalFilesCount})
+            </span>
+          </button>
+
+          {isFolderOpen && (
+            <div className="pl-3 border-l border-white/5 ml-2.5 space-y-0.5 mt-0.5">
+              {renderFolderNode(child)}
+              
+              {child.files.map((b) => {
+                const itemExt = getFileExtension(b.categories?.[0]);
+                const isCurrentFile = b.id === activeFileId || b.slug === activeFileId;
+                
+                return (
+                  <button
+                    key={b.id}
+                    onClick={() => onFileSelect(b.slug || b.id)}
+                    className={`w-full text-left flex items-center gap-1.5 py-0.5 px-2 rounded transition-all truncate
+                      ${isCurrentFile
+                        ? `font-bold ${currentTheme.textAccent} ${currentTheme.bgAccentAlpha}`
+                        : "text-gray-500 hover:text-white hover:bg-white/5"
+                      }`}
+                  >
+                    <span className={`text-[11px] shrink-0 ${isCurrentFile ? currentTheme.textAccent : "text-indigo-400/80"}`}>
+                      {itemExt.icon}
+                    </span>
+                    <span className="truncate font-mono">
+                      {(b.slug || b.id || "").replace(/-/g, "_")}.{itemExt.val}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      );
+    });
+  };
 
   const handleOutlineHeadingClick = (id) => {
     const el = document.getElementById(id);
@@ -238,65 +370,7 @@ const SidebarExplorer = ({
               </div>
 
               {/* Collapsible Categories Folders */}
-              {Object.keys(categoriesMap).map((catName) => {
-                const catBlogs = categoriesMap[catName] || [];
-                const folderSlug = catName.toLowerCase().replace(/[^a-z0-9]+/g, "-");
-                const isFolderOpen = expandedFolders[folderSlug];
-
-                return (
-                  <div key={catName} className="pl-3">
-                    <button
-                      onClick={() => toggleFolder(folderSlug)}
-                      className="w-full text-left flex items-center gap-1.5 py-0.5 text-gray-400 hover:text-white hover:bg-white/5 px-1.5 rounded transition-all"
-                    >
-                      {isFolderOpen ? (
-                        <ChevronDown className="w-3 h-3 text-gray-500" />
-                      ) : (
-                        <ChevronRight className="w-3 h-3 text-gray-500" />
-                      )}
-                      <span>{isFolderOpen ? "📂" : "📁"}</span>
-                      <span className="truncate">{folderSlug}</span>
-                      <span className="text-[10px] text-gray-600 font-bold ml-auto shrink-0">
-                        ({catBlogs.length})
-                      </span>
-                    </button>
-
-                    {/* Files inside category folder */}
-                    {isFolderOpen && (
-                      <div className="pl-3 border-l border-white/5 ml-2.5 space-y-0.5 mt-0.5">
-                        {catBlogs.map((b) => {
-                          const itemExt = getFileExtension(b.categories?.[0]);
-                          const isCurrentFile = b.id === activeFileId || b.slug === activeFileId;
-                          
-                          return (
-                            <button
-                              key={b.id}
-                              onClick={() => onFileSelect(b.slug || b.id)}
-                              className={`w-full text-left flex items-center gap-1.5 py-0.5 px-2 rounded transition-all truncate
-                                ${isCurrentFile
-                                  ? `font-bold ${currentTheme.textAccent} ${currentTheme.bgAccentAlpha}`
-                                  : "text-gray-500 hover:text-white hover:bg-white/5"
-                                }`}
-                            >
-                              <span className={`text-[11px] shrink-0 ${isCurrentFile ? currentTheme.textAccent : "text-indigo-400/80"}`}>
-                                {itemExt.icon}
-                              </span>
-                              <span className="truncate font-mono">
-                                {(b.slug || b.id || "").replace(/-/g, "_")}.{itemExt.val}
-                              </span>
-                            </button>
-                          );
-                        })}
-                        {catBlogs.length === 0 && (
-                          <span className="text-gray-700 italic block pl-5 py-0.5">
-                            (empty)
-                          </span>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+              {renderFolderNode(buildFileTree(allBlogs))}
 
               {/* README.md, ABOUT_ME.md, and settings.json root configurations */}
               <div className="pl-3 pt-2 mt-2 border-t border-white/5 space-y-0.5">
