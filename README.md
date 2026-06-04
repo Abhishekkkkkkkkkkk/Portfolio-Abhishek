@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🚀 Portfolio V2 — Abhishek Kumar
+# 🚀 Personal Portfolio & Dev Workspace — Abhishek Kumar
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Visit%20Site-6366f1?style=for-the-badge&logo=vercel)](https://krabhishek.vercel.app/)
 [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
@@ -10,7 +10,7 @@
 
 <br/>
 
-> A fully redesigned, modular personal portfolio built with React.js, Tailwind CSS, Supabase database, and Google Drive storage. Features a cinematic welcome screen, a VS Code-themed interactive blog/notes workspace, premium GPU-accelerated animations, developer mini-games, and a polished dark-glass UI.
+> A premium, fully responsive developer portfolio built with React.js, Tailwind CSS, Supabase SQL database, and Google Drive. Features a cinematic splash Welcome Loader, a custom VS Code-themed interactive Blog & Notes Workspace (with a built-in terminal compiler shell), GPU-accelerated canvas mini-games, and a polished dark-glass user interface.
 
 <br/>
 
@@ -18,39 +18,46 @@
 
 ---
 
-## ✨ What's New in V2
-
-| Feature | Description |
-|---|---|
-| 🏗️ **Clean Architecture** | Decoupled codebase separating page sections, layouts, standalone routed views, and centralized configuration services. |
-| 📂 **Recursive Multi-Level Folders** | Dynamic nested folder trees inside the Blog Workspace sidebar, perfect for multi-layered topics (e.g. `DSA` ➔ `Sorting` ➔ `Merge Sort`). |
-| 🔄 **Vercel Reload 404 Fix** | Pre-configured `vercel.json` rewrite routing to resolve client-side SPA route mismatches when pages are reloaded. |
-| 📍 **Persistent Tab & Scroll Restoration** | Remembers your active workspace tab via `localStorage`. Exiting a blog details page or pressing back auto-focuses the **Blog** tab and scrolls directly down to the `#Portfolio` workspace. |
-| 📱 **Responsive Mobile Sidebar Mode** | Workspace sidebar is collapsed by default on mobile viewports and automatically slides shut when a file (`README`, `ABOUT_ME`, `settings.json`, or a blog post) is selected. |
-| 👾 **Syntax Invaders Game** | High-performance HTML5 Canvas arcade shooter. Blast descending bugs with semicolon lasers (;) complete with levels, particle bursts, and retro synthesizer audio. |
-| 🎴 **Dev Stack Matcher** | Interactive memory matching card game integrated side-by-side with your LeetCode Stats card inside the Hero section. |
-| 📄 **Notes Section** | Built-in modal PDF viewer displaying study notes hosted on Google Drive. |
-| 🎬 **Welcome Screen** | Optimized loading screen with particle mesh, typewriter URL chip, progress bar, and spring animations. |
-
----
-
 ## 🔄 Migration & Technology Comparison
 
-This section details the migrations and architectural decisions implemented to upgrade from the previous personal portfolio template:
+To achieve high performance, scalability, and modular code architecture, the project has been fully migrated from its original v1 implementation:
 
 | Architectural Area | Previous Implementation | Current Upgraded V2 Implementation | Key Advantages of Migration |
 | :--- | :--- | :--- | :--- |
-| **Database & API Backend** | **Google Firebase Firestore** (NoSQL Database) | **Supabase PostgreSQL** (Relational Database) | Shifted to standard SQL queries, enabling clean database schemas (`supabase_schema.sql`), atomic counter operations via DB triggers (`increment_blog_views`), and robust relational constraints. |
-| **Workspace Sidebar Tree** | **Flat Category Mapping** (Grouped items in 4 hardcoded root folders) | **Dynamic Recursive Folder Trees** (Recursive nodes and nested subfolders) | Allows multi-level folder structures (e.g. `DSA` ➔ `Sorting` ➔ `Merge Sort`), rendering subfolders dynamically based on database categories array or slashes. |
-| **Navigation Back Flow** | **Homepage Redirect Reset** (Escaping to home reset selected tab and scroll to top) | **Persistent Tab State & Scroll Restoration** | Retains selected tab index in `localStorage`. Uses `?tab=blog` url query handling to auto-focus the Blog tab and smooth-scroll back to the portfolio block. |
+| **Database & API Backend** | **Google Firebase Firestore** (NoSQL Database) | **Supabase PostgreSQL** (Relational Database) | Shifted to standard SQL queries, enabling clean database schemas (`supabase_schema.sql`), atomic view/like increments via database functions, and robust relational constraints. |
+| **Workspace Sidebar Tree** | **Flat Category Mapping** (Grouped items in 4 hardcoded root folders) | **Dynamic Recursive Folder Trees** (Recursive nodes and nested subfolders) | Allows multi-level folder structures (e.g. `DSA` ➔ `Sorting` ➔ `Merge Sort`), rendering subfolders dynamically based on database categories array or slash-separated strings. |
+| **Navigation Back Flow** | **Homepage Redirect Reset** (Escaping to home reset selected tab and scroll to top) | **Persistent Tab State & Scroll Restoration** | Retains selected tab index in `localStorage`. Uses `?tab=blog` URL query parameter to auto-focus the Blog tab and smooth-scroll back to the portfolio block. |
 | **Mobile UX Layout** | **Static Workspace Explorer** (Sidebar kept open on mobile selection, blocking content viewport) | **Responsive Mobile Auto-Collapse** | Automatically disables sidebar on viewport load if `< 768px` and collapses sidebar explorer panel upon file selection, maximizing content view space. |
 | **SPA Reload Routes** | **Direct Routing Paths** (Reloading subroutes on Vercel threw `404: NOT_FOUND` errors) | **Server-side Vercel Rewrites** (`vercel.json` mapping all paths to `index.html`) | Enables seamless browser reloading and link sharing for routed subpages like `/blog/:id` or `/project/:id` without 404 router errors. |
+| **Asset Security** | **Sensitive credentials in repo** | **Clean placeholders in git** | Standardizes key references inside `.env.example` with safe placeholder strings to prevent API access token leaks. |
+
+---
+
+## ✨ Core Features & Workspaces
+
+### 📂 Dynamic VS Code Blog Workspace
+Explore technical publications through a highly-interactive IDE clone featuring:
+- **Left Sidebar Explorer**: Expand folders and select files to navigate through technical papers dynamically.
+- **Dynamic File Tree Builder**: Supports infinite nesting levels (e.g. `DSA` ➔ `Sorting` ➔ `Merge Sort`).
+- **Quick Open (Ctrl+P / Cmd+P)**: Search and jump between files in real-time.
+- **Settings Editor (`settings.json`)**: Customize font size, toggle line numbers, and switch between themes (**Dracula**, **Nord**, **Monokai**).
+- **Interactive Bash Terminal**: Run mock commands (`help`, `ls`, `cat`, `theme`, `subscribe`) to interact with the site.
+- **Real-Time Database Sync**: Subscribes to Supabase postgres changes to sync view counts dynamically.
+
+### 🎮 Developer Mini-Games
+Integrated directly into the layout to showcase interactive engineering skills:
+- **Syntax Invaders**: A retro Canvas arcade shooter. Fire semicolon lasers (`;`) to destroy syntax bugs. Features difficulty levels, particle explosion bursts, and synth sound effects.
+- **Dev Stack Matcher**: A memory matching card game showing tech icons side-by-side with your real-time LeetCode statistics.
+
+### 📄 Google Drive Notes Viewer
+Access high-yield computer science notes with an in-app PDF reader modal pulling directly from Google Drive `/preview` embeds.
+
+### 🎬 Welcome Screen Loader
+A lightweight loader that triggers a particle mesh, typewriter animation, and progress bar to ensure low bounce rates.
 
 ---
 
 ## 🛠️ Project Tech Stack
-
-The technologies, frameworks, and libraries used to build and deploy this portfolio website are:
 
 | Component / Layer | Technology / Library | Description |
 | :--- | :--- | :--- |
@@ -61,9 +68,9 @@ The technologies, frameworks, and libraries used to build and deploy this portfo
 | **Icon Set** | **Lucide React** | Modern SVG design icons |
 | **Navigation & Tabs** | **React Router DOM** & **React Swipeable Views** | Client-side routing and mobile-friendly tab swipe controllers |
 | **Animations** | **Framer Motion** & **AOS** | Entrance sweeps, modal popups, and scroll-fade triggers |
-| **Database & Caching** | **Supabase** (PostgreSQL) | Fetches dynamic projects, certificates, blogs, notes, and registers subscribers |
+| **Database & Caching** | **Supabase** (PostgreSQL) | Dynamic database query client utilizing `localStorage` caching |
 | **Form Alerts** | **SweetAlert2** | Interactive form submission alerts |
-| **PDF Storage** | **Google Drive** | Hosts and renders study notes PDFs via `/preview` embeds |
+| **PDF Storage** | **Google Drive** | Hosts study notes PDFs via `/preview` embeds |
 | **Hosting & Deploy** | **Vercel** | Automated CI/CD branch deployments with custom redirects |
 
 ---
@@ -92,7 +99,7 @@ Portfolio-Abhishek/
 │   │   ├── About.jsx      ← Intro, skill tags, timeline, and Syntax Invaders
 │   │   ├── Portfolio.jsx  ← Showcases, certificates, tech tabs, blog, and notes
 │   │   └── Contact.jsx    ← Forms and social link buttons
-│   ├── pages/             # Standalone Routed Page Views (React.lazy loaded)
+│   ├── pages/             # Standalone Routed Page Views
 │   │   ├── WelcomeScreen.jsx ← Welcome loader/splash view
 │   │   ├── ProjectDetail.jsx ← Details page for `/project/:id`
 │   │   ├── BlogDetail.jsx    ← Article VS Code workspace view for `/blog/:id`
@@ -156,7 +163,7 @@ Portfolio-Abhishek/
    ```bash
    cp .env.example .env
    ```
-   *Fill in your Supabase & Firebase config keys in the `.env` file (this file is automatically ignored in `.gitignore`).*
+   *Fill in your Supabase credentials in the `.env` file (this file is automatically ignored in `.gitignore`).*
 
 4. **Start the development server:**
    ```bash
@@ -166,47 +173,71 @@ Portfolio-Abhishek/
 
 ---
 
-## ⚡ Supabase Setup
+## ⚡ Supabase Database Setup
 
-### Step 1 — Create a Supabase Project
-1. Go to the [Supabase Dashboard](https://supabase.com/) and click **New Project**.
-2. Set your project name, database password, and choose a region close to your target users.
+### Step 1 — Run the SQL Script
+1. Log in to the [Supabase Console](https://supabase.com/).
+2. Create a new project and navigate to the **SQL Editor** tab.
+3. Paste the contents of `supabase_schema.sql` (found in the project root) and click **Run**.
+4. This script sets up:
+   - Database tables for projects, certificates, blogs, notes, and subscribers.
+   - Row-Level Security (RLS) policies allowing public read access.
+   - Database functions (`increment_blog_views`, `increment_blog_likes`) to update engagement metrics atomically.
 
-### Step 2 — Run the Database Schema
-1. Once the project is provisioned, navigate to the **SQL Editor** in the left sidebar.
-2. Click **New query**.
-3. Open the [supabase_schema.sql](file:///d:/Abhishek%20Portfolio/supabase_schema.sql) file from the project root, copy its entire contents, paste it into the Supabase editor, and click **Run**.
-4. This script will create the necessary tables (`projects`, `certificates`, `blogs`, `notes`, `subscribers`), build the search indices, enable Row-Level Security (RLS) policies for public read access, and configure functions for tracking views and likes.
-
-### Step 3 — Get API Credentials
-1. Go to **Project Settings** -> **API**.
-2. Copy the **Project URL** and the **`anon` (public)** key.
-3. Paste these values into your `.env` file as:
+### Step 2 — Configure Environment Variables
+1. Go to **Project Settings** -> **API** in the Supabase Dashboard.
+2. Copy the **Project URL** and the **`anon` public API key**.
+3. Add them to your `.env` file:
    ```env
-   VITE_SUPABASE_URL=your_project_url
-   VITE_SUPABASE_ANON_KEY=your_anon_public_key
+   VITE_SUPABASE_URL=https://your-project-id.supabase.co
+   VITE_SUPABASE_ANON_KEY=your-anon-public-key
    ```
 
 ---
 
 ## 📂 Multi-Level Folders Schema in Blogs
 
-The VS Code workspace sidebar supports nested folders automatically. You can nest articles by organizing your categories list in the database.
+The VS Code workspace explorer dynamically builds directories based on the categories array in the Supabase database. You can organize your articles using either of the following methods:
 
-* **Method A (Multiple array elements)**: Save the `categories` field for your blog post as `["DSA", "Sorting"]`. This automatically places the article file under the `DSA` parent folder inside a `Sorting` subfolder.
-* **Method B (Slash Separator)**: Save the first element of the `categories` array as a slash-separated string like `["DSA/Sorting"]`. The parser splits this string to render the folders hierarchically.
+1. **Using multiple categories**:
+   Set `categories` to `["DSA", "Sorting"]`. The workspace explorer will automatically nest the article inside the `sorting` directory under `dsa`.
+2. **Using a slash separator**:
+   Set `categories` to `["DSA/Sorting"]`. The parser splits the string by `/` to render the folder structure recursively.
+
+---
+
+## ⚙️ Custom VS Code Interactive Shell
+
+The bottom panel of the workspace runs a mock terminal interpreter that parses commands:
+* `help` - Show lists of terminal command options.
+* `ls` - List files in the current workspace.
+* `cat <filename>` - Open and print the contents of a workspace file directly in the editor.
+* `theme <name>` - Switch theme colors dynamically (`dracula`, `nord`, `monokai`).
+* `subscribe <email>` - Subscribe to the newsletter database table in Supabase.
+* `clear` - Flush all logs from the terminal screen.
 
 ---
 
 ## 🚀 Vercel Deployment Settings
 
-When importing this project onto Vercel, the configuration settings are managed automatically by the included `vercel.json` file.
+The project contains a pre-configured `vercel.json` file to manage Single Page Application (SPA) routes.
 
-1. **Root Directory**: Ensure this is set to the project root **`./`** (leave default/blank). Do NOT set the Root Directory to `dist`.
-2. **Build Settings**: Vercel will auto-detect the **Vite** preset:
+1. **vercel.json rewrites**:
+   ```json
+   {
+     "rewrites": [
+       {
+         "source": "/(.*)",
+         "destination": "/index.html"
+       }
+     ]
+   }
+   ```
+   *This maps all client-side URL requests to `index.html`, resolving `404: NOT_FOUND` page reload errors.*
+2. **Build Configurations**:
    - Build Command: `npm run build`
    - Output Directory: `dist`
-3. **Environment Variables**: Navigate to **Settings** > **Environment Variables** in the Vercel dashboard and add all the keys from your `.env` file (e.g. `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, etc.) so the live site can connect to your database.
+3. **Environment Variables**: Add your `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` to Vercel's Environment Variables dashboard.
 
 ---
 
