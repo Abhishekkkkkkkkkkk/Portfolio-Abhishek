@@ -5,12 +5,12 @@
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Visit%20Site-6366f1?style=for-the-badge&logo=vercel)](https://krabhishek.vercel.app/)
 [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
-[![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://firebase.google.com/)
+[![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
 [![MIT License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
 <br/>
 
-> A fully redesigned, modular personal portfolio built with React.js, Tailwind CSS, Firebase, and Google Drive storage. Features a cinematic welcome screen, structured blog/notes system, premium GPU-accelerated animations, developer mini-games, and a polished dark-glass UI.
+> A fully redesigned, modular personal portfolio built with React.js, Tailwind CSS, Supabase database, and Google Drive storage. Features a cinematic welcome screen, a VS Code-themed interactive blog/notes workspace, premium GPU-accelerated animations, developer mini-games, and a polished dark-glass UI.
 
 <br/>
 
@@ -22,26 +22,29 @@
 
 | Feature | Description |
 |---|---|
-| 🏗️ **Clean Architecture** | Decoupled codebase separating page sections, layouts, standalone routed views, and centralized configuration services |
-| 👾 **Syntax Invaders Game** | High-performance HTML5 Canvas arcade shooter. Blast descending bugs with semicolon lasers (;) complete with levels, particle bursts, and retro synthesizer audio |
-| 🎴 **Dev Stack Matcher** | Interactive memory matching card game integrated side-by-side with your LeetCode Stats card inside the Hero section |
-| 📝 **Blog System** | Write and publish articles from Firebase with category filters, cover images, reading time calculations, and full HTML rendering |
-| 📄 **Notes Section** | Built-in modal PDF viewer displaying study notes hosted on Google Drive |
-| 🎬 **Welcome Screen** | Optimized loading screen with particle mesh, typewriter URL chip, progress bar, and spring animations |
-| 🎨 **Premium UI** | Polished dark glassmorphism, glow borders, sweep transitions, and skeleton layout loaders |
-| ⚡ **GPU Animations Fix** | Fixed scroll lag by shifting the infinite scroll background loop onto throttled browser repaint cycles |
-| 📦 **Legacy Peer Resolution** | Added `.npmrc` configuration to resolve npm peer conflicts automatically on remote hosts like Vercel |
+| 🏗️ **Clean Architecture** | Decoupled codebase separating page sections, layouts, standalone routed views, and centralized configuration services. |
+| 📂 **Recursive Multi-Level Folders** | Dynamic nested folder trees inside the Blog Workspace sidebar, perfect for multi-layered topics (e.g. `DSA` ➔ `Sorting` ➔ `Merge Sort`). |
+| 🔄 **Vercel Reload 404 Fix** | Pre-configured `vercel.json` rewrite routing to resolve client-side SPA route mismatches when pages are reloaded. |
+| 📍 **Persistent Tab & Scroll Restoration** | Remembers your active workspace tab via `localStorage`. Exiting a blog details page or pressing back auto-focuses the **Blog** tab and scrolls directly down to the `#Portfolio` workspace. |
+| 📱 **Responsive Mobile Sidebar Mode** | Workspace sidebar is collapsed by default on mobile viewports and automatically slides shut when a file (`README`, `ABOUT_ME`, `settings.json`, or a blog post) is selected. |
+| 👾 **Syntax Invaders Game** | High-performance HTML5 Canvas arcade shooter. Blast descending bugs with semicolon lasers (;) complete with levels, particle bursts, and retro synthesizer audio. |
+| 🎴 **Dev Stack Matcher** | Interactive memory matching card game integrated side-by-side with your LeetCode Stats card inside the Hero section. |
+| 📄 **Notes Section** | Built-in modal PDF viewer displaying study notes hosted on Google Drive. |
+| 🎬 **Welcome Screen** | Optimized loading screen with particle mesh, typewriter URL chip, progress bar, and spring animations. |
 
 ---
 
-## ✨ Core Features
+## 🔄 Migration & Technology Comparison
 
-- 📱 **Mobile-First Responsive Layout** optimized across all standard screen sizes.
-- 🎨 **Glassmorphism Dark UI** utilizing tailwind color ranges, subtle shadows, and borders.
-- 🌀 **GPU-Accelerated Animations** powered by AOS and Framer Motion transitions.
-- 🎬 **Loading Screen** with a throttled particle generator that finishes loading within 1 second for low bounce rates.
-- 💼 **Project Detail Subpages** providing a lock popup if code repositories are private.
-- 📬 **Contact Form** validated using SweetAlert2 popup messages.
+This section details the migrations and architectural decisions implemented to upgrade from the previous personal portfolio template:
+
+| Architectural Area | Previous Implementation | Current Upgraded V2 Implementation | Key Advantages of Migration |
+| :--- | :--- | :--- | :--- |
+| **Database & API Backend** | **Google Firebase Firestore** (NoSQL Database) | **Supabase PostgreSQL** (Relational Database) | Shifted to standard SQL queries, enabling clean database schemas (`supabase_schema.sql`), atomic counter operations via DB triggers (`increment_blog_views`), and robust relational constraints. |
+| **Workspace Sidebar Tree** | **Flat Category Mapping** (Grouped items in 4 hardcoded root folders) | **Dynamic Recursive Folder Trees** (Recursive nodes and nested subfolders) | Allows multi-level folder structures (e.g. `DSA` ➔ `Sorting` ➔ `Merge Sort`), rendering subfolders dynamically based on database categories array or slashes. |
+| **Navigation Back Flow** | **Homepage Redirect Reset** (Escaping to home reset selected tab and scroll to top) | **Persistent Tab State & Scroll Restoration** | Retains selected tab index in `localStorage`. Uses `?tab=blog` url query handling to auto-focus the Blog tab and smooth-scroll back to the portfolio block. |
+| **Mobile UX Layout** | **Static Workspace Explorer** (Sidebar kept open on mobile selection, blocking content viewport) | **Responsive Mobile Auto-Collapse** | Automatically disables sidebar on viewport load if `< 768px` and collapses sidebar explorer panel upon file selection, maximizing content view space. |
+| **SPA Reload Routes** | **Direct Routing Paths** (Reloading subroutes on Vercel threw `404: NOT_FOUND` errors) | **Server-side Vercel Rewrites** (`vercel.json` mapping all paths to `index.html`) | Enables seamless browser reloading and link sharing for routed subpages like `/blog/:id` or `/project/:id` without 404 router errors. |
 
 ---
 
@@ -58,10 +61,10 @@ The technologies, frameworks, and libraries used to build and deploy this portfo
 | **Icon Set** | **Lucide React** | Modern SVG design icons |
 | **Navigation & Tabs** | **React Router DOM** & **React Swipeable Views** | Client-side routing and mobile-friendly tab swipe controllers |
 | **Animations** | **Framer Motion** & **AOS** | Entrance sweeps, modal popups, and scroll-fade triggers |
-| **Database & Caching** | **Firebase Cloud Firestore** | Fetches dynamic projects, blogs, and notes (with `localStorage` caching) |
+| **Database & Caching** | **Supabase** (PostgreSQL) | Fetches dynamic projects, certificates, blogs, notes, and registers subscribers |
 | **Form Alerts** | **SweetAlert2** | Interactive form submission alerts |
 | **PDF Storage** | **Google Drive** | Hosts and renders study notes PDFs via `/preview` embeds |
-| **Hosting & Deploy** | **Vercel** | Automated CI/CD branch deployments |
+| **Hosting & Deploy** | **Vercel** | Automated CI/CD branch deployments with custom redirects |
 
 ---
 
@@ -79,7 +82,7 @@ Portfolio-Abhishek/
 │   ├── data/              ← Timelines and structured developer profiles
 │   │   └── TimelineData.js
 │   ├── services/          # Services & API Configurations
-│   │   └── firebase.js    ← Initialized Firebase and Firestore client
+│   │   └── supabase.js    ← Initialized Supabase PostgreSQL client connection
 │   ├── layouts/           # Page structural framing components
 │   │   ├── Navbar.jsx     ← Top navigation component with corrected anchors
 │   │   ├── Footer.jsx     ← Footnote copyright and navigation panel
@@ -89,12 +92,20 @@ Portfolio-Abhishek/
 │   │   ├── About.jsx      ← Intro, skill tags, timeline, and Syntax Invaders
 │   │   ├── Portfolio.jsx  ← Showcases, certificates, tech tabs, blog, and notes
 │   │   └── Contact.jsx    ← Forms and social link buttons
-│   ├── pages/             # Standalone Routed Page Views
+│   ├── pages/             # Standalone Routed Page Views (React.lazy loaded)
 │   │   ├── WelcomeScreen.jsx ← Welcome loader/splash view
 │   │   ├── ProjectDetail.jsx ← Details page for `/project/:id`
-│   │   ├── BlogDetail.jsx    ← Article view for `/blog/:id`
+│   │   ├── BlogDetail.jsx    ← Article VS Code workspace view for `/blog/:id`
 │   │   └── ThankYou.jsx      ← Success redirect page
 │   ├── components/        # Reusable Atomic UI Blocks
+│   │   ├── vscode/        # Modular VS Code Interactive Widgets
+│   │   │   ├── ActivityBar.jsx
+│   │   │   ├── BottomPanel.jsx
+│   │   │   ├── Breadcrumbs.jsx
+│   │   │   ├── EditorTabs.jsx
+│   │   │   ├── QuickOpen.jsx
+│   │   │   ├── SidebarExplorer.jsx ← Dynamic recursive tree view explorer
+│   │   │   └── StatusBar.jsx
 │   │   ├── games/         # Premium Mini-Games
 │   │   │   ├── MemoryGame.jsx     ← Card-matching stack game
 │   │   │   └── SyntaxInvaders.jsx ← Bug-shooter retro arcade game
@@ -110,6 +121,8 @@ Portfolio-Abhishek/
 │   └── main.jsx           ← Entry point mount file
 ├── .env.example           ← Environment keys template configuration
 ├── .npmrc                 ← Legacy peer dependencies configuration
+├── supabase_schema.sql    ← PostgreSQL schema definition for Supabase Setup
+├── vercel.json            ← Vercel SPA router config for reload redirects
 ├── index.html             ← Landing HTML template with JSON-LD SEO schema
 ├── tailwind.config.js     ← Tailwind rules & styling overrides
 ├── package.json           ← Project modules and dependency scripts
@@ -143,7 +156,7 @@ Portfolio-Abhishek/
    ```bash
    cp .env.example .env
    ```
-   *Fill in your Firebase config keys in the `.env` file (these files are automatically ignored in `.gitignore`).*
+   *Fill in your Supabase & Firebase config keys in the `.env` file (this file is automatically ignored in `.gitignore`).*
 
 4. **Start the development server:**
    ```bash
@@ -153,91 +166,47 @@ Portfolio-Abhishek/
 
 ---
 
-## 🔥 Firebase Setup
+## ⚡ Supabase Setup
 
-### Step 1 — Create a Firebase Project
-1. Go to the [Firebase Console](https://console.firebase.google.com/).
-2. Click **Add project** and create a new project.
+### Step 1 — Create a Supabase Project
+1. Go to the [Supabase Dashboard](https://supabase.com/) and click **New Project**.
+2. Set your project name, database password, and choose a region close to your target users.
 
-### Step 2 — Enable Cloud Firestore Database
-1. Navigate to **Firestore Database** in the left menu.
-2. Click **Create database** and select your regional location.
-3. Apply the following read-only rules to allow public access to your portfolio content:
-   ```javascript
-   rules_version = '2';
-   service cloud.firestore {
-     match /databases/{database}/documents {
-       match /{document=**} {
-         allow read: if true;
-         allow write: if false; // Restrict writes to Firebase Console only
-       }
-     }
-   }
+### Step 2 — Run the Database Schema
+1. Once the project is provisioned, navigate to the **SQL Editor** in the left sidebar.
+2. Click **New query**.
+3. Open the [supabase_schema.sql](file:///d:/Abhishek%20Portfolio/supabase_schema.sql) file from the project root, copy its entire contents, paste it into the Supabase editor, and click **Run**.
+4. This script will create the necessary tables (`projects`, `certificates`, `blogs`, `notes`, `subscribers`), build the search indices, enable Row-Level Security (RLS) policies for public read access, and configure functions for tracking views and likes.
+
+### Step 3 — Get API Credentials
+1. Go to **Project Settings** -> **API**.
+2. Copy the **Project URL** and the **`anon` (public)** key.
+3. Paste these values into your `.env` file as:
+   ```env
+   VITE_SUPABASE_URL=your_project_url
+   VITE_SUPABASE_ANON_KEY=your_anon_public_key
    ```
-
-### Step 3 — Register a Web App
-1. Under **Project Settings**, register a new web application (`</>`).
-2. Copy the credentials (API key, Auth Domain, Project ID, App ID, etc.) into your local `.env` file.
 
 ---
 
-## 🗄️ Firestore Collections Schema
+## 📂 Multi-Level Folders Schema in Blogs
 
-Set up the following collections in your Firestore database to populate your portfolio showcase:
+The VS Code workspace sidebar supports nested folders automatically. You can nest articles by organizing your categories list in the database.
 
-### `projects` (Collection)
-| Field | Type | Description |
-|---|---|---|
-| `Title` | string | Name of the project |
-| `Description` | string | Summary paragraph |
-| `Img` | string | Screenshot URL |
-| `Link` | string | Live demo site URL |
-| `Github` | string | Repository link (or `"Private"`) |
-| `TechStack` | array | e.g. `["React.js", "Spring Boot"]` |
-| `Features` | array | e.g. `["Secure REST Endpoints", "PDF Generation"]` |
-
-### `certificates` (Collection)
-| Field | Type | Description |
-|---|---|---|
-| `Img` | string | Image URL of the certificate |
-
-### `blogs` (Collection)
-| Field | Type | Description |
-|---|---|---|
-| `title` | string | Post title |
-| `description` | string | Summary text |
-| `content` | string | Full article content (supports HTML tags) |
-| `tags` | array | e.g. `["Java", "Spring Boot"]` |
-| `date` | string | Publication date (e.g. `"Jun 2026"`) |
-| `readTime` | string | reading speed indicator |
-| `views` | string | integer or string views counts |
-| `coverEmoji` | string | display emoji (e.g. `"☕"`) |
-| `featured` | boolean | Set `true` to display inside the featured blog header slot |
-
-### `notes` (Collection)
-| Field | Type | Description |
-|---|---|---|
-| `title` | string | Notes title |
-| `description` | string | Notes description |
-| `subject` | string | Subject filter category (e.g., `"Java"`) |
-| `tags` | array | e.g. `["OOP", "Multithreading"]` |
-| `pdfUrl` | string | Google Drive PDF share link in `/preview` format |
-| `coverEmoji` | string | display emoji (e.g. `"📚"`) |
-| `pages` | string | page counts metadata |
-| `date` | string | date metadata |
-| `featured` | boolean | Set `true` to showcase in notes view |
+* **Method A (Multiple array elements)**: Save the `categories` field for your blog post as `["DSA", "Sorting"]`. This automatically places the article file under the `DSA` parent folder inside a `Sorting` subfolder.
+* **Method B (Slash Separator)**: Save the first element of the `categories` array as a slash-separated string like `["DSA/Sorting"]`. The parser splits this string to render the folders hierarchically.
 
 ---
 
 ## 🚀 Vercel Deployment Settings
 
-When importing this project onto Vercel, apply the following project configuration settings:
+When importing this project onto Vercel, the configuration settings are managed automatically by the included `vercel.json` file.
 
 1. **Root Directory**: Ensure this is set to the project root **`./`** (leave default/blank). Do NOT set the Root Directory to `dist`.
 2. **Build Settings**: Vercel will auto-detect the **Vite** preset:
-   - Build Command: `vite build`
+   - Build Command: `npm run build`
    - Output Directory: `dist`
-3. **Environment Variables**: Navigate to **Settings** > **Environment Variables** in the Vercel dashboard and add all the keys from your `.env` file (e.g. `VITE_FIREBASE_API_KEY`, etc.) so the live site can connect to your database.
+3. **Environment Variables**: Navigate to **Settings** > **Environment Variables** in the Vercel dashboard and add all the keys from your `.env` file (e.g. `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, etc.) so the live site can connect to your database.
 
 ---
 
