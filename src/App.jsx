@@ -13,6 +13,7 @@ import { AnimatePresence } from "framer-motion";
 
 const ProjectDetails = React.lazy(() => import("./pages/ProjectDetail"));
 const BlogDetail = React.lazy(() => import("./pages/BlogDetail"));
+const UnsubscribePage = React.lazy(() => import("./pages/Unsubscribe"));
 
 /* ─── Landing Page ─── */
 const LandingPage = ({ showWelcome, setShowWelcome }) => {
@@ -110,6 +111,18 @@ function App() {
               </div>
             }>
               <BlogPageLayout />
+            </React.Suspense>
+          } 
+        />
+        <Route 
+          path="/unsubscribe" 
+          element={
+            <React.Suspense fallback={
+              <div className="min-h-screen bg-[#030014] flex items-center justify-center">
+                <div className="w-12 h-12 rounded-full border-2 border-[#6366f1]/20 border-t-[#6366f1] animate-spin" />
+              </div>
+            }>
+              <UnsubscribePage />
             </React.Suspense>
           } 
         />
