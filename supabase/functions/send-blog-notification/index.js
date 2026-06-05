@@ -1,15 +1,17 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.8";
 
 Deno.serve(async (req) => {
-  // 1. Authenticate the request
-  const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+  // 1. Authenticate and retrieve environment variables
+  const BREVO_API_KEY = Deno.env.get("BREVO_API_KEY");
   const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
   const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  const FRONTEND_URL = Deno.env.get("FRONTEND_URL") || "https://abhishekkumar.in";
+  const FRONTEND_URL = Deno.env.get("FRONTEND_URL") || "https://krabhishek.vercel.app";
+  const SENDER_EMAIL = Deno.env.get("SENDER_EMAIL") || "krabhishek2k02@gmail.com";
+  const SENDER_NAME = Deno.env.get("SENDER_NAME") || "Abhishek Kumar";
 
-  if (!RESEND_API_KEY) {
-    console.error("Missing RESEND_API_KEY environment variable.");
-    return new Response(JSON.stringify({ error: "Configuration Error: RESEND_API_KEY is missing." }), {
+  if (!BREVO_API_KEY) {
+    console.error("Missing BREVO_API_KEY environment variable.");
+    return new Response(JSON.stringify({ error: "Configuration Error: BREVO_API_KEY is missing." }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });
@@ -66,25 +68,21 @@ Deno.serve(async (req) => {
       });
     }
 
-    console.log(`Found ${subscribers.length} subscribers. Dispatching notifications...`);
+    console.log(`Found ${subscribers.length} subscribers. Dispatching notifications via Brevo...`);
 
     const readTime = blog.read_time || "5 min read";
     const blogUrl = `${FRONTEND_URL}/blog/${blog.slug}`;
-
-    // 5. Chunk subscribers and prepare batch email requests (Resend batch API allows up to 100 emails per request)
-    const CHUNK_SIZE = 100;
+    
+    let sentCount = 0;
     const errors = [];
-    let processedCount = 0;
 
-    for (let i = 0; i < subscribers.length; i += CHUNK_SIZE) {
-      const chunk = subscribers.slice(i, i + CHUNK_SIZE);
+    // 5. Send individualized emails via Brevo API
+    // We send individual requests to ensure each subscriber gets a personalized unsubscribe link.
+    const sendPromises = subscribers.map(async (subscriber) => {
+      const unsubscribeUrl = `${FRONTEND_URL}/unsubscribe?token=${subscriber.id}`;
       
-      // Map subscribers to Resend batch objects
-      const batchPayload = chunk.map((subscriber) => {
-        const unsubscribeUrl = `${FRONTEND_URL}/unsubscribe?token=${subscriber.id}`;
-        
-        // Premium Dracula / VS Code styled HTML template
-        const htmlContent = `
+      // Premium Dracula / VS Code styled HTML template
+      const htmlContent = `
 <!DOCTYPE html>
 <html>
 <head>
@@ -243,42 +241,45 @@ Deno.serve(async (req) => {
   </div>
 </body>
 </html>
-        `;
+      `;
 
-        return {
-          from: "Abhishek Kumar <onboarding@resend.dev>", // Note: Replace with custom domain email once configured in Resend (e.g. newsletter@abhishekkumar.in)
-          to: subscriber.email,
-          subject: `New Blog: ${blog.title}`,
-          html: htmlContent,
-        };
-      });
+      try {
+        const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+          method: "POST",
+          headers: {
+            "api-key": BREVO_API_KEY,
+            "Content-Type": "application/json",
+            "accept": "application/json"
+          },
+          body: JSON.stringify({
+            sender: { name: SENDER_NAME, email: SENDER_EMAIL },
+            to: [{ email: subscriber.email }],
+            subject: `New Blog: ${blog.title}`,
+            htmlContent: htmlContent
+          })
+        });
 
-      // Call Resend Batch API
-      console.log(`Sending batch of ${chunk.length} emails via Resend...`);
-      const response = await fetch("https://api.resend.com/emails/batch", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${RESEND_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(batchPayload),
-      });
-
-      if (!response.ok) {
-        const errText = await response.text();
-        console.error(`Resend batch API call failed: Status ${response.status}`, errText);
-        errors.push({ status: response.status, error: errText });
-      } else {
-        const resData = await response.json();
-        console.log(`Resend batch API call succeeded:`, resData);
-        processedCount += chunk.length;
+        if (!response.ok) {
+          const errText = await response.text();
+          console.error(`Brevo API call failed for ${subscriber.email}: Status ${response.status}`, errText);
+          errors.push({ email: subscriber.email, status: response.status, error: errText });
+        } else {
+          console.log(`Successfully sent email notification to ${subscriber.email}`);
+          sentCount++;
+        }
+      } catch (fetchErr) {
+        console.error(`Network error sending to ${subscriber.email}:`, fetchErr.message);
+        errors.push({ email: subscriber.email, error: fetchErr.message });
       }
-    }
+    });
+
+    // Resolve all email dispatches in parallel
+    await Promise.all(sendPromises);
 
     if (errors.length > 0) {
-      console.error(`Completed with errors. Notified ${processedCount} subscribers. Errors:`, errors);
+      console.error(`Completed with errors. Notified ${sentCount} subscribers. Errors:`, errors);
       return new Response(JSON.stringify({
-        message: `Partial success: notified ${processedCount} subscribers.`,
+        message: `Partial success: notified ${sentCount} subscribers.`,
         errors: errors,
       }), {
         status: 207,
@@ -286,8 +287,8 @@ Deno.serve(async (req) => {
       });
     }
 
-    console.log(`Successfully notified all ${processedCount} subscribers.`);
-    return new Response(JSON.stringify({ message: `Success: notified ${processedCount} subscribers.` }), {
+    console.log(`Successfully notified all ${sentCount} subscribers.`);
+    return new Response(JSON.stringify({ message: `Success: notified all ${sentCount} subscribers.` }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
