@@ -167,7 +167,7 @@ export default function FullWidthTabs() {
   });
   const [quickOpenOpen, setQuickOpenOpen] = useState(false);
   const [activePanelTab, setActivePanelTab] = useState("terminal");
-  const [panelHeight, setPanelHeight] = useState("normal");
+  const [panelHeight, setPanelHeight] = useState(() => typeof window !== "undefined" && window.innerWidth < 768 ? "collapsed" : "normal");
   const [openTabs, setOpenTabs] = useState(() => {
     try {
       const saved = localStorage.getItem("workspace-open-tabs");
@@ -871,7 +871,7 @@ export default function FullWidthTabs() {
               ];
 
               return (
-                <div className="rounded-2xl border border-white/10 bg-[#0d0d16] overflow-hidden shadow-2xl text-gray-300 font-sans select-none" data-aos="fade-up">
+                <div className="rounded-none md:rounded-2xl border-x-0 md:border border-white/10 bg-[#0d0d16] overflow-hidden shadow-2xl text-gray-300 font-sans select-none" data-aos="fade-up">
                   
                   {/* ─── IDE Title Bar ─── */}
                   <div className={`flex items-center justify-between px-4 py-2.5 border-b border-white/5 text-[11px] font-mono text-gray-500 ${currentTheme.bgHeader}`}>
@@ -887,9 +887,8 @@ export default function FullWidthTabs() {
                     </div>
                   </div>
 
-                  <div className="flex flex-row min-h-[580px] items-stretch">
+                  <div className="flex flex-row min-h-[580px] items-stretch relative">
                     
-                    {/* ─── IDE Activity Bar ─── */}
                     {/* ─── IDE Activity Bar ─── */}
                     <ActivityBar
                       activeView={activeView}
@@ -937,6 +936,7 @@ export default function FullWidthTabs() {
                             `[Git]: Committed successfully with message: "${msg}"`
                           ]);
                         }}
+                        onSidebarClose={() => setSidebarOpen(false)}
                       />
                     )}
 
@@ -985,7 +985,7 @@ export default function FullWidthTabs() {
                       <div className="flex-1 flex min-h-0 relative overflow-y-auto">
                         
                         {/* Gutter Line Numbers */}
-                        <div className="w-12 bg-black/20 border-r border-white/5 py-4 font-mono text-[11px] text-gray-600 text-right pr-3 select-none leading-relaxed shrink-0">
+                        <div className="hidden md:block w-12 bg-black/20 border-r border-white/5 py-4 font-mono text-[11px] text-gray-600 text-right pr-3 select-none leading-relaxed shrink-0">
                           {Array.from({ length: 35 }).map((_, i) => (
                             <div key={i}>{i + 1}</div>
                           ))}
@@ -1152,6 +1152,8 @@ export default function FullWidthTabs() {
                         blog={null}
                         headingsCount={readmeHeadings.length}
                         currentTheme={currentTheme}
+                        onTerminalToggle={() => setPanelHeight(h => h === "collapsed" ? "normal" : "collapsed")}
+                        isTerminalOpen={panelHeight !== "collapsed"}
                       />
 
                     </main>

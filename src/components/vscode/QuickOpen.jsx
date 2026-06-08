@@ -96,7 +96,7 @@ const QuickOpen = ({
     <div className="fixed inset-0 z-[100] flex items-start justify-center pt-[10%] bg-black/60 backdrop-blur-sm animate-fadeIn">
       <div 
         ref={modalRef}
-        className="w-full max-w-lg rounded-lg border border-white/10 bg-[#0d0d16] shadow-2xl overflow-hidden font-mono text-xs text-gray-300"
+        className="w-[calc(100%-24px)] mx-3 max-w-lg rounded-lg border border-white/10 bg-[#0d0d16] shadow-2xl overflow-hidden font-mono text-xs text-gray-300"
       >
         {/* Search header input */}
         <div className="flex items-center gap-2 px-3 py-2 bg-black/40 border-b border-white/5">

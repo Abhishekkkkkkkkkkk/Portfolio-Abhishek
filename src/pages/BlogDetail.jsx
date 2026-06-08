@@ -206,7 +206,7 @@ const BlogDetail = () => {
   });
   const [quickOpenOpen, setQuickOpenOpen] = useState(false);
   const [activePanelTab, setActivePanelTab] = useState("terminal");
-  const [panelHeight, setPanelHeight] = useState("normal");
+  const [panelHeight, setPanelHeight] = useState(() => typeof window !== "undefined" && window.innerWidth < 768 ? "collapsed" : "normal");
 
   // Monitor Ctrl+P/Cmd+P key bindings for Quick Open palette
   useEffect(() => {
@@ -1093,7 +1093,7 @@ const BlogDetail = () => {
       <ReadingProgress />
       <BackToTop />
 
-      <div className="relative min-h-screen bg-[#030014] overflow-x-hidden md:px-[8%] py-10">
+      <div className="relative min-h-screen bg-[#030014] overflow-x-hidden md:px-[8%] py-0 md:py-10">
         
         {/* Background ambient glows */}
         <div className="pointer-events-none fixed inset-0 z-0">
@@ -1101,7 +1101,7 @@ const BlogDetail = () => {
           <div className="absolute bottom-1/3 right-0 w-[500px] h-[500px] rounded-full bg-[#8be9fd]/5 blur-[130px]" />
         </div>
 
-        <div className="relative z-10 w-full rounded-2xl border border-white/10 bg-[#0d0d16] overflow-hidden shadow-2xl text-gray-300 font-sans select-none animate-fadeIn">
+        <div className="relative z-10 w-full rounded-none md:rounded-2xl border-x-0 md:border border-white/10 bg-[#0d0d16] overflow-hidden shadow-2xl text-gray-300 font-sans select-none animate-fadeIn">
           
           {/* ─── IDE Title Bar ─── */}
           <div className={`flex items-center justify-between px-4 py-2.5 border-b border-b-white/5 text-[11px] font-mono text-gray-500 ${currentTheme.bgHeader}`}>
@@ -1121,7 +1121,7 @@ const BlogDetail = () => {
             </div>
           </div>
 
-          <div className="flex flex-row min-h-[600px] items-stretch">
+          <div className="flex flex-row min-h-[600px] items-stretch relative">
             
             {/* ─── IDE Activity Bar ─── */}
             {/* ─── IDE Activity Bar ─── */}
@@ -1175,6 +1175,7 @@ const BlogDetail = () => {
                     `[Git]: Committed successfully with message: "${msg}"`
                   ]);
                 }}
+                onSidebarClose={() => setSidebarOpen(false)}
               />
             )}
 
@@ -1221,7 +1222,7 @@ const BlogDetail = () => {
                 
                 {/* Gutter Line Numbers */}
                 {lineNumbers === "on" && (
-                  <div className="w-12 bg-black/20 border-r border-white/5 py-6 font-mono text-[11px] text-gray-600 text-right pr-3 select-none leading-relaxed shrink-0">
+                  <div className="hidden md:block w-12 bg-black/20 border-r border-white/5 py-6 font-mono text-[11px] text-gray-600 text-right pr-3 select-none leading-relaxed shrink-0">
                     {Array.from({ length: 60 }).map((_, i) => (
                       <div key={i}>{i + 1}</div>
                     ))}
@@ -1229,7 +1230,7 @@ const BlogDetail = () => {
                 )}
 
                 {/* Prose Text Column */}
-                <div className="flex-1 p-6 md:p-8 overflow-x-auto min-w-0 text-left">
+                <div className="flex-1 p-4 md:p-8 overflow-x-auto min-w-0 text-left">
                   {loading ? (
                     <div className="flex flex-col items-center justify-center py-20 gap-3 text-center font-mono text-xs text-gray-500">
                       <div className="relative w-8 h-8">
@@ -1256,12 +1257,12 @@ const BlogDetail = () => {
                             {blog.tags.map((tag) => <TagBadge key={tag} tag={tag} />)}
                           </div>
                         )}
-                        <h1 className="text-2xl md:text-3xl font-black text-white font-mono tracking-tight" style={{ fontFamily: "'Sora', sans-serif" }}>
+                        <h1 className="text-xl md:text-3xl font-black text-white font-mono tracking-tight" style={{ fontFamily: "'Sora', sans-serif" }}>
                           {blog.title}
                         </h1>
                         
                         {/* Meta interaction details bar */}
-                        <div className="flex flex-wrap items-center gap-4 mt-3 text-xs text-gray-500 font-mono w-full">
+                        <div className="flex flex-wrap items-center gap-2 md:gap-4 mt-3 text-[10px] md:text-xs text-gray-500 font-mono w-full">
                           <span>Date: {blog.date}</span>
                           <span>•</span>
                           <span>Read: {computedReadTime}</span>
@@ -1312,6 +1313,8 @@ const BlogDetail = () => {
                 blog={blog}
                 headingsCount={headings.length}
                 currentTheme={currentTheme}
+                onTerminalToggle={() => setPanelHeight(h => h === "collapsed" ? "normal" : "collapsed")}
+                isTerminalOpen={panelHeight !== "collapsed"}
               />
 
             </main>

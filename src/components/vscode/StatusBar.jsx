@@ -1,11 +1,13 @@
 import React from "react";
-import { GitBranch, Radio, Check } from "lucide-react";
+import { GitBranch, Radio, Check, Terminal } from "lucide-react";
 
 const StatusBar = ({
   activeTabId,
   blog,
   headingsCount,
-  currentTheme
+  currentTheme,
+  onTerminalToggle,
+  isTerminalOpen
 }) => {
   let language = "Markdown";
   if (activeTabId === "settings") {
@@ -42,6 +44,19 @@ const StatusBar = ({
           <span>⊗ 0</span>
           <span>⚠ 0</span>
         </div>
+
+        {onTerminalToggle && (
+          <button 
+            type="button"
+            onClick={onTerminalToggle}
+            className={`flex items-center gap-1 hover:text-white cursor-pointer transition-colors px-1.5 py-0.5 rounded hover:bg-white/5 font-mono text-[10px]
+              ${isTerminalOpen ? "text-[#50fa7b]" : "text-gray-500"}`}
+            title="Toggle Terminal Panel"
+          >
+            <Terminal className="w-3.5 h-3.5 text-inherit" />
+            <span>Terminal</span>
+          </button>
+        )}
 
         <div className="hidden sm:flex items-center gap-1 text-[#bd93f9]">
           <Radio className="w-3.5 h-3.5" />

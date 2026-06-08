@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ChevronDown, ChevronRight, Search, GitBranch, Play, Check, ShieldAlert, Sparkles } from "lucide-react";
+import { ChevronDown, ChevronRight, Search, GitBranch, Play, Check, ShieldAlert, Sparkles, X } from "lucide-react";
 
 const getFolderSegments = (blog) => {
   if (!blog.categories || blog.categories.length === 0) {
@@ -78,7 +78,8 @@ const SidebarExplorer = ({
   activeHeadingId,
   onFileSelect,
   activeView = "explorer",
-  onGitCommit
+  onGitCommit,
+  onSidebarClose
 }) => {
   const [explorerOpen, setExplorerOpen] = useState(true);
   const [outlineOpen, setOutlineOpen] = useState(true);
@@ -184,9 +185,17 @@ const SidebarExplorer = ({
     );
 
     return (
-      <aside className={`w-full md:w-60 border-r border-white/5 flex flex-col font-mono text-[12px] shrink-0 select-none ${currentTheme.bgSidebar} h-full`}>
+      <aside className={`absolute md:static left-12 md:left-auto top-0 bottom-0 z-20 md:z-auto w-[calc(100%-48px)] md:w-60 border-r border-white/5 flex flex-col font-mono text-[12px] shrink-0 select-none bg-[#0b0b14]/98 md:${currentTheme.bgSidebar} h-full shadow-2xl md:shadow-none backdrop-blur-md md:backdrop-blur-none`}>
         <div className="flex items-center justify-between px-4 py-2 bg-black/20 border-b border-white/5 text-gray-400 font-bold uppercase tracking-wider text-[10px]">
           <span>Search: workspace</span>
+          <button 
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onSidebarClose?.(); }} 
+            className="md:hidden p-0.5 hover:bg-white/10 hover:text-white rounded transition-colors"
+            title="Close Sidebar"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
         </div>
         <div className="p-3 space-y-3 flex-1 overflow-y-auto">
           <div className="relative font-mono">
@@ -231,9 +240,17 @@ const SidebarExplorer = ({
   // ────────────────────────────────────────────────────────
   if (activeView === "git") {
     return (
-      <aside className={`w-full md:w-60 border-r border-white/5 flex flex-col font-mono text-[12px] shrink-0 select-none ${currentTheme.bgSidebar} h-full`}>
+      <aside className={`absolute md:static left-12 md:left-auto top-0 bottom-0 z-20 md:z-auto w-[calc(100%-48px)] md:w-60 border-r border-white/5 flex flex-col font-mono text-[12px] shrink-0 select-none bg-[#0b0b14]/98 md:${currentTheme.bgSidebar} h-full shadow-2xl md:shadow-none backdrop-blur-md md:backdrop-blur-none`}>
         <div className="flex items-center justify-between px-4 py-2 bg-black/20 border-b border-white/5 text-gray-400 font-bold uppercase tracking-wider text-[10px]">
           <span>Source Control</span>
+          <button 
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onSidebarClose?.(); }} 
+            className="md:hidden p-0.5 hover:bg-white/10 hover:text-white rounded transition-colors"
+            title="Close Sidebar"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
         </div>
         <div className="p-3 flex-1 flex flex-col min-h-0">
           <form onSubmit={handleCommitSubmit} className="space-y-2 shrink-0">
@@ -302,9 +319,17 @@ const SidebarExplorer = ({
     ];
 
     return (
-      <aside className={`w-full md:w-60 border-r border-white/5 flex flex-col font-mono text-[12px] shrink-0 select-none ${currentTheme.bgSidebar} h-full`}>
+      <aside className={`absolute md:static left-12 md:left-auto top-0 bottom-0 z-20 md:z-auto w-[calc(100%-48px)] md:w-60 border-r border-white/5 flex flex-col font-mono text-[12px] shrink-0 select-none bg-[#0b0b14]/98 md:${currentTheme.bgSidebar} h-full shadow-2xl md:shadow-none backdrop-blur-md md:backdrop-blur-none`}>
         <div className="flex items-center justify-between px-4 py-2 bg-black/20 border-b border-white/5 text-gray-400 font-bold uppercase tracking-wider text-[10px]">
           <span>Extensions: Marketplace</span>
+          <button 
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onSidebarClose?.(); }} 
+            className="md:hidden p-0.5 hover:bg-white/10 hover:text-white rounded transition-colors"
+            title="Close Sidebar"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
         </div>
         <div className="p-3 space-y-3 flex-1 overflow-y-auto">
           <div className="relative font-mono">
@@ -342,9 +367,17 @@ const SidebarExplorer = ({
   // Default View: Explorer Panel (Explorer & Profile active)
   // ────────────────────────────────────────────────────────
   return (
-    <aside className={`w-full md:w-60 border-r border-white/5 flex flex-col font-mono text-[12px] shrink-0 select-none ${currentTheme.bgSidebar} h-full`}>
+    <aside className={`absolute md:static left-12 md:left-auto top-0 bottom-0 z-20 md:z-auto w-[calc(100%-48px)] md:w-60 border-r border-white/5 flex flex-col font-mono text-[12px] shrink-0 select-none bg-[#0b0b14]/98 md:${currentTheme.bgSidebar} h-full shadow-2xl md:shadow-none backdrop-blur-md md:backdrop-blur-none`}>
       <div className="flex items-center justify-between px-4 py-2 bg-black/20 border-b border-white/5 text-gray-400 font-bold uppercase tracking-wider text-[10px]">
         <span>Explorer: abhishek-portfolio</span>
+        <button 
+          type="button"
+          onClick={(e) => { e.stopPropagation(); onSidebarClose?.(); }} 
+          className="md:hidden p-0.5 hover:bg-white/10 hover:text-white rounded transition-colors"
+          title="Close Sidebar"
+        >
+          <X className="w-3.5 h-3.5" />
+        </button>
       </div>
 
       <div className="flex-1 flex flex-col overflow-y-auto">
