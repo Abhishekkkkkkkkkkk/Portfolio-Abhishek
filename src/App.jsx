@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./index.css";
 import Home from "./sections/Home";
 import About from "./sections/About";
@@ -10,10 +10,13 @@ import ContactPage from "./sections/Contact";
 import WelcomeScreen from "./pages/WelcomeScreen";
 import Footer from "./layouts/Footer";
 import { AnimatePresence } from "framer-motion";
+import PlaygroundTeaser from "./sections/PlaygroundTeaser";
+import MatrixRain from "./components/effects/MatrixRain";
 
 const ProjectDetails = React.lazy(() => import("./pages/ProjectDetail"));
 const BlogDetail = React.lazy(() => import("./pages/BlogDetail"));
 const UnsubscribePage = React.lazy(() => import("./pages/Unsubscribe"));
+const Playground = React.lazy(() => import("./pages/Playground"));
 
 /* ─── Landing Page ─── */
 const LandingPage = ({ showWelcome, setShowWelcome }) => {
@@ -50,6 +53,7 @@ const LandingPage = ({ showWelcome, setShowWelcome }) => {
           <Home />
           <About />
           <Portfolio />
+          <PlaygroundTeaser />
           <ContactPage />
           <Footer />
         </>
@@ -74,12 +78,21 @@ const BlogPageLayout = () => (
   </>
 );
 
-/* ─── App ─── */
 function App() {
   const [showWelcome, setShowWelcome] = useState(true);
+  const [matrixEnabled, setMatrixEnabled] = useState(() => localStorage.getItem("global-matrix") === "true");
+
+  useEffect(() => {
+    const handleMatrixChange = (e) => {
+      setMatrixEnabled(e.detail);
+    };
+    window.addEventListener("global-matrix-changed", handleMatrixChange);
+    return () => window.removeEventListener("global-matrix-changed", handleMatrixChange);
+  }, []);
 
   return (
     <BrowserRouter>
+      {matrixEnabled && <MatrixRain />}
       <Routes>
         <Route
           path="/"
@@ -123,6 +136,18 @@ function App() {
               </div>
             }>
               <UnsubscribePage />
+            </React.Suspense>
+          } 
+        />
+        <Route 
+          path="/playground" 
+          element={
+            <React.Suspense fallback={
+              <div className="min-h-screen bg-[#030014] flex items-center justify-center">
+                <div className="w-12 h-12 rounded-full border-2 border-[#6366f1]/20 border-t-[#6366f1] animate-spin" />
+              </div>
+            }>
+              <Playground />
             </React.Suspense>
           } 
         />

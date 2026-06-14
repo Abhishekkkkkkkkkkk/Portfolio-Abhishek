@@ -1,10 +1,64 @@
 import React, { useState, useEffect } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Sun, Moon, Volume2, VolumeX, Binary } from "lucide-react";
+import { Link } from "react-router-dom";
+import { playTap, getMutedState, setMutedState } from "../services/soundEffects";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState("Home");
+  const [theme, setTheme] = useState(() => localStorage.getItem("global-theme") || "dark");
+  const [muted, setMuted] = useState(() => getMutedState());
+  const [matrixEnabled, setMatrixEnabled] = useState(() => localStorage.getItem("global-matrix") === "true");
+
+  useEffect(() => {
+    if (theme === "light") {
+      document.body.classList.add("light");
+    } else {
+      document.body.classList.remove("light");
+    }
+    localStorage.setItem("global-theme", theme);
+    window.dispatchEvent(new CustomEvent("global-theme-changed", { detail: theme }));
+  }, [theme]);
+
+  useEffect(() => {
+    const handleThemeChange = (e) => {
+      setTheme(e.detail);
+    };
+    window.addEventListener("global-theme-changed", handleThemeChange);
+    return () => window.removeEventListener("global-theme-changed", handleThemeChange);
+  }, []);
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+  };
+
+  const toggleMute = () => {
+    const nextMuted = !muted;
+    setMuted(nextMuted);
+    setMutedState(nextMuted);
+    if (!nextMuted) {
+      setTimeout(() => playTap(), 50);
+    }
+  };
+
+  const toggleMatrix = () => {
+    const nextMatrix = !matrixEnabled;
+    setMatrixEnabled(nextMatrix);
+    localStorage.setItem("global-matrix", String(nextMatrix));
+    window.dispatchEvent(new CustomEvent("global-matrix-changed", { detail: nextMatrix }));
+    playTap();
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.key === "l" || e.key === "L") && e.target.tagName !== "INPUT" && e.target.tagName !== "TEXTAREA") {
+        toggleTheme();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   const navItems = [
     { href: "#Home", label: "Home" },
@@ -17,6 +71,7 @@ const Navbar = () => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
       const sections = navItems
+        .filter((item) => !item.isRoute)
         .map((item) => {
           const section = document.querySelector(item.href);
           if (section) {
@@ -56,6 +111,7 @@ const Navbar = () => {
   }, [isOpen]);
 
   const scrollToSection = (e, href) => {
+    playTap();
     e.preventDefault();
     const section = document.querySelector(href);
     if (section) {
@@ -94,36 +150,119 @@ const Navbar = () => {
           {/* Desktop Navigation */}
           <div className="hidden md:block">
             <div className="ml-8 flex items-center space-x-8">
-              {navItems.map((item) => (
-                <a
-                  key={item.label}
-                  href={item.href}
-                  onClick={(e) => scrollToSection(e, item.href)}
-                  className="group relative px-1 py-2 text-sm font-medium"
-                >
-                  <span
-                    className={`relative z-10 transition-colors duration-300 ${
-                      activeSection === item.href.substring(1)
-                        ? "bg-gradient-to-r from-[#6366f1] to-[#a855f7] bg-clip-text text-transparent font-semibold"
-                        : "text-[#e2d3fd] group-hover:text-white"
-                    }`}
+              {navItems.map((item) => {
+                if (item.isRoute) {
+                  return (
+                    <Link
+                      key={item.label}
+                      to={item.href}
+                      className="group relative px-1 py-2 text-sm font-medium"
+                    >
+                      <span className="relative z-10 transition-colors duration-300 text-[#e2d3fd] group-hover:text-white">
+                        {item.label}
+                      </span>
+                      <span className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-[#6366f1] to-[#a855f7] transform origin-left transition-transform duration-300 scale-x-0 group-hover:scale-x-100" />
+                    </Link>
+                  );
+                }
+                return (
+                  <a
+                    key={item.label}
+                    href={item.href}
+                    onClick={(e) => scrollToSection(e, item.href)}
+                    className="group relative px-1 py-2 text-sm font-medium"
                   >
-                    {item.label}
-                  </span>
-                  <span
-                    className={`absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-[#6366f1] to-[#a855f7] transform origin-left transition-transform duration-300 ${
-                      activeSection === item.href.substring(1)
-                        ? "scale-x-100"
-                        : "scale-x-0 group-hover:scale-x-100"
-                    }`}
-                  />
-                </a>
-              ))}
+                    <span
+                      className={`relative z-10 transition-colors duration-300 ${
+                        activeSection === item.href.substring(1)
+                          ? "bg-gradient-to-r from-[#6366f1] to-[#a855f7] bg-clip-text text-transparent font-semibold"
+                          : "text-[#e2d3fd] group-hover:text-white"
+                      }`}
+                    >
+                      {item.label}
+                    </span>
+                    <span
+                      className={`absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-[#6366f1] to-[#a855f7] transform origin-left transition-transform duration-300 ${
+                        activeSection === item.href.substring(1)
+                          ? "scale-x-100"
+                          : "scale-x-0 group-hover:scale-x-100"
+                      }`}
+                    />
+                  </a>
+                );
+              })}
+              
+              {/* Matrix Rain Toggle */}
+              <button
+                onClick={toggleMatrix}
+                className={`p-2 py-1.5 rounded-xl border transition-all cursor-pointer flex items-center justify-center ${
+                  matrixEnabled
+                    ? "border-green-500/40 bg-green-500/10 text-green-400"
+                    : "border-[#6366f1]/20 bg-white/5 text-gray-400 hover:text-white"
+                }`}
+                title="Toggle Matrix Code Rain"
+              >
+                <Binary className="w-4.5 h-4.5" />
+              </button>
+
+              {/* Sound Toggle */}
+              <button
+                onClick={toggleMute}
+                className={`p-2 py-1.5 rounded-xl border transition-all cursor-pointer flex items-center justify-center ${
+                  muted
+                    ? "border-red-500/40 bg-red-500/10 text-red-400"
+                    : "border-[#6366f1]/20 bg-white/5 text-gray-400 hover:text-white"
+                }`}
+                title="Toggle Audio Feedback"
+              >
+                {muted ? <VolumeX className="w-4.5 h-4.5" /> : <Volume2 className="w-4.5 h-4.5" />}
+              </button>
+
+              {/* Theme Toggle Button */}
+              <button
+                onClick={toggleTheme}
+                className="p-2 py-1.5 rounded-xl border border-[#6366f1]/20 bg-white/5 text-yellow-400 hover:text-yellow-300 dark:text-yellow-400 hover:bg-white/10 transition-all cursor-pointer flex items-center justify-center"
+                title="Toggle Theme (Press L)"
+              >
+                {theme === "dark" ? <Sun className="w-4.5 h-4.5" /> : <Moon className="w-4.5 h-4.5 text-indigo-400" />}
+              </button>
             </div>
           </div>
 
           {/* Mobile Menu Button */}
-          <div className="md:hidden">
+          <div className="md:hidden flex items-center gap-2">
+            <button
+              onClick={toggleMatrix}
+              className={`p-2 rounded-xl border transition-all cursor-pointer ${
+                matrixEnabled
+                  ? "border-green-500/40 bg-green-500/10 text-green-400"
+                  : "border-white/10 bg-white/5 text-gray-400 hover:text-white"
+              }`}
+              title="Toggle Matrix Rain"
+            >
+              <Binary className="w-4.5 h-4.5" />
+            </button>
+
+            <button
+              onClick={toggleMute}
+              className={`p-2 rounded-xl border transition-all cursor-pointer ${
+                muted
+                  ? "border-red-500/40 bg-red-500/10 text-red-400"
+                  : "border-white/10 bg-white/5 text-gray-400 hover:text-white"
+              }`}
+              title="Toggle Sound"
+            >
+              {muted ? <VolumeX className="w-4.5 h-4.5" /> : <Volume2 className="w-4.5 h-4.5" />}
+            </button>
+
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-xl border border-white/10 bg-white/5 text-yellow-400 hover:text-yellow-300 transition-all cursor-pointer"
+              title="Toggle Theme"
+            >
+              {theme === "dark" ? <Sun className="w-4.5 h-4.5" /> : <Moon className="w-4.5 h-4.5 text-indigo-400" />}
+            </button>
+
             <button
               onClick={() => setIsOpen(!isOpen)}
               className={`relative p-2 text-[#e2d3fd] hover:text-white transition-transform duration-300 ease-in-out transform ${
@@ -151,25 +290,44 @@ const Navbar = () => {
       >
         <div className="flex flex-col h-full">
           <div className="px-4 py-6 space-y-4 flex-1 ">
-            {navItems.map((item, index) => (
-              <a
-                key={item.label}
-                href={item.href}
-                onClick={(e) => scrollToSection(e, item.href)}
-                className={`block px-4 py-3 text-lg font-medium transition-all duration-300 ease ${
-                  activeSection === item.href.substring(1)
-                    ? "bg-gradient-to-r from-[#6366f1] to-[#a855f7] bg-clip-text text-transparent font-semibold"
-                    : "text-[#e2d3fd] hover:text-white"
-                }`}
-                style={{
-                  transitionDelay: `${index * 100}ms`,
-                  transform: isOpen ? "translateX(0)" : "translateX(50px)",
-                  opacity: isOpen ? 1 : 0,
-                }}
-              >
-                {item.label}
-              </a>
-            ))}
+            {navItems.map((item, index) => {
+              if (item.isRoute) {
+                return (
+                  <Link
+                    key={item.label}
+                    to={item.href}
+                    onClick={() => setIsOpen(false)}
+                    className="block px-4 py-3 text-lg font-medium transition-all duration-300 ease text-[#e2d3fd] hover:text-white"
+                    style={{
+                      transitionDelay: `${index * 100}ms`,
+                      transform: isOpen ? "translateX(0)" : "translateX(50px)",
+                      opacity: isOpen ? 1 : 0,
+                    }}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              }
+              return (
+                <a
+                  key={item.label}
+                  href={item.href}
+                  onClick={(e) => scrollToSection(e, item.href)}
+                  className={`block px-4 py-3 text-lg font-medium transition-all duration-300 ease ${
+                    activeSection === item.href.substring(1)
+                      ? "bg-gradient-to-r from-[#6366f1] to-[#a855f7] bg-clip-text text-transparent font-semibold"
+                      : "text-[#e2d3fd] hover:text-white"
+                  }`}
+                  style={{
+                    transitionDelay: `${index * 100}ms`,
+                    transform: isOpen ? "translateX(0)" : "translateX(50px)",
+                    opacity: isOpen ? 1 : 0,
+                  }}
+                >
+                  {item.label}
+                </a>
+              );
+            })}
           </div>
         </div>
       </div>

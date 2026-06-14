@@ -19,6 +19,8 @@ import Tab from "@mui/material/Tab";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import CardProject from "../components/CardProject";
+import TiltCard from "../components/effects/TiltCard";
+import { playTap } from "../services/soundEffects";
 import TechStackIcon from "../components/TechStackIcon";
 import AOS from "aos";
 import "aos/dist/aos.css";
@@ -575,6 +577,7 @@ export default function FullWidthTabs() {
   }, [fetchData]);
 
   const handleChange = (event, newValue) => {
+    playTap();
     setValue(newValue);
     localStorage.setItem("portfolio-active-tab", newValue);
   };
@@ -736,7 +739,9 @@ export default function FullWidthTabs() {
                     data-aos-duration={index % 3 === 1 ? "1200" : "1000"}
                     data-aos-delay={index * 50}
                   >
-                    <CardProject Img={project.Img} Title={project.Title} Description={project.Description} Link={project.Link} id={project.id} />
+                    <TiltCard>
+                      <CardProject Img={project.Img} Title={project.Title} Description={project.Description} Link={project.Link} id={project.id} />
+                    </TiltCard>
                   </div>
                 ))}
               </div>

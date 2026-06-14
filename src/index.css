@@ -139,3 +139,132 @@ footer a {
 footer a:hover {
   text-decoration: underline;
 }
+
+/* ==========================================================================
+   GLOBAL LIGHT THEME SYSTEM
+   ========================================================================== */
+
+/* Page Background & Global Variables */
+body.light {
+  background: #f6f5ff !important;
+  color: #1e1b4b !important;
+}
+
+/* Light mode overrides for layout wrapper sections */
+body.light .bg-\[\#030014\] {
+  background-color: #f6f5ff !important;
+}
+body.light footer.bg-\[\#030014\],
+body.light footer {
+  background-color: #ededfa !important;
+  color: #1e293b !important;
+  border-top: 1px solid rgba(99, 102, 241, 0.15) !important;
+}
+
+/* Light mode Navbar fixed background */
+body.light nav.fixed {
+  background-color: rgba(246, 245, 255, 0.8) !important;
+  border-bottom: 1px solid rgba(99, 102, 241, 0.15) !important;
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.05) !important;
+}
+body.light nav.fixed .bg-\[\#030014\] {
+  background-color: #f6f5ff !important;
+}
+
+/* Color Palette Adjustments for Text readability */
+body.light .text-white:not(.vscode-container *):not(pre *):not(code *):not(.terminal *):not(.retro-terminal *):not(.welcome-screen *):not(.syntax-highlight *) {
+  color: #0f172a !important;
+}
+body.light .text-gray-100:not(.vscode-container *):not(pre *):not(code *):not(.terminal *):not(.retro-terminal *):not(.welcome-screen *):not(.syntax-highlight *) {
+  color: #0f172a !important;
+}
+body.light .text-gray-200:not(.vscode-container *):not(pre *):not(code *):not(.terminal *):not(.retro-terminal *):not(.welcome-screen *):not(.syntax-highlight *) {
+  color: #1e293b !important;
+}
+body.light .text-gray-300:not(.vscode-container *):not(pre *):not(code *):not(.terminal *):not(.retro-terminal *):not(.welcome-screen *):not(.syntax-highlight *) {
+  color: #334155 !important;
+}
+body.light .text-gray-400:not(.vscode-container *):not(pre *):not(code *):not(.terminal *):not(.retro-terminal *):not(.welcome-screen *):not(.syntax-highlight *) {
+  color: #475569 !important;
+}
+body.light .text-gray-500:not(.vscode-container *):not(pre *):not(code *):not(.terminal *):not(.retro-terminal *):not(.welcome-screen *):not(.syntax-highlight *) {
+  color: #64748b !important;
+}
+body.light .text-gray-600:not(.vscode-container *):not(pre *):not(code *):not(.terminal *):not(.retro-terminal *):not(.welcome-screen *):not(.syntax-highlight *) {
+  color: #94a3b8 !important;
+}
+
+/* Specific Accent colors adjustment for Light contrast */
+body.light .text-\[\#e2d3fd\]:not(.vscode-container *):not(pre *):not(code *):not(.terminal *):not(.retro-terminal *) {
+  color: #4f46e5 !important;
+}
+body.light .text-\[\#818cf8\]:not(.vscode-container *):not(pre *):not(code *):not(.terminal *):not(.retro-terminal *) {
+  color: #4f46e5 !important;
+}
+body.light .text-\[\#a78bfa\]:not(.vscode-container *):not(pre *):not(code *):not(.terminal *):not(.retro-terminal *) {
+  color: #7c3aed !important;
+}
+body.light .text-\[\#22d3ee\]:not(.vscode-container *):not(pre *):not(code *):not(.terminal *):not(.retro-terminal *) {
+  color: #0891b2 !important;
+}
+
+/* Light Glassmorphic card styling overrides */
+body.light .bg-\[\#0a0a1a\]\/80:not(.vscode-container *):not(.retro-terminal *),
+body.light .bg-\[\#0a0a1a\]\/85:not(.vscode-container *):not(.retro-terminal *),
+body.light .bg-\[\#0a0a1a\]\/60:not(.vscode-container *):not(.retro-terminal *),
+body.light .bg-\[\#0a0a1a\]:not(.vscode-container *):not(.retro-terminal *),
+body.light .bg-\[\#0c0c1e\]:not(.vscode-container *):not(.retro-terminal *),
+body.light .bg-\[\#0c0c1e\]\/90:not(.vscode-container *):not(.retro-terminal *) {
+  background-color: rgba(255, 255, 255, 0.82) !important;
+  border-color: rgba(99, 102, 241, 0.16) !important;
+  box-shadow: 0 10px 30px -10px rgba(99, 102, 241, 0.1), 0 1px 3px rgba(99, 102, 241, 0.05) !important;
+}
+
+body.light .bg-white\/5:not(.vscode-container *):not(.retro-terminal *):not(.welcome-screen *),
+body.light .bg-white\/3:not(.vscode-container *):not(.retro-terminal *):not(.welcome-screen *),
+body.light .bg-white\/4:not(.vscode-container *):not(.retro-terminal *):not(.welcome-screen *),
+body.light .bg-white\/8:not(.vscode-container *):not(.retro-terminal *):not(.welcome-screen *) {
+  background-color: rgba(99, 102, 241, 0.06) !important;
+}
+
+body.light .border-white\/10:not(.vscode-container *):not(.retro-terminal *):not(.welcome-screen *),
+body.light .border-white\/8:not(.vscode-container *):not(.retro-terminal *):not(.welcome-screen *),
+body.light .border-white\/5:not(.vscode-container *):not(.retro-terminal *):not(.welcome-screen *),
+body.light .border-white\/15:not(.vscode-container *):not(.retro-terminal *):not(.welcome-screen *) {
+  border-color: rgba(99, 102, 241, 0.15) !important;
+}
+
+/* Form inputs & interactive components */
+body.light input,
+body.light textarea,
+body.light select {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  border-color: rgba(99, 102, 241, 0.2) !important;
+  color: #0f172a !important;
+}
+body.light input::placeholder,
+body.light textarea::placeholder {
+  color: #64748b !important;
+}
+
+/* Timeline components adjustments */
+body.light .border-l-2.border-white\/10 {
+  border-color: rgba(99, 102, 241, 0.2) !important;
+}
+body.light .bg-\[\#6366f1\]\/10 {
+  background-color: rgba(99, 102, 241, 0.1) !important;
+}
+
+/* VSCode tabs and UI panel adjustments for light background compatibility */
+body.light .vscode-theme-container, 
+body.light .terminal-container {
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.35) !important;
+}
+
+/* Scrollbar override for light mode */
+body.light ::-webkit-scrollbar-track {
+  background: rgba(246, 245, 255, 0.8) !important;
+}
+body.light ::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.2) !important;
+}

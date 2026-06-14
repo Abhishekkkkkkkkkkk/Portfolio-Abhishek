@@ -12,7 +12,8 @@ import {
 } from "lucide-react";
 import AOS from "aos";
 import "aos/dist/aos.css";
-import MemoryGame from "../components/games/MemoryGame";
+import TechGlobe from "../components/effects/TechGlobe";
+import TiltCard from "../components/effects/TiltCard";
 
 /* ─── Constants ─── */
 const TYPING_SPEED = 100;
@@ -423,8 +424,10 @@ const Home = () => {
             data-aos="fade-left"
             data-aos-delay="400"
           >
-            <MemoryGame />
-            <LeetCodeCard />
+            <TechGlobe />
+            <TiltCard className="w-full max-w-sm">
+              <LeetCodeCard />
+            </TiltCard>
           </div>
         </div>
 
