@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { supabase } from "../services/supabase";
 import { TagBadge } from "../components/BlogCard";
+import BlogRenderer from "../components/BlogRenderer";
 
 // Modular VS Code Components
 import ActivityBar from "../components/vscode/ActivityBar";
@@ -99,7 +100,22 @@ const TocList = ({ headings, activeId, onSelect }) => (
         href={`#${id}`}
         onClick={(e) => {
           e.preventDefault();
-          document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+          const el = document.getElementById(id);
+          if (el) {
+            el.scrollIntoView({ behavior: "smooth", block: "start" });
+          } else {
+            const iframe = document.querySelector("iframe[title='Blog content renderer']");
+            if (iframe) {
+              const doc = iframe.contentDocument || iframe.contentWindow.document;
+              const headingEl = doc?.getElementById(id);
+              if (headingEl) {
+                const headingRect = headingEl.getBoundingClientRect();
+                const iframeRect = iframe.getBoundingClientRect();
+                const scrollTarget = window.scrollY + iframeRect.top + headingRect.top - 80;
+                window.scrollTo({ top: scrollTarget, behavior: "smooth" });
+              }
+            }
+          }
           onSelect?.();
         }}
         className={`block text-[12px] leading-snug py-1.5 px-2 rounded-lg transition-all duration-200 font-mono
@@ -963,6 +979,7 @@ const BlogDetail = () => {
 
   /* TOC build and observe hook dependencies */
   useEffect(() => {
+    if (id !== "settings") return;
     if (!contentRef.current) return;
     const els = contentRef.current.querySelectorAll("h2, h3");
     const items = [];
@@ -971,10 +988,10 @@ const BlogDetail = () => {
       items.push({ id: el.id, text: el.textContent, level: el.tagName });
     });
     setHeadings(items);
-  }, [blog]);
+  }, [blog, id]);
 
   useEffect(() => {
-    if (!headings.length) return;
+    if (id !== "settings" || !headings.length) return;
     const observer = new IntersectionObserver(
       (entries) => {
         const visible = entries.filter((e) => e.isIntersecting);
@@ -984,11 +1001,55 @@ const BlogDetail = () => {
     );
     headings.forEach(({ id }) => { const el = document.getElementById(id); if (el) observer.observe(el); });
     return () => observer.disconnect();
-  }, [headings]);
+  }, [headings, id]);
+
+  // Handle active heading highlight on scroll for iframe (non-settings)
+  useEffect(() => {
+    if (id === "settings") return;
+    
+    const handleScroll = () => {
+      const iframe = document.querySelector("iframe[title='Blog content renderer']");
+      if (!iframe) return;
+      const doc = iframe.contentDocument || iframe.contentWindow.document;
+      if (!doc) return;
+      
+      const headingsEls = doc.querySelectorAll("h2, h3");
+      let activeHeadingId = "";
+      let minDistance = Infinity;
+      const triggerThreshold = 100;
+      
+      headingsEls.forEach((el) => {
+        const rect = el.getBoundingClientRect();
+        const iframeRect = iframe.getBoundingClientRect();
+        const topRelativeToParentViewport = iframeRect.top + rect.top;
+        
+        if (topRelativeToParentViewport < triggerThreshold + 50) {
+          const absDist = Math.abs(topRelativeToParentViewport - triggerThreshold);
+          if (absDist < minDistance) {
+            minDistance = absDist;
+            activeHeadingId = el.id;
+          }
+        }
+      });
+      
+      if (activeHeadingId) {
+        setActiveId(activeHeadingId);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    const timer = setTimeout(handleScroll, 500);
+    
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      clearTimeout(timer);
+    };
+  }, [headings, id]);
 
   /* Process pre blocks copy logic */
   useEffect(() => {
     if (loading || !blog || !contentRef.current) return;
+    if (id !== "settings") return;
 
     const preBlocks = contentRef.current.querySelectorAll("pre");
     preBlocks.forEach((block) => {
@@ -1031,7 +1092,7 @@ const BlogDetail = () => {
       wrapper.insertBefore(header, block);
       block.className = "p-4 overflow-x-auto text-[13px] leading-relaxed font-mono text-gray-300 scrollbar-thin scrollbar-thumb-white/10";
     });
-  }, [blog, loading]);
+  }, [blog, loading, id]);
 
   useEffect(() => {
     if (!blog) return;
@@ -1282,12 +1343,21 @@ const BlogDetail = () => {
                       )}
 
                       {/* Article content body */}
-                      <div 
-                        ref={contentRef} 
-                        className="blog-prose" 
-                        style={{ fontSize: `${fontSize}px` }}
-                        dangerouslySetInnerHTML={{ __html: blog.content }} 
-                      />
+                      {id === "settings" ? (
+                        <div 
+                          ref={contentRef} 
+                          className="blog-prose" 
+                          style={{ fontSize: `${fontSize}px` }}
+                          dangerouslySetInnerHTML={{ __html: blog.content }} 
+                        />
+                      ) : (
+                        <BlogRenderer
+                          htmlContent={blog.content}
+                          currentTheme={currentTheme}
+                          fontSize={fontSize}
+                          onHeadingsDiscovered={setHeadings}
+                        />
+                      )}
                     </>
                   )}
                 </div>

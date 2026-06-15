@@ -162,6 +162,18 @@ const SidebarExplorer = ({
     const el = document.getElementById(id);
     if (el) {
       el.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      const iframe = document.querySelector("iframe[title='Blog content renderer']");
+      if (iframe) {
+        const doc = iframe.contentDocument || iframe.contentWindow.document;
+        const headingEl = doc?.getElementById(id);
+        if (headingEl) {
+          const headingRect = headingEl.getBoundingClientRect();
+          const iframeRect = iframe.getBoundingClientRect();
+          const scrollTarget = window.scrollY + iframeRect.top + headingRect.top - 80;
+          window.scrollTo({ top: scrollTarget, behavior: "smooth" });
+        }
+      }
     }
   };
 
