@@ -241,7 +241,8 @@ const BlogDetail = () => {
     try {
       const saved = localStorage.getItem("workspace-open-tabs");
       const parsed = saved ? JSON.parse(saved) : ["readme"];
-      return parsed.includes("readme") ? parsed : ["readme", ...parsed];
+      const unique = Array.from(new Set(parsed));
+      return unique.includes("readme") ? unique : ["readme", ...unique];
     } catch (e) {
       return ["readme"];
     }
@@ -252,8 +253,8 @@ const BlogDetail = () => {
   }, [openTabs]);
 
   useEffect(() => {
-    if (id && !openTabs.includes(id)) {
-      setOpenTabs(prev => [...prev, id]);
+    if (id) {
+      setOpenTabs(prev => prev.includes(id) ? prev : [...prev, id]);
     }
   }, [id]);
 
@@ -1053,7 +1054,48 @@ const BlogDetail = () => {
 
     const preBlocks = contentRef.current.querySelectorAll("pre");
     preBlocks.forEach((block) => {
-      if (block.querySelector(".copy-code-btn") || block.parentElement.classList.contains("code-block-wrapper")) return;
+      // Check if this pre block is already wrapped in a custom code container, or if any of its parent containers already has a copy button
+      let isAlreadyWrapped = false;
+      let ancestor = block.parentElement;
+      while (ancestor && ancestor !== contentRef.current) {
+        const classStr = ancestor.className || "";
+        if (
+          classStr.includes("code-block-wrapper") ||
+          classStr.includes("code-wrapper") ||
+          classStr.includes("code-container") ||
+          classStr.includes("code-window") ||
+          classStr.includes("terminal-window")
+        ) {
+          isAlreadyWrapped = true;
+          break;
+        }
+
+        // Check if the ancestor contains any element that acts as a copy button (excluding anything inside <pre>)
+        const copyElements = ancestor.querySelectorAll("button, .copy-btn, .copy-code-btn, [class*='copy'], [id*='copy']");
+        let hasCopy = Array.from(copyElements).some(el => {
+          if (el.closest("pre")) return false; // Ignore syntax-highlighted keywords inside the code block
+          return el.textContent.toLowerCase().includes("copy") || el.className.toLowerCase().includes("copy");
+        });
+
+        // Also check if any element outside <pre> has exact "copy" text
+        if (!hasCopy) {
+          const allElements = ancestor.querySelectorAll("button, span, div, a");
+          hasCopy = Array.from(allElements).some(el => {
+            if (el.closest("pre")) return false; // Ignore code tokens
+            const text = (el.textContent || "").trim().toLowerCase();
+            return text === "copy" || text === "copied" || text.includes("copy to clipboard");
+          });
+        }
+
+        if (hasCopy) {
+          isAlreadyWrapped = true;
+          break;
+        }
+
+        ancestor = ancestor.parentElement;
+      }
+
+      if (isAlreadyWrapped || block.querySelector(".copy-code-btn") || block.parentElement.classList.contains("code-block-wrapper")) return;
 
       const wrapper = document.createElement("div");
       wrapper.className = "code-block-wrapper relative group/code-block rounded-xl overflow-hidden my-6 border border-white/10 bg-[#080814]";
@@ -1093,6 +1135,55 @@ const BlogDetail = () => {
       block.className = "p-4 overflow-x-auto text-[13px] leading-relaxed font-mono text-gray-300 scrollbar-thin scrollbar-thumb-white/10";
     });
   }, [blog, loading, id]);
+
+  /* Execute scripts and bind global functions from blog content (tab switching, copy code, visualizers) */
+  useEffect(() => {
+    if (loading || !blog || !contentRef.current) return;
+
+    // Find and execute script tags
+    const scripts = contentRef.current.querySelectorAll("script");
+    const executedScripts = [];
+
+    scripts.forEach((oldScript) => {
+      const newScript = document.createElement("script");
+      Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+      
+      // Replace let and const with var to allow safe redeclaration/re-execution of scripts on page changes
+      const processedCode = oldScript.textContent
+        .replace(/\bconst\s+/g, "var ")
+        .replace(/\blet\s+/g, "var ");
+        
+      newScript.textContent = processedCode;
+      document.body.appendChild(newScript);
+      executedScripts.push(newScript);
+    });
+
+    // Manually trigger initialization functions if defined in the script
+    if (typeof window.initVisualizer === "function") {
+      try {
+        window.initVisualizer();
+      } catch (err) {
+        console.error("Error running initVisualizer:", err);
+      }
+    }
+
+    // Cleanup on unmount or blog change to prevent memory leaks and namespace pollution
+    return () => {
+      executedScripts.forEach(script => {
+        if (script.parentNode) {
+          script.parentNode.removeChild(script);
+        }
+      });
+      // Remove global functions we might have bound by resetting them to undefined (delete throws TypeError in strict mode)
+      window.switchTab = undefined;
+      window.copyCode = undefined;
+      window.initVisualizer = undefined;
+      window.resetVisualizer = undefined;
+      window.nextVisStep = undefined;
+      window.visualizerArray = undefined;
+      window.visualizerStep = undefined;
+    };
+  }, [blog, loading]);
 
   useEffect(() => {
     if (!blog) return;
@@ -1192,15 +1283,11 @@ const BlogDetail = () => {
               sidebarOpen={sidebarOpen}
               setSidebarOpen={setSidebarOpen}
               onSettingsClick={() => {
-                if (!openTabs.includes("settings")) {
-                  setOpenTabs(prev => [...prev, "settings"]);
-                }
+                setOpenTabs(prev => prev.includes("settings") ? prev : [...prev, "settings"]);
                 navigate("/blog/settings");
               }}
               onProfileClick={() => {
-                if (!openTabs.includes("about_me")) {
-                  setOpenTabs(prev => [...prev, "about_me"]);
-                }
+                setOpenTabs(prev => prev.includes("about_me") ? prev : [...prev, "about_me"]);
                 navigate("/blog/about_me");
               }}
               currentTheme={currentTheme}
@@ -1219,9 +1306,7 @@ const BlogDetail = () => {
                 headings={headings}
                 activeHeadingId={activeId}
                 onFileSelect={(fileId) => {
-                  if (!openTabs.includes(fileId)) {
-                    setOpenTabs(prev => [...prev, fileId]);
-                  }
+                  setOpenTabs(prev => prev.includes(fileId) ? prev : [...prev, fileId]);
                   navigate(`/blog/${fileId}`);
                   if (window.innerWidth < 768) {
                     setSidebarOpen(false);
@@ -1249,9 +1334,7 @@ const BlogDetail = () => {
                 onClose={() => setQuickOpenOpen(false)}
                 allBlogs={allBlogs}
                 onFileSelect={(fileId) => {
-                  if (!openTabs.includes(fileId)) {
-                    setOpenTabs(prev => [...prev, fileId]);
-                  }
+                  setOpenTabs(prev => prev.includes(fileId) ? prev : [...prev, fileId]);
                   navigate(`/blog/${fileId}`);
                   if (window.innerWidth < 768) {
                     setSidebarOpen(false);
