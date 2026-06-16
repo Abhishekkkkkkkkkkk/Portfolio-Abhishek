@@ -11,7 +11,9 @@ import WelcomeScreen from "./pages/WelcomeScreen";
 import Footer from "./layouts/Footer";
 import { AnimatePresence } from "framer-motion";
 import PlaygroundTeaser from "./sections/PlaygroundTeaser";
+import Guestbook from "./sections/Guestbook";
 import MatrixRain from "./components/effects/MatrixRain";
+import CommandPalette from "./components/CommandPalette";
 
 const ProjectDetails = React.lazy(() => import("./pages/ProjectDetail"));
 const BlogDetail = React.lazy(() => import("./pages/BlogDetail"));
@@ -54,6 +56,7 @@ const LandingPage = ({ showWelcome, setShowWelcome }) => {
           <About />
           <Portfolio />
           <PlaygroundTeaser />
+          <Guestbook />
           <ContactPage />
           <Footer />
         </>
@@ -93,6 +96,7 @@ function App() {
   return (
     <BrowserRouter>
       {matrixEnabled && <MatrixRain />}
+      <CommandPalette />
       <Routes>
         <Route
           path="/"

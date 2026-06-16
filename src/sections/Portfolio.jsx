@@ -162,6 +162,17 @@ export default function FullWidthTabs() {
     return savedTab !== null ? parseInt(savedTab, 10) : 0;
   });
 
+  // Listen to tab triggers from Command Palette
+  useEffect(() => {
+    const handleTriggerTab = (e) => {
+      if (typeof e.detail === "number") {
+        setValue(e.detail);
+      }
+    };
+    window.addEventListener("trigger-portfolio-tab", handleTriggerTab);
+    return () => window.removeEventListener("trigger-portfolio-tab", handleTriggerTab);
+  }, []);
+
   // VS Code Layout and Control States for Blog Tab
   const [activeView, setActiveView] = useState("explorer");
   const [sidebarOpen, setSidebarOpen] = useState(() => {

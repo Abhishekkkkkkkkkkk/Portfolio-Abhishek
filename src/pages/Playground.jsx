@@ -23,6 +23,7 @@ import RockPaperScissors from "../components/playground/games/RockPaperScissors"
 import Game2048 from "../components/playground/games/Game2048";
 import Tetris from "../components/playground/games/Tetris";
 import FlappyBird from "../components/playground/games/FlappyBird";
+import GitEscapeRoom from "../components/playground/games/GitEscapeRoom";
 
 // Challenges imports
 import DevQuiz from "../components/playground/challenges/DevQuiz";
@@ -48,7 +49,8 @@ import SortingBenchmark from "../components/playground/experiments/SortingBenchm
 import FractalTree from "../components/playground/experiments/FractalTree";
 import MorseCode from "../components/playground/experiments/MorseCode";
 import PhysicsSandbox from "../components/playground/experiments/PhysicsSandbox";
-
+import RegexVisualizer from "../components/playground/experiments/RegexVisualizer";
+import SynthPiano from "../components/playground/experiments/SynthPiano";
 // Easter Eggs import
 import EasterEggs from "../components/playground/EasterEggs";
 
@@ -73,6 +75,19 @@ const Playground = () => {
     setTimeout(() => {
       unlockAchievement("first-visitor");
     }, 1000);
+  }, []);
+
+  // Listen to stage commands from global Command Palette
+  useEffect(() => {
+    const handleTriggerStage = (e) => {
+      if (e.detail && e.detail.stageId && e.detail.category) {
+        setActiveCategory(e.detail.category);
+        setActiveStage(e.detail.stageId);
+        window.scrollTo({ top: 350, behavior: "smooth" });
+      }
+    };
+    window.addEventListener("trigger-stage", handleTriggerStage);
+    return () => window.removeEventListener("trigger-stage", handleTriggerStage);
   }, []);
 
   const toggleTheme = () => {
@@ -105,7 +120,8 @@ const Playground = () => {
       { id: "rps", title: "Code Stack Compiler", desc: "Play classic Rock Paper Scissors themed around software stacks.", component: RockPaperScissors, icon: Gamepad2, label: "RPS" },
       { id: "2048", title: "2048 Classic", desc: "Manage grid layouts and merge matching tiles to reach 2048.", component: Game2048, icon: Gamepad2, label: "2048" },
       { id: "tetris", title: "Tetris Blocks", desc: "Manage piece fall, rotation, and alignment to clear rows.", component: Tetris, icon: Gamepad2, label: "Tetris" },
-      { id: "flappy", title: "Flappy Compiler", desc: "Steer the syntax cursor node to dodge code compilation obstacles.", component: FlappyBird, icon: Gamepad2, label: "Flappy" }
+      { id: "flappy", title: "Flappy Compiler", desc: "Steer the syntax cursor node to dodge code compilation obstacles.", component: FlappyBird, icon: Gamepad2, label: "Flappy" },
+      { id: "git-escape", title: "Git Merge Escape", desc: "Resolve branch merge conflicts across files under pressure to escape code locks.", component: GitEscapeRoom, icon: Gamepad2, label: "Git Escape" }
     ],
     challenges: [
       { id: "quiz", title: "Developer Quiz Hub", desc: "Test your skills in Java, JavaScript, and DSA structures.", component: DevQuiz, icon: BrainCircuit, label: "Quizzes" },
@@ -127,7 +143,9 @@ const Playground = () => {
       { id: "sort-bench", title: "Sorting Speed Benchmark", desc: "Run side-by-side performance tests on sorting complexity.", component: SortingBenchmark, icon: Terminal, label: "Sort Bench" },
       { id: "fractal-tree", title: "Fractal Tree Canvas", desc: "Compute recursive tree structures with wind animations.", component: FractalTree, icon: Terminal, label: "Fractals" },
       { id: "morse-code", title: "Morse Code player", desc: "Synthesize telegraph beeps and flashes from message inputs.", component: MorseCode, icon: Terminal, label: "Morse Code" },
-      { id: "physics-sandbox", title: "2D Vector Physics Box", desc: "Spawn and throw elastic shapes under adjustable gravity.", component: PhysicsSandbox, icon: Terminal, label: "Physics Box" }
+      { id: "physics-sandbox", title: "2D Vector Physics Box", desc: "Spawn and throw elastic shapes under adjustable gravity.", component: PhysicsSandbox, icon: Terminal, label: "Physics Box" },
+      { id: "regex-vis", title: "Regex Visualizer", desc: "Break down regex patterns into visual syntax trees and test strings.", component: RegexVisualizer, icon: Terminal, label: "Regex Vis" },
+      { id: "synth-piano", title: "Interactive Synth Piano", desc: "Play piano keys with shortcuts and watch the reactive canvas visualizer.", component: SynthPiano, icon: Terminal, label: "Synth Piano" }
     ]
   };
 

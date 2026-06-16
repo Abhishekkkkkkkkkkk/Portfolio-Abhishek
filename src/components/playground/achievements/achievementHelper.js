@@ -35,6 +35,18 @@ export const ACHIEVEMENTS = {
     description: "Discovered a hidden Easter egg.",
     icon: "🕵️‍♂️",
   },
+  GUESTBOOK_SIGNATURE: {
+    id: "guestbook-signature",
+    title: "Vibe Checker",
+    description: "Signed the real-time guestbook.",
+    icon: "✍️",
+  },
+  GIT_ESCAPE_EXPERT: {
+    id: "git-escape-expert",
+    title: "Merge Master",
+    description: "Successfully resolved all merge conflict levels.",
+    icon: "🔀",
+  },
 };
 
 export const getUnlockedAchievements = () => {

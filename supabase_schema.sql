@@ -126,3 +126,22 @@ CREATE POLICY "Enable insert access for all users" ON subscribers FOR INSERT WIT
 -- Paste and run the following command in your Supabase SQL editor to ensure updates stream live:
 -- ALTER PUBLICATION supabase_realtime ADD TABLE blogs;
 -- ALTER TABLE blogs REPLICA IDENTITY FULL;
+
+-- 11. GUESTBOOK TABLE (Interactive Feed)
+CREATE TABLE IF NOT EXISTS guestbook (
+  id BIGSERIAL PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  message VARCHAR(500) NOT NULL,
+  emoji VARCHAR(10) DEFAULT '💻',
+  country_code VARCHAR(10) DEFAULT 'UN',
+  country_name VARCHAR(100) DEFAULT 'Unknown Location',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE guestbook ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Enable read access for all users" ON guestbook FOR SELECT USING (true);
+CREATE POLICY "Enable insert access for all users" ON guestbook FOR INSERT WITH CHECK (true);
+
+-- Enable Realtime for guestbook
+-- ALTER PUBLICATION supabase_realtime ADD TABLE guestbook;
+-- ALTER TABLE guestbook REPLICA IDENTITY FULL;
