@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ChevronDown, ChevronRight, Search, GitBranch, Play, Check, ShieldAlert, Sparkles, X } from "lucide-react";
+import { ChevronDown, ChevronRight, Search, GitBranch, Check, X } from "lucide-react";
 
 const getFolderSegments = (blog) => {
   if (!blog.categories || blog.categories.length === 0) {
@@ -69,7 +69,6 @@ const buildFileTree = (blogs) => {
 const SidebarExplorer = ({
   allBlogs,
   activeFileId,
-  categoriesMap,
   expandedFolders,
   toggleFolder,
   getFileExtension,

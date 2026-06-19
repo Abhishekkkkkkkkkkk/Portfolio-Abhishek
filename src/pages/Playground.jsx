@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   ArrowLeft, Gamepad2, Trophy, BrainCircuit, Sparkles, 
-  Terminal, Sun, Moon, HelpCircle, LayoutGrid, CheckCircle2 
+  Terminal, Sun, Moon
 } from "lucide-react";
 import TiltCard from "../components/effects/TiltCard";
 import { playTap } from "../services/soundEffects";
@@ -11,7 +11,7 @@ import { playTap } from "../services/soundEffects";
 // Achievements import
 import AchievementToast from "../components/playground/achievements/AchievementToast";
 import AchievementsPanel from "../components/playground/achievements/AchievementsPanel";
-import { unlockAchievement, getUnlockedAchievements } from "../components/playground/achievements/achievementHelper";
+import { unlockAchievement } from "../components/playground/achievements/achievementHelper";
 
 // Games imports
 import MemoryGame from "../components/playground/games/MemoryGame";

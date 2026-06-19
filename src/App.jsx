@@ -7,7 +7,7 @@ import AnimatedBackground from "./layouts/Background";
 import Navbar from "./layouts/Navbar";
 import Portfolio from "./sections/Portfolio";
 import ContactPage from "./sections/Contact";
-import WelcomeScreen from "./pages/WelcomeScreen";
+import WelcomeScreen from "./Pages/WelcomeScreen";
 import Footer from "./layouts/Footer";
 import { AnimatePresence } from "framer-motion";
 import PlaygroundTeaser from "./sections/PlaygroundTeaser";
@@ -15,10 +15,10 @@ import Guestbook from "./sections/Guestbook";
 import MatrixRain from "./components/effects/MatrixRain";
 import CommandPalette from "./components/CommandPalette";
 
-const ProjectDetails = React.lazy(() => import("./pages/ProjectDetail"));
-const BlogDetail = React.lazy(() => import("./pages/BlogDetail"));
-const UnsubscribePage = React.lazy(() => import("./pages/Unsubscribe"));
-const Playground = React.lazy(() => import("./pages/Playground"));
+const ProjectDetails = React.lazy(() => import("./Pages/ProjectDetail"));
+const BlogDetail = React.lazy(() => import("./Pages/BlogDetail"));
+const UnsubscribePage = React.lazy(() => import("./Pages/Unsubscribe"));
+const Playground = React.lazy(() => import("./Pages/Playground"));
 
 /* ─── Landing Page ─── */
 const LandingPage = ({ showWelcome, setShowWelcome }) => {

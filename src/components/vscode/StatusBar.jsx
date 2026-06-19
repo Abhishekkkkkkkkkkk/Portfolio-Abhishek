@@ -5,7 +5,6 @@ const StatusBar = ({
   activeTabId,
   blog,
   headingsCount,
-  currentTheme,
   onTerminalToggle,
   isTerminalOpen
 }) => {
@@ -27,7 +26,7 @@ const StatusBar = ({
   const bgThemeClass = activeTabId === "settings" ? "bg-amber-700 text-white" : "bg-[#0b0b12] text-gray-500";
 
   return (
-    <div className={`flex items-center justify-between px-4 py-1 bg-[#0b0b12] border-t border-white/5 text-[10px] font-mono select-none shrink-0 h-6 text-gray-500`}>
+    <div className={`flex items-center justify-between px-4 py-1 border-t border-white/5 text-[10px] font-mono select-none shrink-0 h-6 ${bgThemeClass}`}>
       {/* Left side items */}
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-1 hover:text-white cursor-pointer transition-colors text-indigo-400">

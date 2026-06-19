@@ -7,7 +7,6 @@ import {
   Award, BookOpen, FileText
 } from "lucide-react";
 import { playTap, playSuccess } from "../services/soundEffects";
-import Swal from "sweetalert2";
 
 const CommandPalette = () => {
   const navigate = useNavigate();
@@ -199,13 +198,13 @@ const CommandPalette = () => {
                   if (location.pathname === "/") {
                     const el = document.getElementById("Portfolio");
                     if (el) el.scrollIntoView({ behavior: "smooth" });
-                    window.dispatchEvent(new CustomEvent("trigger-portfolio-tab", { detail: 4 }));
+                    window.dispatchEvent(new CustomEvent("trigger-portfolio-tab", { detail: 3 }));
                   } else {
                     navigate("/");
                     setTimeout(() => {
                       const el = document.getElementById("Portfolio");
                       if (el) el.scrollIntoView({ behavior: "smooth" });
-                      window.dispatchEvent(new CustomEvent("trigger-portfolio-tab", { detail: 4 }));
+                      window.dispatchEvent(new CustomEvent("trigger-portfolio-tab", { detail: 3 }));
                     }, 100);
                   }
                 }
@@ -221,7 +220,7 @@ const CommandPalette = () => {
       
       loadDynamicItems();
     }
-  }, [isOpen]);
+  }, [isOpen, navigate, location.pathname]);
 
   // 3. Keyboard shortcut triggers (Ctrl+K or /)
   useEffect(() => {

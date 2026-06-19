@@ -13,7 +13,6 @@ import StatusBar from "../components/vscode/StatusBar";
 import PropTypes from "prop-types";
 import SwipeableViews from "react-swipeable-views";
 import { useTheme } from "@mui/material/styles";
-import AppBar from "@mui/material/AppBar";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Typography from "@mui/material/Typography";
@@ -22,13 +21,12 @@ import CardProject from "../components/CardProject";
 import TiltCard from "../components/effects/TiltCard";
 import { playTap } from "../services/soundEffects";
 import TechStackIcon from "../components/TechStackIcon";
+import TechStackRow from "../components/TechStackRow";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import Certificate from "../components/Certificate";
-import BlogCard from "../components/BlogCard";
-import FeaturedBlogCard from "../components/FeaturedBlogCard";
 import NoteCard from "../components/NoteCard";
-import { Code, Award, Boxes, ChevronDown, ChevronUp, Sparkles, BookOpen, FileText, Search, X, TrendingUp, Flame, Mail, Send } from "lucide-react";
+import { Code, Award, Boxes, ChevronDown, ChevronUp, Sparkles, BookOpen, FileText, Search, X } from "lucide-react";
 
 /* ─── Toggle Button ─── */
 const ToggleButton = memo(({ onClick, isShowingMore }) => (
@@ -196,10 +194,9 @@ export default function FullWidthTabs() {
     localStorage.setItem("workspace-open-tabs", JSON.stringify(openTabs));
   }, [openTabs]);
 
-  // Monitor Ctrl+P/Cmd+P key bindings for Quick Open palette on homepage
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (value === 3 && (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "p") {
+      if (value === 4 && (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "p") {
         e.preventDefault();
         setQuickOpenOpen(prev => !prev);
       }
@@ -261,7 +258,7 @@ export default function FullWidthTabs() {
           })
         ]);
         break;
-      case "cat":
+      case "cat": {
         if (!args[1]) {
           setTerminalLogs(prev => [...prev, `[Compiler]: Error: File argument required. Usage: cat <filename>`]);
           break;
@@ -283,7 +280,8 @@ export default function FullWidthTabs() {
           }
         }
         break;
-      case "theme":
+      }
+      case "theme": {
         if (!args[1]) {
           setTerminalLogs(prev => [...prev, `[Compiler]: Error: Theme name required. (dracula, nord, monokai)`]);
           break;
@@ -297,7 +295,8 @@ export default function FullWidthTabs() {
           setTerminalLogs(prev => [...prev, `[Compiler]: Error: Theme not recognized. Try 'dracula', 'nord', or 'monokai'.`]);
         }
         break;
-      case "subscribe":
+      }
+      case "subscribe": {
         if (!args[1]) {
           setTerminalLogs(prev => [...prev, `[Compiler]: Error: Email required. Usage: subscribe <email>`]);
           break;
@@ -317,10 +316,11 @@ export default function FullWidthTabs() {
           } else {
             setTerminalLogs(prev => [...prev, `[Compiler]: Success: Registered ${email} successfully!`]);
           }
-        } catch (err) {
+        } catch {
           setTerminalLogs(prev => [...prev, `[Compiler]: Error: Subscription registry failed.`]);
         }
         break;
+      }
       default:
         setTerminalLogs(prev => [
           ...prev,
@@ -336,71 +336,12 @@ export default function FullWidthTabs() {
   const [notes, setNotes] = useState([]);
   const [showAllProjects, setShowAllProjects] = useState(false);
   const [showAllCertificates, setShowAllCertificates] = useState(false);
-  const [showAllBlogs, setShowAllBlogs] = useState(false);
   const [showAllNotes, setShowAllNotes] = useState(false);
   const [blogFilter, setBlogFilter] = useState("All");
   const [notesFilter, setNotesFilter] = useState("All");
   const [blogSearch, setBlogSearch] = useState("");
   const isMobile = window.innerWidth < 768;
   const initialItems = isMobile ? 4 : 6;
-  const [emailInput, setEmailInput] = useState("");
-
-  const handleSubscribe = async (e) => {
-    e.preventDefault();
-    if (!emailInput) return;
-    try {
-      const Swal = (await import("sweetalert2")).default;
-      const { error } = await supabase
-        .from("subscribers")
-        .insert([{ email: emailInput }]);
-
-      if (error) {
-        if (error.code === "23505") {
-          Swal.fire({
-            title: "Already Subscribed!",
-            text: "This email address is already subscribed to the newsletter.",
-            icon: "info",
-            background: "#0a0a1a",
-            color: "#fff",
-            confirmButtonColor: "#bd93f9",
-            customClass: {
-              popup: "rounded-2xl border border-white/5 backdrop-blur-2xl"
-            }
-          });
-          setEmailInput("");
-          return;
-        }
-        throw error;
-      }
-
-      Swal.fire({
-        title: "Subscribed Successfully!",
-        text: "Thank you for subscribing to my newsletter. You will receive technical updates directly in your inbox!",
-        icon: "success",
-        background: "#0a0a1a",
-        color: "#fff",
-        confirmButtonColor: "#bd93f9",
-        customClass: {
-          popup: "rounded-2xl border border-white/5 backdrop-blur-2xl"
-        }
-      });
-      setEmailInput("");
-    } catch (err) {
-      console.error("Subscription failed:", err);
-      const Swal = (await import("sweetalert2")).default;
-      Swal.fire({
-        title: "Subscription Failed",
-        text: "Could not register your email at this time. Please try again later.",
-        icon: "error",
-        background: "#0a0a1a",
-        color: "#fff",
-        confirmButtonColor: "#bd93f9",
-        customClass: {
-          popup: "rounded-2xl border border-white/5 backdrop-blur-2xl"
-        }
-      });
-    }
-  };
 
   const [expandedFolders, setExpandedFolders] = useState({
     java: true,
@@ -596,8 +537,8 @@ export default function FullWidthTabs() {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     if (params.get("tab") === "blog") {
-      setValue(3);
-      localStorage.setItem("portfolio-active-tab", "3");
+      setValue(4);
+      localStorage.setItem("portfolio-active-tab", "4");
       setTimeout(() => {
         const el = document.getElementById("Portfolio");
         if (el) {
@@ -610,7 +551,6 @@ export default function FullWidthTabs() {
   const toggleShowMore = useCallback((type) => {
     if (type === "projects")     setShowAllProjects((p) => !p);
     else if (type === "certificates") setShowAllCertificates((p) => !p);
-    else if (type === "blogs")   setShowAllBlogs((p) => !p);
     else                         setShowAllNotes((p) => !p);
   }, []);
 
@@ -630,22 +570,19 @@ export default function FullWidthTabs() {
     ? notes
     : notes.filter((n) => n.subject === notesFilter || n.tags?.some((t) => t.toLowerCase().includes(notesFilter.toLowerCase())));
 
-  const featuredBlog  = filteredBlogs.find((b) => b.featured);
-  const regularBlogs  = filteredBlogs.filter((b) => !b.featured);
   const featuredNote  = filteredNotes.find((n) => n.featured);
   const regularNotes  = filteredNotes.filter((n) => !n.featured);
 
   const displayedProjects      = showAllProjects      ? projects      : projects.slice(0, initialItems);
   const displayedCertificates  = showAllCertificates  ? certificates  : certificates.slice(0, initialItems);
-  const displayedRegularBlogs  = showAllBlogs         ? regularBlogs  : regularBlogs.slice(0, initialItems);
   const displayedRegularNotes  = showAllNotes         ? regularNotes  : regularNotes.slice(0, initialItems);
 
   const TAB_CONFIG = [
     { icon: Code,      label: "Projects",     count: projects.length },
     { icon: Award,     label: "Certificates", count: certificates.length },
     { icon: Boxes,     label: "Tech Stack",   count: techStacks.length },
-    { icon: BookOpen,  label: "Blog",         count: blogs.length },
     { icon: FileText,  label: "Notes",        count: notes.length },
+    { icon: BookOpen,  label: "Blogs",         count: blogs.length },
   ];
 
   return (
@@ -741,7 +678,18 @@ export default function FullWidthTabs() {
         >
           {/* ── Projects ── */}
           <TabPanel value={value} index={0} dir={theme.direction}>
-            <SectionLabel count={projects.length} label="Projects" />
+            {/* Centered Title */}
+            <div className="text-center mb-10 relative">
+              <h3 
+                className="text-3xl md:text-4xl font-extrabold tracking-[0.18em] text-[#e2e8f0] uppercase select-none font-sans"
+                style={{ textShadow: "0 0 15px rgba(226, 232, 240, 0.35), 0 0 30px rgba(16, 185, 129, 0.15)" }}
+              >
+                MY PROJECTS
+              </h3>
+              <div className="mt-3 flex justify-center">
+                <div className="h-0.5 w-24 bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+              </div>
+            </div>
             <div className="container mx-auto flex justify-center items-center overflow-hidden">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 2xl:grid-cols-3 gap-6">
                 {displayedProjects.map((project, index) => (
@@ -751,7 +699,15 @@ export default function FullWidthTabs() {
                     data-aos-delay={index * 50}
                   >
                     <TiltCard>
-                      <CardProject Img={project.Img} Title={project.Title} Description={project.Description} Link={project.Link} id={project.id} />
+                      <CardProject 
+                        Img={project.Img} 
+                        Title={project.Title} 
+                        Description={project.Description} 
+                        Link={project.Link} 
+                        id={project.id} 
+                        TechStack={project.TechStack}
+                        Github={project.Github}
+                      />
                     </TiltCard>
                   </div>
                 ))}
@@ -766,7 +722,18 @@ export default function FullWidthTabs() {
 
           {/* ── Certificates ── */}
           <TabPanel value={value} index={1} dir={theme.direction}>
-            <SectionLabel count={certificates.length} label="Certificates" />
+            {/* Centered Title */}
+            <div className="text-center mb-10 relative">
+              <h3 
+                className="text-3xl md:text-4xl font-extrabold tracking-[0.18em] text-[#e2e8f0] uppercase select-none font-sans"
+                style={{ textShadow: "0 0 15px rgba(226, 232, 240, 0.35), 0 0 30px rgba(16, 185, 129, 0.15)" }}
+              >
+                MY CERTIFICATES
+              </h3>
+              <div className="mt-3 flex justify-center">
+                <div className="h-0.5 w-24 bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+              </div>
+            </div>
             <div className="container mx-auto flex justify-center items-center overflow-hidden">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                 {displayedCertificates.map((certificate, index) => (
@@ -775,7 +742,13 @@ export default function FullWidthTabs() {
                     data-aos-duration={index % 3 === 1 ? "1200" : "1000"}
                     data-aos-delay={index * 50}
                   >
-                    <Certificate ImgSertif={certificate.Img} />
+                    <Certificate 
+                      ImgSertif={certificate.Img} 
+                      Name={certificate.Name}
+                      Issuer={certificate.Issuer}
+                      IssueDate={certificate.IssueDate}
+                      CredentialUrl={certificate.CredentialUrl}
+                    />
                   </div>
                 ))}
               </div>
@@ -789,32 +762,133 @@ export default function FullWidthTabs() {
 
           {/* ── Tech Stack ── */}
           <TabPanel value={value} index={2} dir={theme.direction}>
-            <SectionLabel count={techStacks.length} label="Technologies" />
-            {[
-              { label: "Languages",         range: [0, 4] },
-              { label: "Frontend",          range: [4, 11] },
-              { label: "Backend",           range: [11, 20] },
-              { label: "Databases",         range: [20, 23] },
-              { label: "Tools & Platforms", range: [23, 34] },
-            ].map(({ label, range }) => (
-              <div key={label} className="mb-8">
-                <div className="flex items-center gap-3 mb-4" data-aos="fade-right">
-                  <span className="text-[11px] font-mono text-[#6366f1]/70 uppercase tracking-[0.2em]">{label}</span>
-                  <div className="h-px flex-1 bg-gradient-to-r from-[#6366f1]/20 to-transparent" />
-                </div>
-                <div className="flex flex-wrap gap-4">
-                  {techStacks.slice(range[0], range[1]).map((stack, index) => (
-                    <div key={index} data-aos="fade-up" data-aos-duration="700" data-aos-delay={index * 40}>
-                      <TechStackIcon TechStackIcon={stack.icon} Language={stack.language} />
-                    </div>
-                  ))}
-                </div>
+            {/* Centered Mockup Title */}
+            <div className="text-center mb-10 relative">
+              <h3 
+                className="text-3xl md:text-4xl font-extrabold tracking-[0.18em] text-[#e2e8f0] uppercase select-none font-sans"
+                style={{ textShadow: "0 0 15px rgba(226, 232, 240, 0.35), 0 0 30px rgba(16, 185, 129, 0.15)" }}
+              >
+                MY TECH STACK
+              </h3>
+              <div className="mt-3 flex justify-center">
+                <div className="h-0.5 w-24 bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
               </div>
-            ))}
+            </div>
+
+            <div className="flex flex-col gap-6">
+              {[
+                { label: "Languages",         range: [0, 4] },
+                { label: "Frontend",          range: [4, 11] },
+                { label: "Backend",           range: [11, 20] },
+                { label: "Databases",         range: [20, 23] },
+                { label: "Tools",             range: [23, 34] },
+              ].map(({ label, range }) => (
+                <div key={label}>
+                  <TechStackRow label={label}>
+                    {techStacks.slice(range[0], range[1]).map((stack, index) => (
+                      <div key={index} className="hover:scale-105 transition-transform duration-200">
+                        <TechStackIcon TechStackIcon={stack.icon} Language={stack.language} />
+                      </div>
+                    ))}
+                  </TechStackRow>
+                </div>
+              ))}
+            </div>
+          </TabPanel>
+
+          {/* ── Notes ── */}
+          <TabPanel value={value} index={3} dir={theme.direction}>
+            {/* Centered Title */}
+            <div className="text-center mb-10 relative">
+              <h3 
+                className="text-3xl md:text-4xl font-extrabold tracking-[0.18em] text-[#e2e8f0] uppercase select-none font-sans"
+                style={{ textShadow: "0 0 15px rgba(226, 232, 240, 0.35), 0 0 30px rgba(16, 185, 129, 0.15)" }}
+              >
+                MY NOTES
+              </h3>
+              <div className="mt-3 flex justify-center">
+                <div className="h-0.5 w-24 bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+              </div>
+            </div>
+            <FilterBar categories={NOTES_CATEGORIES} active={notesFilter} onChange={(cat) => { setNotesFilter(cat); setShowAllNotes(false); }} />
+
+            {filteredNotes.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
+                <span className="text-5xl">📂</span>
+                <p className="text-gray-500 text-sm">No notes found for this subject.</p>
+              </div>
+            ) : (
+              <>
+                {/* Featured note */}
+                {featuredNote && (
+                  <div className="mb-6" data-aos="fade-up">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="h-px flex-1 bg-gradient-to-r from-transparent to-[#6366f1]/20" />
+                      <span className="text-[11px] font-mono text-gray-600 uppercase tracking-widest">Featured</span>
+                      <div className="h-px flex-1 bg-gradient-to-l from-transparent to-[#6366f1]/20" />
+                    </div>
+                    <div className="max-w-sm">
+                      <NoteCard
+                        id={featuredNote.id}
+                        title={featuredNote.title}
+                        description={featuredNote.description}
+                        subject={featuredNote.subject}
+                        tags={featuredNote.tags}
+                        pdfUrl={featuredNote.pdfUrl}
+                        coverEmoji={featuredNote.coverEmoji}
+                        pages={featuredNote.pages}
+                        date={featuredNote.date}
+                        featured={true}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Notes grid */}
+                {regularNotes.length > 0 && (
+                  <>
+                    <div className="flex items-center gap-3 mb-5" data-aos="fade-right">
+                      <div className="h-px flex-1 bg-gradient-to-r from-transparent to-[#6366f1]/20" />
+                      <span className="text-[11px] font-mono text-gray-600 uppercase tracking-widest">{regularNotes.length} Notes</span>
+                      <div className="h-px flex-1 bg-gradient-to-l from-transparent to-[#6366f1]/20" />
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                      {displayedRegularNotes.map((note, index) => (
+                        <div key={note.id}
+                          data-aos={index % 3 === 0 ? "fade-up-right" : index % 3 === 1 ? "fade-up" : "fade-up-left"}
+                          data-aos-duration="900"
+                          data-aos-delay={index * 60}
+                        >
+                          <NoteCard
+                            id={note.id}
+                            title={note.title}
+                            description={note.description}
+                            subject={note.subject}
+                            tags={note.tags}
+                            pdfUrl={note.pdfUrl}
+                            coverEmoji={note.coverEmoji}
+                            pages={note.pages}
+                            date={note.date}
+                            featured={false}
+                          />
+                        </div>
+                      ))}
+                    </div>
+
+                    {regularNotes.length > initialItems && (
+                      <div className="mt-8 w-full flex justify-center">
+                        <ToggleButton onClick={() => toggleShowMore("notes")} isShowingMore={showAllNotes} />
+                      </div>
+                    )}
+                  </>
+                )}
+              </>
+            )}
           </TabPanel>
 
           {/* ── Blog ── */}
-          <TabPanel value={value} index={3} dir={theme.direction}>
+          <TabPanel value={value} index={4} dir={theme.direction}>
             {(() => {
               // Theme settings mapping
               const THEME_MAP = {
@@ -887,7 +961,7 @@ export default function FullWidthTabs() {
               ];
 
               return (
-                <div className="rounded-none md:rounded-2xl border-x-0 md:border border-white/10 bg-[#0d0d16] overflow-hidden shadow-2xl text-gray-300 font-sans select-none" data-aos="fade-up">
+                <div className="vscode-container rounded-none md:rounded-2xl border-x-0 md:border border-white/10 bg-[#0d0d16] overflow-hidden shadow-2xl text-gray-300 font-sans select-none" data-aos="fade-up">
                   
                   {/* ─── IDE Title Bar ─── */}
                   <div className={`flex items-center justify-between px-4 py-2.5 border-b border-white/5 text-[11px] font-mono text-gray-500 ${currentTheme.bgHeader}`}>
@@ -998,7 +1072,7 @@ export default function FullWidthTabs() {
                       />
 
                       {/* Editor Reading Frame */}
-                      <div className="flex-1 flex min-h-0 relative overflow-y-auto">
+                      <div className="flex-1 flex min-h-0 relative overflow-visible">
                         
                         {/* Gutter Line Numbers */}
                         <div className="hidden md:block w-12 bg-black/20 border-r border-white/5 py-4 font-mono text-[11px] text-gray-600 text-right pr-3 select-none leading-relaxed shrink-0">
@@ -1008,7 +1082,7 @@ export default function FullWidthTabs() {
                         </div>
 
                         {/* Code Content Container */}
-                        <div className="flex-1 p-6 md:p-8 overflow-x-auto min-w-0 text-left">
+                        <div className="flex-1 p-6 md:p-8 overflow-visible min-w-0 text-left">
                           
                           {/* Virtual Markdown Header */}
                           <div className="border-b border-white/5 pb-4 mb-6">
@@ -1029,7 +1103,7 @@ export default function FullWidthTabs() {
                               {BLOG_CATEGORIES.map((cat) => (
                                 <button
                                   key={cat}
-                                  onClick={() => { setBlogFilter(cat); setShowAllBlogs(false); }}
+                                  onClick={() => { setBlogFilter(cat); }}
                                   className={`px-2.5 py-1 rounded font-mono text-[11px] font-bold border transition-all duration-200
                                     ${blogFilter === cat
                                       ? `border-indigo-500/50 bg-indigo-500/10 text-indigo-400`
@@ -1075,7 +1149,6 @@ export default function FullWidthTabs() {
                           ) : (
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                               {filteredBlogs.map((blog) => {
-                                const ext = getFileExtension(blog.categories?.[0]);
                                 return (
                                   <div 
                                     key={blog.id} 
@@ -1132,14 +1205,14 @@ export default function FullWidthTabs() {
 
                           {/* Collapsible Headers references inside the README */}
                           <div id="readme-folders" className="mt-8 pt-4 border-t border-white/5 text-left font-mono">
-                            <h3 className="text-white text-xs font-bold font-mono">// Directory Folders</h3>
+                            <h3 className="text-white text-xs font-bold font-mono">{"// Directory Folders"}</h3>
                             <p className="text-gray-500 text-[11px] mt-1 leading-relaxed">
                               The workspace contains organized notes categorizing Spring frameworks, core Java collections internals, complexity guides, and system designs.
                             </p>
                           </div>
                           
                           <div id="readme-features" className="mt-6 pt-4 border-t border-white/5 text-left font-mono">
-                            <h3 className="text-white text-xs font-bold font-mono">// Interactive IDE Features</h3>
+                            <h3 className="text-white text-xs font-bold font-mono">{"// Interactive IDE Features"}</h3>
                             <p className="text-gray-500 text-[11px] mt-1 leading-relaxed">
                               Use the left activity bar to search or toggling Explorer view. Command lines at the bottom panel execute mock operations.
                             </p>
@@ -1179,93 +1252,17 @@ export default function FullWidthTabs() {
               );
             })()}
           </TabPanel>
-
-          {/* ── Notes ── */}
-          <TabPanel value={value} index={4} dir={theme.direction}>
-            <SectionLabel count={filteredNotes.length} label="Notes" />
-            <FilterBar categories={NOTES_CATEGORIES} active={notesFilter} onChange={(cat) => { setNotesFilter(cat); setShowAllNotes(false); }} />
-
-            {filteredNotes.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
-                <span className="text-5xl">📂</span>
-                <p className="text-gray-500 text-sm">No notes found for this subject.</p>
-              </div>
-            ) : (
-              <>
-                {/* Featured note */}
-                {featuredNote && (
-                  <div className="mb-6" data-aos="fade-up">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="h-px flex-1 bg-gradient-to-r from-transparent to-[#6366f1]/20" />
-                      <span className="text-[11px] font-mono text-gray-600 uppercase tracking-widest">Featured</span>
-                      <div className="h-px flex-1 bg-gradient-to-l from-transparent to-[#6366f1]/20" />
-                    </div>
-                    <div className="max-w-sm">
-                      <NoteCard
-                        id={featuredNote.id}
-                        title={featuredNote.title}
-                        description={featuredNote.description}
-                        subject={featuredNote.subject}
-                        tags={featuredNote.tags}
-                        pdfUrl={featuredNote.pdfUrl}
-                        coverEmoji={featuredNote.coverEmoji}
-                        pages={featuredNote.pages}
-                        date={featuredNote.date}
-                        featured={true}
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {/* Notes grid */}
-                {regularNotes.length > 0 && (
-                  <>
-                    <div className="flex items-center gap-3 mb-5" data-aos="fade-right">
-                      <div className="h-px flex-1 bg-gradient-to-r from-transparent to-[#6366f1]/20" />
-                      <span className="text-[11px] font-mono text-gray-600 uppercase tracking-widest">{regularNotes.length} Notes</span>
-                      <div className="h-px flex-1 bg-gradient-to-l from-transparent to-[#6366f1]/20" />
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-                      {displayedRegularNotes.map((note, index) => (
-                        <div key={note.id}
-                          data-aos={index % 3 === 0 ? "fade-up-right" : index % 3 === 1 ? "fade-up" : "fade-up-left"}
-                          data-aos-duration="900"
-                          data-aos-delay={index * 60}
-                        >
-                          <NoteCard
-                            id={note.id}
-                            title={note.title}
-                            description={note.description}
-                            subject={note.subject}
-                            tags={note.tags}
-                            pdfUrl={note.pdfUrl}
-                            coverEmoji={note.coverEmoji}
-                            pages={note.pages}
-                            date={note.date}
-                            featured={false}
-                          />
-                        </div>
-                      ))}
-                    </div>
-
-                    {regularNotes.length > initialItems && (
-                      <div className="mt-8 w-full flex justify-center">
-                        <ToggleButton onClick={() => toggleShowMore("notes")} isShowingMore={showAllNotes} />
-                      </div>
-                    )}
-                  </>
-                )}
-              </>
-            )}
-          </TabPanel>
         </SwipeableViews>
       </Box>
 
       <style>{`
-        #Portfolio ::-webkit-scrollbar { width: 4px; }
-        #Portfolio ::-webkit-scrollbar-track { background: transparent; }
-        #Portfolio ::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.3); border-radius: 2px; }
+        /* Hide all scrollbars completely */
+        #Portfolio ::-webkit-scrollbar { display: none !important; width: 0px !important; height: 0px !important; }
+        #Portfolio { -ms-overflow-style: none !important; scrollbar-width: none !important; }
+        .scrollbar-none::-webkit-scrollbar { display: none !important; width: 0px !important; height: 0px !important; }
+        .scrollbar-none { scrollbar-width: none !important; -ms-overflow-style: none !important; overflow: hidden !important; }
+        ::-webkit-scrollbar { display: none !important; width: 0px !important; height: 0px !important; }
+        body, html { scrollbar-width: none !important; -ms-overflow-style: none !important; }
       `}</style>
     </div>
   );

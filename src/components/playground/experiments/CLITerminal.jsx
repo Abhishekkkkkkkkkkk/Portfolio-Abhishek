@@ -204,10 +204,9 @@ const CLITerminal = () => {
         </p>
       </div>
 
-      {/* Terminal Board wrapper */}
       <div 
         onClick={focusConsole}
-        className="rounded-xl border border-emerald-500/20 bg-[#030704] p-4 font-mono text-[11px] text-emerald-400 min-h-[260px] flex flex-col justify-between cursor-text relative overflow-hidden shadow-2xl shadow-emerald-950/10"
+        className="retro-terminal rounded-xl border border-emerald-500/20 bg-[#030704] p-4 font-mono text-[11px] text-emerald-400 min-h-[260px] flex flex-col justify-between cursor-text relative overflow-hidden shadow-2xl shadow-emerald-950/10"
       >
         {isMatrixMode ? (
           <div className="absolute inset-0 bg-black flex flex-col justify-between">

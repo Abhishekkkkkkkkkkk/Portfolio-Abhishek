@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { Menu, X, Sun, Moon, Volume2, VolumeX, Binary } from "lucide-react";
-import { Link } from "react-router-dom";
 import { playTap, getMutedState, setMutedState } from "../services/soundEffects";
 
 const Navbar = () => {
@@ -71,7 +70,6 @@ const Navbar = () => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
       const sections = navItems
-        .filter((item) => !item.isRoute)
         .map((item) => {
           const section = document.querySelector(item.href);
           if (section) {
@@ -150,47 +148,31 @@ const Navbar = () => {
           {/* Desktop Navigation */}
           <div className="hidden md:block">
             <div className="ml-8 flex items-center space-x-8">
-              {navItems.map((item) => {
-                if (item.isRoute) {
-                  return (
-                    <Link
-                      key={item.label}
-                      to={item.href}
-                      className="group relative px-1 py-2 text-sm font-medium"
-                    >
-                      <span className="relative z-10 transition-colors duration-300 text-[#e2d3fd] group-hover:text-white">
-                        {item.label}
-                      </span>
-                      <span className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-[#6366f1] to-[#a855f7] transform origin-left transition-transform duration-300 scale-x-0 group-hover:scale-x-100" />
-                    </Link>
-                  );
-                }
-                return (
-                  <a
-                    key={item.label}
-                    href={item.href}
-                    onClick={(e) => scrollToSection(e, item.href)}
-                    className="group relative px-1 py-2 text-sm font-medium"
+              {navItems.map((item) => (
+                <a
+                  key={item.label}
+                  href={item.href}
+                  onClick={(e) => scrollToSection(e, item.href)}
+                  className="group relative px-1 py-2 text-sm font-medium"
+                >
+                  <span
+                    className={`relative z-10 transition-colors duration-300 ${
+                      activeSection === item.href.substring(1)
+                        ? "bg-gradient-to-r from-[#6366f1] to-[#a855f7] bg-clip-text text-transparent font-semibold"
+                        : "text-[#e2d3fd] group-hover:text-white"
+                    }`}
                   >
-                    <span
-                      className={`relative z-10 transition-colors duration-300 ${
-                        activeSection === item.href.substring(1)
-                          ? "bg-gradient-to-r from-[#6366f1] to-[#a855f7] bg-clip-text text-transparent font-semibold"
-                          : "text-[#e2d3fd] group-hover:text-white"
-                      }`}
-                    >
-                      {item.label}
-                    </span>
-                    <span
-                      className={`absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-[#6366f1] to-[#a855f7] transform origin-left transition-transform duration-300 ${
-                        activeSection === item.href.substring(1)
-                          ? "scale-x-100"
-                          : "scale-x-0 group-hover:scale-x-100"
-                      }`}
-                    />
-                  </a>
-                );
-              })}
+                    {item.label}
+                  </span>
+                  <span
+                    className={`absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-[#6366f1] to-[#a855f7] transform origin-left transition-transform duration-300 ${
+                      activeSection === item.href.substring(1)
+                        ? "scale-x-100"
+                        : "scale-x-0 group-hover:scale-x-100"
+                    }`}
+                  />
+                </a>
+              ))}
               
               {/* Matrix Rain Toggle */}
               <button
@@ -290,44 +272,25 @@ const Navbar = () => {
       >
         <div className="flex flex-col h-full">
           <div className="px-4 py-6 space-y-4 flex-1 ">
-            {navItems.map((item, index) => {
-              if (item.isRoute) {
-                return (
-                  <Link
-                    key={item.label}
-                    to={item.href}
-                    onClick={() => setIsOpen(false)}
-                    className="block px-4 py-3 text-lg font-medium transition-all duration-300 ease text-[#e2d3fd] hover:text-white"
-                    style={{
-                      transitionDelay: `${index * 100}ms`,
-                      transform: isOpen ? "translateX(0)" : "translateX(50px)",
-                      opacity: isOpen ? 1 : 0,
-                    }}
-                  >
-                    {item.label}
-                  </Link>
-                );
-              }
-              return (
-                <a
-                  key={item.label}
-                  href={item.href}
-                  onClick={(e) => scrollToSection(e, item.href)}
-                  className={`block px-4 py-3 text-lg font-medium transition-all duration-300 ease ${
-                    activeSection === item.href.substring(1)
-                      ? "bg-gradient-to-r from-[#6366f1] to-[#a855f7] bg-clip-text text-transparent font-semibold"
-                      : "text-[#e2d3fd] hover:text-white"
-                  }`}
-                  style={{
-                    transitionDelay: `${index * 100}ms`,
-                    transform: isOpen ? "translateX(0)" : "translateX(50px)",
-                    opacity: isOpen ? 1 : 0,
-                  }}
-                >
-                  {item.label}
-                </a>
-              );
-            })}
+            {navItems.map((item, index) => (
+              <a
+                key={item.label}
+                href={item.href}
+                onClick={(e) => scrollToSection(e, item.href)}
+                className={`block px-4 py-3 text-lg font-medium transition-all duration-300 ease ${
+                  activeSection === item.href.substring(1)
+                    ? "bg-gradient-to-r from-[#6366f1] to-[#a855f7] bg-clip-text text-transparent font-semibold"
+                    : "text-[#e2d3fd] hover:text-white"
+                }`}
+                style={{
+                  transitionDelay: `${index * 100}ms`,
+                  transform: isOpen ? "translateX(0)" : "translateX(50px)",
+                  opacity: isOpen ? 1 : 0,
+                }}
+              >
+                {item.label}
+              </a>
+            ))}
           </div>
         </div>
       </div>

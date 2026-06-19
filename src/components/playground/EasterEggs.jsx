@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Terminal, X, Bug, Award, Sparkles } from "lucide-react";
+import { Terminal, X, Bug } from "lucide-react";
 import { unlockAchievement } from "./achievements/achievementHelper";
 
 const KONAMI_CODE = [
@@ -136,7 +136,7 @@ const EasterEggs = ({ toggleTheme }) => {
           "  JavaScript, TypeScript, React.js, Next.js, Tailwind, Docker."
         ];
         break;
-      case "joke":
+      case "joke": {
         const jokes = [
           "Why do programmers wear glasses? Because they can't C#.",
           "There are 10 types of people: those who understand binary, and those who don't.",
@@ -145,6 +145,7 @@ const EasterEggs = ({ toggleTheme }) => {
         ];
         response = [jokes[Math.floor(Math.random() * jokes.length)]];
         break;
+      }
       case "matrix":
         response = [
           "Initializing Matrix Rain simulation...",

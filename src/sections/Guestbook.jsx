@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, MessageSquare, MapPin, User, Calendar, Wifi, WifiOff, Sparkles, ShieldAlert } from "lucide-react";
+import { Send, MessageSquare, MapPin, User, Calendar, Sparkles, ShieldAlert } from "lucide-react";
 import { supabase } from "../services/supabase";
 import { unlockAchievement } from "../components/playground/achievements/achievementHelper";
 import { playTap, playSuccess } from "../services/soundEffects";
-import Swal from "sweetalert2";
 
 const REACTION_EMOJIS = ["💻", "🚀", "🔥", "☕", "💡", "👾", "🎉", "❤️"];
 
@@ -67,7 +66,7 @@ const Guestbook = () => {
             });
           }
         }
-      } catch (err) {
+      } catch {
         console.warn("Location API failed. Defaulting to Unknown Location.");
       }
     };
@@ -141,6 +140,8 @@ const Guestbook = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!name.trim() || !message.trim()) return;
+
+    const Swal = (await import("sweetalert2")).default;
 
     setLoading(true);
     playTap();
@@ -243,7 +244,7 @@ const Guestbook = () => {
         hour: "2-digit",
         minute: "2-digit",
       });
-    } catch (e) {
+    } catch {
       return "Just now";
     }
   };

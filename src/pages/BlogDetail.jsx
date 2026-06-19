@@ -1,11 +1,9 @@
 import React, { useEffect, useState, useRef } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import {
-  ArrowLeft, Clock, Calendar, Eye, ChevronRight,
-  BookOpen, Tag, Share2, Copy, Check, List, X, ChevronUp
+  ArrowLeft, Eye, BookOpen, Share2, Check, ChevronUp
 } from "lucide-react";
 import { supabase } from "../services/supabase";
-import { TagBadge } from "../components/BlogCard";
 
 // Modular VS Code Components
 import ActivityBar from "../components/vscode/ActivityBar";
@@ -16,8 +14,7 @@ import QuickOpen from "../components/vscode/QuickOpen";
 import BottomPanel from "../components/vscode/BottomPanel";
 import StatusBar from "../components/vscode/StatusBar";
 
-/* ── Strip trailing " views" if stored as "1.2k views" in Firestore ── */
-const cleanViews = (v) => (v ? String(v).replace(/\s*views$/i, "").trim() : null);
+
 
 /* ── Reading progress bar ── */
 const ReadingProgress = () => {
@@ -90,77 +87,11 @@ const estimateReadTime = (html = "") => {
   return `${Math.max(1, Math.ceil(words / 200))} min read`;
 };
 
-/* ── TOC list ── */
-const TocList = ({ headings, activeId, onSelect }) => (
-  <nav className="space-y-0.5 animate-fadeIn">
-    {headings.map(({ id, text, level }) => (
-      <a
-        key={id}
-        href={`#${id}`}
-        onClick={(e) => {
-          e.preventDefault();
-          document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
-          onSelect?.();
-        }}
-        className={`block text-[12px] leading-snug py-1.5 px-2 rounded-lg transition-all duration-200 font-mono
-          ${level === "H3" ? "ml-3 text-[11px]" : ""}
-          ${activeId === id
-            ? "text-indigo-400 bg-indigo-500/10 border-l-2 border-indigo-500 pl-3"
-            : "text-gray-500 hover:text-gray-300 hover:bg-white/5"
-          }`}
-      >
-        {text}
-      </a>
-    ))}
-  </nav>
+const TagBadge = ({ tag }) => (
+  <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-[#13131f] border border-white/5 text-[#bd93f9]">
+    #{tag}
+  </span>
 );
-
-/* ── Related Blogs Component ── */
-const RelatedBlogsWidget = ({ blogs, navigate }) => {
-  if (!blogs || blogs.length === 0) return null;
-  
-  return (
-    <div className="p-5 rounded-2xl border border-white/8 bg-[#0a0a1a]/80 backdrop-blur-xl animate-fadeIn">
-      <div className="flex items-center gap-2 mb-4 pb-3 border-b border-white/6">
-        <BookOpen className="w-4 h-4 text-indigo-400" />
-        <span className="text-xs font-bold text-gray-400 uppercase tracking-widest font-mono">Related Articles</span>
-      </div>
-      <div className="space-y-4">
-        {blogs.map((b) => (
-          <div
-            key={b.id}
-            onClick={() => {
-              navigate(`/blog/${b.slug || b.id}`);
-              window.scrollTo(0, 0);
-            }}
-            className="group/item flex gap-3 cursor-pointer p-2 rounded-xl hover:bg-white/5 border border-transparent hover:border-white/5 transition-all duration-300 animate-slideInRight"
-          >
-            {/* Cover image or emoji */}
-            <div className="w-12 h-12 rounded-lg border border-white/10 shrink-0 overflow-hidden flex items-center justify-center bg-gradient-to-br from-indigo-500/10 to-purple-500/5">
-              {b.coverImg ? (
-                <img src={b.coverImg} alt={b.title} className="w-full h-full object-cover group-hover/item:scale-105 transition-transform duration-500" />
-              ) : (
-                <span className="text-xl group-hover/item:scale-110 transition-transform duration-300">{b.coverEmoji}</span>
-              )}
-            </div>
-            
-            {/* Title and stats */}
-            <div className="min-w-0 flex-1 flex flex-col justify-between">
-              <h4 className="text-[12px] font-bold text-gray-300 line-clamp-2 leading-snug group-hover/item:text-indigo-400 transition-colors font-mono">
-                {b.title}
-              </h4>
-              <div className="flex items-center gap-2 mt-1.5 text-[9px] text-gray-500 font-mono">
-                <span>{b.date}</span>
-                <span>•</span>
-                <span className="flex items-center gap-0.5"><Eye className="w-2.5 h-2.5" />{b.views}</span>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
 
 /* ════════════════════════════════
    Main BlogDetail component
@@ -170,10 +101,8 @@ const BlogDetail = () => {
   const navigate = useNavigate();
   const [blog, setBlog] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [tocOpen, setTocOpen] = useState(false);
   const [headings, setHeadings] = useState([]);
   const [activeId, setActiveId] = useState("");
-  const [relatedBlogs, setRelatedBlogs] = useState([]);
   const [views, setViews] = useState(0);
   const contentRef = useRef(null);
 
@@ -689,7 +618,7 @@ const BlogDetail = () => {
       try {
         const [
           { data: blogData, error },
-          { data: listData, error: listErr }
+          { data: listData }
         ] = await Promise.all([
           supabase.from("blogs").select("*").or(`id.eq.${id},slug.eq.${id}`).single(),
           supabase.from("blogs").select("id, title, categories, slug, published_date, views_count")
@@ -725,35 +654,6 @@ const BlogDetail = () => {
 
         setBlog(mappedBlog);
         setViews(mappedBlog.views);
-
-        // Fetch related blogs from same tags / categories
-        let query = supabase
-          .from("blogs")
-          .select("id, title, description, cover_emoji, cover_img_url, tags, published_date, views_count, slug, read_time")
-          .neq("id", blogData.id);
-
-        if (mappedBlog.tags && mappedBlog.tags.length > 0) {
-          query = query.overlaps("tags", mappedBlog.tags);
-        } else if (mappedBlog.categories && mappedBlog.categories.length > 0) {
-          query = query.overlaps("categories", mappedBlog.categories);
-        }
-
-        const { data: relatedRaw } = await query.limit(3);
-
-        const relatedMapped = (relatedRaw || []).map(b => ({
-          id: b.id,
-          slug: b.slug,
-          title: b.title,
-          description: b.description,
-          coverEmoji: b.cover_emoji || "📝",
-          coverImg: b.cover_img_url,
-          tags: b.tags || [],
-          views: b.views_count || 0,
-          readTime: b.read_time || null,
-          date: formatDate(b.published_date)
-        }));
-
-        setRelatedBlogs(relatedMapped);
 
         // Call RPC view increment trigger (atomic)
         await supabase.rpc("increment_blog_views", { blog_id: blogData.id });
@@ -797,7 +697,7 @@ const BlogDetail = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [blog?.id]);
+  }, [blog]);
 
   // Settings page event listener bindings
   useEffect(() => {
@@ -892,7 +792,7 @@ const BlogDetail = () => {
           })
         ]);
         break;
-      case "cat":
+      case "cat": {
         if (!args[1]) {
           setTerminalLogs(prev => [...prev, `[Compiler]: Error: File argument required. Usage: cat <filename>`]);
           break;
@@ -915,7 +815,8 @@ const BlogDetail = () => {
           }
         }
         break;
-      case "theme":
+      }
+      case "theme": {
         if (!args[1]) {
           setTerminalLogs(prev => [...prev, `[Compiler]: Error: Theme name required. (dracula, nord, monokai)`]);
           break;
@@ -929,7 +830,8 @@ const BlogDetail = () => {
           setTerminalLogs(prev => [...prev, `[Compiler]: Error: Theme not recognized. Try 'dracula', 'nord', or 'monokai'.`]);
         }
         break;
-      case "subscribe":
+      }
+      case "subscribe": {
         if (!args[1]) {
           setTerminalLogs(prev => [...prev, `[Compiler]: Error: Email required. Usage: subscribe <email>`]);
           break;
@@ -949,10 +851,11 @@ const BlogDetail = () => {
           } else {
             setTerminalLogs(prev => [...prev, `[Compiler]: Success: Registered ${email} successfully!`]);
           }
-        } catch (err) {
+        } catch {
           setTerminalLogs(prev => [...prev, `[Compiler]: Error: Subscription registry failed.`]);
         }
         break;
+      }
       default:
         setTerminalLogs(prev => [
           ...prev,
@@ -1192,7 +1095,7 @@ const BlogDetail = () => {
           <div className="absolute bottom-1/3 right-0 w-[500px] h-[500px] rounded-full bg-[#8be9fd]/5 blur-[130px]" />
         </div>
 
-        <div className="relative z-10 w-full rounded-none md:rounded-2xl border-x-0 md:border border-white/10 bg-[#0d0d16] overflow-hidden shadow-2xl text-gray-300 font-sans select-none animate-fadeIn">
+        <div className="vscode-container relative z-10 w-full rounded-none md:rounded-2xl border-x-0 md:border border-white/10 bg-[#0d0d16] overflow-hidden shadow-2xl text-gray-300 font-sans select-none animate-fadeIn">
           
           {/* ─── IDE Title Bar ─── */}
           <div className={`flex items-center justify-between px-4 py-2.5 border-b border-b-white/5 text-[11px] font-mono text-gray-500 ${currentTheme.bgHeader}`}>
@@ -1357,10 +1260,9 @@ const BlogDetail = () => {
                         </div>
                       </div>
 
-                      {/* Intro description block */}
                       {blog.description && (
                         <div className={`mb-6 p-4 rounded border font-mono text-[13px] text-gray-300 leading-relaxed italic border-l-4 text-left`} style={{ borderColor: `${currentTheme.accentHex}30`, backgroundColor: `${currentTheme.accentHex}08`, borderLeftColor: currentTheme.accentHex }}>
-                          // {blog.description}
+                          {"// "}{blog.description}
                         </div>
                       )}
 
