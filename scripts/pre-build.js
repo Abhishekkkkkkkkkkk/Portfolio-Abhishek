@@ -90,43 +90,74 @@ function compileBlogs() {
   
   const blogsIndex = [];
   
-  // Read all folders in content/blogs
-  const topics = fs.readdirSync(contentDir).filter(f => fs.statSync(path.join(contentDir, f)).isDirectory());
-  
-  for (const topic of topics) {
-    const topicPath = path.join(contentDir, topic);
-    const files = fs.readdirSync(topicPath).filter(f => f.endsWith('.md'));
-    
-    const publicTopicDir = path.join(publicOutDir, topic);
-    fs.mkdirSync(publicTopicDir, { recursive: true });
-    
-    for (const file of files) {
-      const filePath = path.join(topicPath, file);
-      const fileContent = fs.readFileSync(filePath, 'utf8');
-      
-      const { metadata } = parseFrontmatter(fileContent);
-      
-      if (!metadata.id) {
-        console.warn(`Warning: Skipping ${file} due to missing id in frontmatter.`);
-        continue;
+  // Helper to walk directories recursively
+  function walk(dir) {
+    let results = [];
+    if (!fs.existsSync(dir)) return results;
+    const list = fs.readdirSync(dir);
+    for (const file of list) {
+      if (file === '.git') continue; // Skip Git configuration folder
+      const filePath = path.join(dir, file);
+      const stat = fs.statSync(filePath);
+      if (stat && stat.isDirectory()) {
+        results = results.concat(walk(filePath));
+      } else if (file.endsWith('.md')) {
+        results.push(filePath);
       }
-      
-      // Auto-populate missing details
-      const slug = metadata.slug || metadata.id;
-      
-      // Add topic identifier for routing lookup
-      const blogMeta = {
-        ...metadata,
-        slug,
-        topicId: topic
-      };
-      
-      blogsIndex.push(blogMeta);
-      
-      // Copy the markdown file directly to public output
-      const destPath = path.join(publicTopicDir, file);
-      fs.writeFileSync(destPath, fileContent, 'utf8');
     }
+    return results;
+  }
+
+  const allMarkdownFiles = walk(contentDir);
+  
+  for (const filePath of allMarkdownFiles) {
+    const relativePath = path.relative(contentDir, filePath);
+    const segments = relativePath.split(path.sep);
+    
+    if (segments.length < 2) continue; // Must be inside at least a topic folder (e.g. dsa/something.md)
+    
+    const topic = segments[0];
+    const file = segments[segments.length - 1];
+    
+    // Ensure public topic directory exists
+    const publicTopicDir = path.join(publicOutDir, topic);
+    if (!fs.existsSync(publicTopicDir)) {
+      fs.mkdirSync(publicTopicDir, { recursive: true });
+    }
+    
+    const fileContent = fs.readFileSync(filePath, 'utf8');
+    const { metadata } = parseFrontmatter(fileContent);
+    
+    if (!metadata.id) {
+      console.warn(`Warning: Skipping ${file} due to missing id in frontmatter.`);
+      continue;
+    }
+    
+    // Auto-populate missing details
+    const slug = metadata.slug || metadata.id;
+    
+    // Determine category and subCategory fallback from folder structure
+    const folderSubCategory = segments.length > 2 ? segments[1] : null;
+    const cat = metadata.category || topic.charAt(0).toUpperCase() + topic.slice(1);
+    const subCat = metadata.subCategory || folderSubCategory || "General";
+    
+    // Format categories array: [Category, SubCategory]
+    const categories = metadata.categories || [cat, subCat];
+    
+    const blogMeta = {
+      category: cat,
+      subCategory: subCat,
+      categories,
+      ...metadata,
+      slug,
+      topicId: topic
+    };
+    
+    blogsIndex.push(blogMeta);
+    
+    // Copy the markdown file directly to public output (flattened under the topic directory)
+    const destPath = path.join(publicTopicDir, `${slug}.md`);
+    fs.writeFileSync(destPath, fileContent, 'utf8');
   }
   
   // Sort blogs: featured first, then publishedDate descending
