@@ -142,13 +142,16 @@ function compileBlogs() {
     const subCat = metadata.subCategory || folderSubCategory || "General";
     
     // Format categories array: [Category, SubCategory]
-    const categories = metadata.categories || [cat, subCat];
+    let categories = metadata.categories || [cat, subCat];
+    if (Array.isArray(categories) && categories.length === 1) {
+      categories = [categories[0], subCat];
+    }
     
     const blogMeta = {
       category: cat,
       subCategory: subCat,
-      categories,
       ...metadata,
+      categories,
       slug,
       topicId: topic
     };

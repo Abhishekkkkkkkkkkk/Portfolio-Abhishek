@@ -2,9 +2,6 @@
   {
     "category": "Java",
     "subCategory": "Core",
-    "categories": [
-      "Java"
-    ],
     "id": "threads-in-java",
     "title": "Threads in Java",
     "description": "Learn how threads work in Java, covering concurrency, race conditions, and thread safety with synchronized.",
@@ -13,6 +10,10 @@
       "Threads",
       "Concurrency",
       "Multithreading"
+    ],
+    "categories": [
+      "Java",
+      "Core"
     ],
     "difficulty": "Medium",
     "coverEmoji": "🧵",
@@ -28,10 +29,6 @@
   {
     "category": "DSA",
     "subCategory": "Recursion",
-    "categories": [
-      "DSA",
-      "Recursion"
-    ],
     "id": "check-palindrome-using-recursion",
     "title": "Checking Palindrome using Recursion",
     "description": "Learn how to check if a string is a palindrome using recursion. Understand the properties of mirror indexing, optimized single-pointer recursion, trace execution with interactive dashboards, and compare with the optimal iterative two-pointer approach.",
@@ -43,6 +40,10 @@
       "cpp",
       "java",
       "two-pointers"
+    ],
+    "categories": [
+      "DSA",
+      "Recursion"
     ],
     "difficulty": "Medium",
     "coverEmoji": "🪞",
@@ -58,10 +59,6 @@
   {
     "category": "DSA",
     "subCategory": "Recursion",
-    "categories": [
-      "DSA",
-      "Recursion"
-    ],
     "id": "find-nth-fibonacci-number-using-recursion",
     "title": "Finding Nth Fibonacci Number using Recursion",
     "description": "A comprehensive guide to finding the Nth Fibonacci number using recursion. Learn how multiple recursive calls work under the hood, trace stack frames, visualize execution trees, analyze exponential complexity, and implement the optimal iterative approach.",
@@ -73,6 +70,10 @@
       "cpp",
       "java",
       "complexity-analysis"
+    ],
+    "categories": [
+      "DSA",
+      "Recursion"
     ],
     "difficulty": "Medium",
     "coverEmoji": "🌀",
@@ -88,10 +89,6 @@
   {
     "category": "dsa",
     "subCategory": "recursion",
-    "categories": [
-      "dsa",
-      "recursion"
-    ],
     "id": "reverse-an-array-using-recursion",
     "title": "Reversing an Array using Recursion",
     "description": "A complete developer's guide to reversing an array using recursion. Learn both the intuitive two-pointer approach and the optimized single-pointer mathematical mapping method, analyze complexity, and explore the optimal iterative swap method.",
@@ -103,6 +100,10 @@
       "cpp",
       "java",
       "pointers"
+    ],
+    "categories": [
+      "dsa",
+      "recursion"
     ],
     "difficulty": "Medium",
     "coverEmoji": "↩️",
@@ -118,9 +119,6 @@
   {
     "category": "JDBC",
     "subCategory": "Core",
-    "categories": [
-      "JDBC"
-    ],
     "id": "java-database-connectivity-jdbc-guide",
     "title": "Java Database Connectivity (JDBC) — The Complete Developer's Guide",
     "description": "A comprehensive, deep-dive guide to JDBC in Java. Learn data connectivity, driver architectures, the 7 steps of JDBC, transaction management, savepoints, batch updates, rowsets, metadata APIs, and HikariCP connection pooling.",
@@ -132,6 +130,10 @@
       "pooling",
       "cachedrowset",
       "stored-procedures"
+    ],
+    "categories": [
+      "JDBC",
+      "Core"
     ],
     "difficulty": "Medium",
     "coverEmoji": "🔌",
@@ -147,9 +149,6 @@
   {
     "category": "spring",
     "subCategory": "Core",
-    "categories": [
-      "spring"
-    ],
     "id": "introduction-to-spring-framework",
     "title": "Introduction to Spring Framework — Prerequisites, Evolution, and Setup",
     "description": "A comprehensive developer-focused guide introducing Spring 6. Discover why Spring is the enterprise standard, understand core prerequisites (Java, Maven, Hibernate), explore the ecosystem modules, and set up your local development environment.",
@@ -158,6 +157,10 @@
       "spring-boot",
       "java",
       "backend"
+    ],
+    "categories": [
+      "spring",
+      "Core"
     ],
     "difficulty": "Medium",
     "coverEmoji": "🍃",
@@ -173,9 +176,6 @@
   {
     "category": "GIT",
     "subCategory": "Core",
-    "categories": [
-      "GIT"
-    ],
     "id": "git-command-cheat-sheet",
     "title": "Git & GitHub — Command Cheat Sheet",
     "description": "A beautifully designed, interactive Git cheat sheet featuring real-time search, category filters, and click-to-copy code blocks for essential developer commands.",
@@ -185,6 +185,10 @@
       "commands",
       "cheatsheet",
       "developer-tools"
+    ],
+    "categories": [
+      "GIT",
+      "Core"
     ],
     "difficulty": "Medium",
     "coverEmoji": "⚡",
@@ -200,9 +204,6 @@
   {
     "category": "GIT",
     "subCategory": "Core",
-    "categories": [
-      "GIT"
-    ],
     "id": "introduction-to-git-complete-guide",
     "title": "Introduction to Git — The Complete Master Guide",
     "description": "Master Git and version control from scratch. Learn local, centralized, and distributed systems, the Linux kernel story, branching, merging, rebasing, remotes, and Git internals.",
@@ -212,6 +213,10 @@
       "github",
       "tutorial",
       "beginners"
+    ],
+    "categories": [
+      "GIT",
+      "Core"
     ],
     "difficulty": "Medium",
     "coverEmoji": "🌱",
@@ -227,9 +232,6 @@
   {
     "category": "Java",
     "subCategory": "Core",
-    "categories": [
-      "Java"
-    ],
     "id": "naming-conventions-in-java",
     "title": "Naming Conventions in Java",
     "description": "Learn how Java standardizes identifiers to write readable, maintainable, and industry-compliant code. A deep-dive guide covering naming guidelines for classes, interfaces, methods, variables, constants, packages, and constructors.",
@@ -239,6 +241,10 @@
       "OOPs",
       "Basics",
       "Naming Conventions"
+    ],
+    "categories": [
+      "Java",
+      "Core"
     ],
     "difficulty": "Easy",
     "coverEmoji": "📋",
@@ -254,9 +260,6 @@
   {
     "category": "Java",
     "subCategory": "Core",
-    "categories": [
-      "Java"
-    ],
     "id": "exceptions-in-java",
     "title": "Understanding Exceptions in Java",
     "description": "Learn about Compile-Time, Logical, and Run-Time errors in Java. Master try-catch, multiple catches, exception hierarchy, custom exceptions, throw vs throws, and try-with-resources.",
@@ -265,6 +268,10 @@
       "Exceptions",
       "Error Handling",
       "Basics"
+    ],
+    "categories": [
+      "Java",
+      "Core"
     ],
     "difficulty": "Easy",
     "coverEmoji": "📝",
@@ -280,10 +287,6 @@
   {
     "category": "DSA",
     "subCategory": "Recursion",
-    "categories": [
-      "DSA",
-      "Recursion"
-    ],
     "id": "recursion-the-complete-deep-dive",
     "title": "Recursion — The Complete Deep Dive",
     "description": "A comprehensive guide to recursion in C++ covering recursion fundamentals, stack overflow, base conditions, recursive trees, backtracking, parameterised recursion, functional recursion, dry runs, visual explanations, and interview-focused concepts.",
@@ -299,6 +302,10 @@
       "Coding Interview",
       "Problem Solving"
     ],
+    "categories": [
+      "DSA",
+      "Recursion"
+    ],
     "difficulty": "Medium",
     "coverEmoji": "🔄",
     "coverImage": "",
@@ -313,15 +320,16 @@
   {
     "category": "Java",
     "subCategory": "Core",
-    "categories": [
-      "Java"
-    ],
     "id": "taking-input-from-user-in-java",
     "title": "Taking Input from User in Java",
     "description": "Learn how to take user input in Java using different approaches, including System.in.read(), BufferedReader, and Scanner. This article explains how each method works, their advantages and limitations, and when to use them in real-world Java applications. Whether you're a beginner or revising Java fundamentals, this guide will help you understand user input handling in a simple and practical way.",
     "tags": [
       "Java",
       "User Input"
+    ],
+    "categories": [
+      "Java",
+      "Core"
     ],
     "difficulty": "Medium",
     "coverEmoji": "☕",
@@ -337,9 +345,6 @@
   {
     "category": "Java",
     "subCategory": "Core",
-    "categories": [
-      "Java"
-    ],
     "id": "packages-in-java",
     "title": "Packages in Java",
     "description": "Learn how Java uses packages to organize classes just like folders organize files — covering built-in packages, custom package creation, import syntax, and naming conventions.",
@@ -348,6 +353,10 @@
       "Packages",
       "OOPs",
       "Basics"
+    ],
+    "categories": [
+      "Java",
+      "Core"
     ],
     "difficulty": "Easy",
     "coverEmoji": "📦",
