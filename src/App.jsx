@@ -19,6 +19,7 @@ const ProjectDetails = React.lazy(() => import("./Pages/ProjectDetail"));
 const BlogDetail = React.lazy(() => import("./Pages/BlogDetail"));
 const UnsubscribePage = React.lazy(() => import("./Pages/Unsubscribe"));
 const Playground = React.lazy(() => import("./Pages/Playground"));
+const BlogHome = React.lazy(() => import("./Pages/BlogHome"));
 
 /* ─── Landing Page ─── */
 const LandingPage = ({ showWelcome, setShowWelcome }) => {
@@ -74,12 +75,7 @@ const ProjectPageLayout = () => (
 );
 
 /* ─── Blog Page Layout ─── */
-const BlogPageLayout = () => (
-  <>
-    <BlogDetail />
-    <Footer />
-  </>
-);
+const BlogPageLayout = () => <BlogDetail />;
 
 function App() {
   const [showWelcome, setShowWelcome] = useState(true);
@@ -94,7 +90,7 @@ function App() {
   }, []);
 
   return (
-    <BrowserRouter>
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       {matrixEnabled && <MatrixRain />}
       <CommandPalette />
       <Routes>
@@ -116,6 +112,42 @@ function App() {
               </div>
             }>
               <ProjectPageLayout />
+            </React.Suspense>
+          } 
+        />
+        <Route 
+          path="/blog" 
+          element={
+            <React.Suspense fallback={
+              <div className="min-h-screen bg-[#030014] flex items-center justify-center">
+                <div className="w-12 h-12 rounded-full border-2 border-[#6366f1]/20 border-t-[#6366f1] animate-spin" />
+              </div>
+            }>
+              <BlogHome />
+            </React.Suspense>
+          } 
+        />
+        <Route 
+          path="/blog/topic/:topicId" 
+          element={
+            <React.Suspense fallback={
+              <div className="min-h-screen bg-[#030014] flex items-center justify-center">
+                <div className="w-12 h-12 rounded-full border-2 border-[#6366f1]/20 border-t-[#6366f1] animate-spin" />
+              </div>
+            }>
+              <BlogPageLayout />
+            </React.Suspense>
+          } 
+        />
+        <Route 
+          path="/blog/topic/:topicId/:blogId" 
+          element={
+            <React.Suspense fallback={
+              <div className="min-h-screen bg-[#030014] flex items-center justify-center">
+                <div className="w-12 h-12 rounded-full border-2 border-[#6366f1]/20 border-t-[#6366f1] animate-spin" />
+              </div>
+            }>
+              <BlogPageLayout />
             </React.Suspense>
           } 
         />

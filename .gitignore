@@ -35,3 +35,7 @@ dist-ssr
 # Temporary workspace tools
 powershell.bat
 scratch/
+
+# Headless blog content repository
+content/blogs/
+public/blogs/

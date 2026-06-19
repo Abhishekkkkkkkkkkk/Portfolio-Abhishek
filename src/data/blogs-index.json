@@ -1,0 +1,363 @@
+[
+  {
+    "id": "threads-in-java",
+    "title": "Threads in Java",
+    "description": "Learn how threads work in Java, covering concurrency, race conditions, and thread safety with synchronized.",
+    "category": "Java",
+    "subCategory": "Core",
+    "tags": [
+      "Java",
+      "Threads",
+      "Concurrency",
+      "Multithreading"
+    ],
+    "categories": [
+      "Java"
+    ],
+    "difficulty": "Medium",
+    "coverEmoji": "🧵",
+    "coverImage": "",
+    "publishedDate": "2026-06-05T10:02:28+00:00",
+    "lastUpdated": "2026-06-05T10:02:34+00:00",
+    "featured": true,
+    "readTime": "",
+    "views": 10,
+    "slug": "threads-in-java",
+    "topicId": "java"
+  },
+  {
+    "id": "check-palindrome-using-recursion",
+    "title": "Checking Palindrome using Recursion",
+    "description": "Learn how to check if a string is a palindrome using recursion. Understand the properties of mirror indexing, optimized single-pointer recursion, trace execution with interactive dashboards, and compare with the optimal iterative two-pointer approach.",
+    "category": "DSA",
+    "subCategory": "Recursion",
+    "tags": [
+      "recursion",
+      "palindrome",
+      "strings",
+      "dsa",
+      "cpp",
+      "java",
+      "two-pointers"
+    ],
+    "categories": [
+      "DSA",
+      "Recursion"
+    ],
+    "difficulty": "Medium",
+    "coverEmoji": "🪞",
+    "coverImage": "",
+    "publishedDate": "2026-06-16T07:30:06+00:00",
+    "lastUpdated": "2026-06-16T07:30:10+00:00",
+    "featured": false,
+    "readTime": "6 min read",
+    "views": 16,
+    "slug": "check-palindrome-using-recursion",
+    "topicId": "dsa"
+  },
+  {
+    "id": "find-nth-fibonacci-number-using-recursion",
+    "title": "Finding Nth Fibonacci Number using Recursion",
+    "description": "A comprehensive guide to finding the Nth Fibonacci number using recursion. Learn how multiple recursive calls work under the hood, trace stack frames, visualize execution trees, analyze exponential complexity, and implement the optimal iterative approach.",
+    "category": "DSA",
+    "subCategory": "Recursion",
+    "tags": [
+      "recursion",
+      "fibonacci",
+      "algorithms",
+      "dsa",
+      "cpp",
+      "java",
+      "complexity-analysis"
+    ],
+    "categories": [
+      "DSA",
+      "Recursion"
+    ],
+    "difficulty": "Medium",
+    "coverEmoji": "🌀",
+    "coverImage": "",
+    "publishedDate": "2026-06-16T07:24:30+00:00",
+    "lastUpdated": "2026-06-16T07:24:34+00:00",
+    "featured": false,
+    "readTime": "6 min read",
+    "views": 28,
+    "slug": "find-nth-fibonacci-number-using-recursion",
+    "topicId": "dsa"
+  },
+  {
+    "id": "reverse-an-array-using-recursion",
+    "title": "Reversing an Array using Recursion",
+    "description": "A complete developer's guide to reversing an array using recursion. Learn both the intuitive two-pointer approach and the optimized single-pointer mathematical mapping method, analyze complexity, and explore the optimal iterative swap method.",
+    "category": "dsa",
+    "subCategory": "recursion",
+    "tags": [
+      "recursion",
+      "arrays",
+      "algorithms",
+      "dsa",
+      "cpp",
+      "java",
+      "pointers"
+    ],
+    "categories": [
+      "dsa",
+      "recursion"
+    ],
+    "difficulty": "Medium",
+    "coverEmoji": "↩️",
+    "coverImage": "",
+    "publishedDate": "2026-06-15T13:01:01+00:00",
+    "lastUpdated": "2026-06-15T13:01:05+00:00",
+    "featured": false,
+    "readTime": "5 min read",
+    "views": 26,
+    "slug": "reverse-an-array-using-recursion",
+    "topicId": "dsa"
+  },
+  {
+    "id": "java-database-connectivity-jdbc-guide",
+    "title": "Java Database Connectivity (JDBC) — The Complete Developer's Guide",
+    "description": "A comprehensive, deep-dive guide to JDBC in Java. Learn data connectivity, driver architectures, the 7 steps of JDBC, transaction management, savepoints, batch updates, rowsets, metadata APIs, and HikariCP connection pooling.",
+    "category": "JDBC",
+    "subCategory": "Core",
+    "tags": [
+      "jdbc",
+      "backend",
+      "java",
+      "transactions",
+      "pooling",
+      "cachedrowset",
+      "stored-procedures"
+    ],
+    "categories": [
+      "JDBC"
+    ],
+    "difficulty": "Medium",
+    "coverEmoji": "🔌",
+    "coverImage": "",
+    "publishedDate": "2026-06-12T09:24:24+00:00",
+    "lastUpdated": "2026-06-12T09:24:48+00:00",
+    "featured": false,
+    "readTime": "26 min read",
+    "views": 18,
+    "slug": "java-database-connectivity-jdbc-guide",
+    "topicId": "jdbc"
+  },
+  {
+    "id": "introduction-to-spring-framework",
+    "title": "Introduction to Spring Framework — Prerequisites, Evolution, and Setup",
+    "description": "A comprehensive developer-focused guide introducing Spring 6. Discover why Spring is the enterprise standard, understand core prerequisites (Java, Maven, Hibernate), explore the ecosystem modules, and set up your local development environment.",
+    "category": "spring",
+    "subCategory": "Core",
+    "tags": [
+      "spring-framework",
+      "spring-boot",
+      "java",
+      "backend"
+    ],
+    "categories": [
+      "spring"
+    ],
+    "difficulty": "Medium",
+    "coverEmoji": "🍃",
+    "coverImage": "",
+    "publishedDate": "2026-06-11T11:05:45+00:00",
+    "lastUpdated": "2026-06-11T11:10:24+00:00",
+    "featured": false,
+    "readTime": "10 min read",
+    "views": 12,
+    "slug": "introduction-to-spring-framework",
+    "topicId": "spring"
+  },
+  {
+    "id": "git-command-cheat-sheet",
+    "title": "Git & GitHub — Command Cheat Sheet",
+    "description": "A beautifully designed, interactive Git cheat sheet featuring real-time search, category filters, and click-to-copy code blocks for essential developer commands.",
+    "category": "GIT",
+    "subCategory": "Core",
+    "tags": [
+      "git",
+      "reference",
+      "commands",
+      "cheatsheet",
+      "developer-tools"
+    ],
+    "categories": [
+      "GIT"
+    ],
+    "difficulty": "Medium",
+    "coverEmoji": "⚡",
+    "coverImage": "",
+    "publishedDate": "2026-06-09T08:41:08+00:00",
+    "lastUpdated": "2026-06-09T08:41:12+00:00",
+    "featured": false,
+    "readTime": "5 min read",
+    "views": 6,
+    "slug": "git-command-cheat-sheet",
+    "topicId": "git"
+  },
+  {
+    "id": "introduction-to-git-complete-guide",
+    "title": "Introduction to Git — The Complete Master Guide",
+    "description": "Master Git and version control from scratch. Learn local, centralized, and distributed systems, the Linux kernel story, branching, merging, rebasing, remotes, and Git internals.",
+    "category": "GIT",
+    "subCategory": "Core",
+    "tags": [
+      "git",
+      "version-control",
+      "github",
+      "tutorial",
+      "beginners"
+    ],
+    "categories": [
+      "GIT"
+    ],
+    "difficulty": "Medium",
+    "coverEmoji": "🌱",
+    "coverImage": "",
+    "publishedDate": "2026-06-09T08:37:34+00:00",
+    "lastUpdated": "2026-06-09T08:37:41+00:00",
+    "featured": false,
+    "readTime": "15 min read",
+    "views": 2,
+    "slug": "introduction-to-git-complete-guide",
+    "topicId": "git"
+  },
+  {
+    "id": "naming-conventions-in-java",
+    "title": "Naming Conventions in Java",
+    "description": "Learn how Java standardizes identifiers to write readable, maintainable, and industry-compliant code. A deep-dive guide covering naming guidelines for classes, interfaces, methods, variables, constants, packages, and constructors.",
+    "category": "Java",
+    "subCategory": "Core",
+    "tags": [
+      "Java",
+      "Packages",
+      "OOPs",
+      "Basics",
+      "Naming Conventions"
+    ],
+    "categories": [
+      "Java"
+    ],
+    "difficulty": "Easy",
+    "coverEmoji": "📋",
+    "coverImage": "",
+    "publishedDate": "2026-06-08T15:49:49+00:00",
+    "lastUpdated": "2026-06-08T15:49:52+00:00",
+    "featured": false,
+    "readTime": "5 min read",
+    "views": 17,
+    "slug": "naming-conventions-in-java",
+    "topicId": "java"
+  },
+  {
+    "id": "exceptions-in-java",
+    "title": "Understanding Exceptions in Java",
+    "description": "Learn about Compile-Time, Logical, and Run-Time errors in Java. Master try-catch, multiple catches, exception hierarchy, custom exceptions, throw vs throws, and try-with-resources.",
+    "category": "Java",
+    "subCategory": "Core",
+    "tags": [
+      "Java",
+      "Exceptions",
+      "Error Handling",
+      "Basics"
+    ],
+    "categories": [
+      "Java"
+    ],
+    "difficulty": "Easy",
+    "coverEmoji": "📝",
+    "coverImage": "⚠️",
+    "publishedDate": "2026-06-08T15:30:11+00:00",
+    "lastUpdated": "2026-06-08T15:30:17+00:00",
+    "featured": false,
+    "readTime": "12 min read",
+    "views": 10,
+    "slug": "exceptions-in-java",
+    "topicId": "java"
+  },
+  {
+    "id": "recursion-the-complete-deep-dive",
+    "title": "Recursion — The Complete Deep Dive",
+    "description": "A comprehensive guide to recursion in C++ covering recursion fundamentals, stack overflow, base conditions, recursive trees, backtracking, parameterised recursion, functional recursion, dry runs, visual explanations, and interview-focused concepts.",
+    "category": "DSA",
+    "subCategory": "Recursion",
+    "tags": [
+      "Recursion",
+      "DSA",
+      "C++",
+      "Backtracking",
+      "Recursive Tree",
+      "Stack Overflow",
+      "Parameterised Recursion",
+      "Functional Recursion",
+      "Coding Interview",
+      "Problem Solving"
+    ],
+    "categories": [
+      "DSA",
+      "Recursion"
+    ],
+    "difficulty": "Medium",
+    "coverEmoji": "🔄",
+    "coverImage": "",
+    "publishedDate": "2026-06-05T15:58:58+00:00",
+    "lastUpdated": "2026-06-05T15:58:56+00:00",
+    "featured": false,
+    "readTime": "20 min read",
+    "views": 12,
+    "slug": "recursion-the-complete-deep-dive",
+    "topicId": "dsa"
+  },
+  {
+    "id": "taking-input-from-user-in-java",
+    "title": "Taking Input from User in Java",
+    "description": "Learn how to take user input in Java using different approaches, including System.in.read(), BufferedReader, and Scanner. This article explains how each method works, their advantages and limitations, and when to use them in real-world Java applications. Whether you're a beginner or revising Java fundamentals, this guide will help you understand user input handling in a simple and practical way.",
+    "category": "Java",
+    "subCategory": "Core",
+    "tags": [
+      "Java",
+      "User Input"
+    ],
+    "categories": [
+      "Java"
+    ],
+    "difficulty": "Medium",
+    "coverEmoji": "☕",
+    "coverImage": "",
+    "publishedDate": "2026-06-05T10:28:15+00:00",
+    "lastUpdated": "2026-06-05T14:35:30+00:00",
+    "featured": false,
+    "readTime": "5 min read",
+    "views": 12,
+    "slug": "taking-input-from-user-in-java",
+    "topicId": "java"
+  },
+  {
+    "id": "packages-in-java",
+    "title": "Packages in Java",
+    "description": "Learn how Java uses packages to organize classes just like folders organize files — covering built-in packages, custom package creation, import syntax, and naming conventions.",
+    "category": "Java",
+    "subCategory": "Core",
+    "tags": [
+      "Java",
+      "Packages",
+      "OOPs",
+      "Basics"
+    ],
+    "categories": [
+      "Java"
+    ],
+    "difficulty": "Easy",
+    "coverEmoji": "📦",
+    "coverImage": "",
+    "publishedDate": "2026-06-03T14:54:25+00:00",
+    "lastUpdated": "2026-06-03T15:14:39+00:00",
+    "featured": false,
+    "readTime": "6 min read",
+    "views": 53,
+    "slug": "packages-in-java",
+    "topicId": "java"
+  }
+]
