@@ -2,10 +2,11 @@ import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import {
   ArrowLeft, Eye, Clock, Calendar, Share2, Check, Bookmark, 
-  ChevronRight, ChevronDown, BookOpen, Search, Menu, X, ArrowRight, ArrowLeft as ArrowLeftIcon
+  ChevronRight, ChevronDown, BookOpen, Search, Menu, X, ArrowRight, ArrowLeft as ArrowLeftIcon,
+  Sun, Moon
 } from "lucide-react";
-import blogsIndex from "../data/blogs-index.json";
-import MarkdownRenderer from "../components/blog/MarkdownRenderer";
+import { supabase } from "../services/supabase";
+import BlogRenderer from "../components/blog/BlogRenderer";
 
 // ======================== TOPICS TO CATEGORY MAP ========================
 const TOPIC_MAP = {
@@ -19,6 +20,23 @@ const TOPIC_MAP = {
   "oops": "OOPs",
   "interview-questions": "Interview Prep",
   "projects": "Projects"
+};
+
+// ======================== HELPER: MAP CATEGORIES TO TOPIC ID ========================
+const getTopicId = (categories) => {
+  if (!categories || categories.length === 0) return "general";
+  const primaryCat = categories[0].toLowerCase().trim();
+  if (primaryCat.includes("java") && !primaryCat.includes("javascript")) return "java";
+  if (primaryCat.includes("spring")) return "spring-boot";
+  if (primaryCat.includes("dsa") || primaryCat.includes("recursion") || primaryCat.includes("algorithm")) return "dsa";
+  if (primaryCat.includes("system") || primaryCat.includes("design")) return "system-design";
+  if (primaryCat.includes("react")) return "react";
+  if (primaryCat.includes("js") || primaryCat.includes("javascript")) return "javascript";
+  if (primaryCat.includes("database") || primaryCat.includes("sql") || primaryCat.includes("jdbc")) return "database";
+  if (primaryCat.includes("oops")) return "oops";
+  if (primaryCat.includes("interview")) return "interview-questions";
+  if (primaryCat.includes("project")) return "projects";
+  return primaryCat.replace(/\s+/g, "-");
 };
 
 // ======================== HELPER: CLEAN VIEWS ========================
@@ -43,6 +61,25 @@ const BlogDetail = () => {
   const [views, setViews] = useState(0);
   const [copied, setCopied] = useState(false);
   const [bookmarked, setBookmarked] = useState(false);
+  const [theme, setTheme] = useState(() => localStorage.getItem("global-theme") || "dark");
+
+  useEffect(() => {
+    if (theme === "light") {
+      document.body.classList.add("light");
+    } else {
+      document.body.classList.remove("light");
+    }
+    localStorage.setItem("global-theme", theme);
+    window.dispatchEvent(new CustomEvent("global-theme-changed", { detail: theme }));
+  }, [theme]);
+
+  useEffect(() => {
+    const handleThemeChange = (e) => {
+      setTheme(e.detail);
+    };
+    window.addEventListener("global-theme-changed", handleThemeChange);
+    return () => window.removeEventListener("global-theme-changed", handleThemeChange);
+  }, []);
 
   // Layout navigation states
   const [activeHeadingId, setActiveHeadingId] = useState("");
@@ -69,75 +106,90 @@ const BlogDetail = () => {
     setLoading(true);
     setCopied(false);
     
-    // Set sidebar lists immediately from imported blogsIndex
-    setAllBlogs(blogsIndex || []);
-
     const cleanId = isWorkbench ? blogId : id;
-    
-    if (isWorkbench && !blogId) {
-      // In workspace but no specific blog selected
-      setBlog(null);
-      setLoading(false);
-      return;
-    }
-
-    if (!cleanId) {
-      setBlog(null);
-      setLoading(false);
-      return;
-    }
-
-    // Find the blog metadata in the catalog
-    const blogMeta = (blogsIndex || []).find(b => b.id === cleanId || b.slug === cleanId);
-    if (!blogMeta) {
-      console.error("Requested blog metadata not found in index:", cleanId);
-      setBlog(null);
-      setLoading(false);
-      return;
-    }
-
-    const targetTopicId = blogMeta.topicId;
-    const targetSlug = blogMeta.slug;
 
     try {
-      // Fetch the raw markdown content dynamically from public directory
-      const response = await fetch(`/blogs/${targetTopicId}/${targetSlug}.md`);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch markdown file from /blogs/${targetTopicId}/${targetSlug}.md`);
+      // Always fetch the list of all blogs to populate the sidebar and directory tree
+      const { data: listData, error: listErr } = await supabase
+        .from("blogs")
+        .select("id, title, categories, slug, published_date, views_count");
+
+      if (listErr) {
+        console.error("Failed to load blogs list:", listErr);
       }
-      
-      const rawText = await response.text();
-      
+
+      if (listData) {
+        const mappedList = listData.map(b => ({
+          ...b,
+          topicId: getTopicId(b.categories)
+        }));
+        setAllBlogs(mappedList);
+      }
+
+      if (isWorkbench && !blogId) {
+        // In category workbench but no specific blog selected yet
+        setBlog(null);
+        setLoading(false);
+        return;
+      }
+
+      if (!cleanId) {
+        setBlog(null);
+        setLoading(false);
+        return;
+      }
+
+      const { data: blogData, error: blogErr } = await supabase
+        .from("blogs")
+        .select("*")
+        .or(`id.eq.${cleanId},slug.eq.${cleanId}`)
+        .single();
+
+      if (blogErr || !blogData) {
+        console.error("Blog query error or not found:", blogErr);
+        setBlog(null);
+        setLoading(false);
+        return;
+      }
+
       // Parse YAML frontmatter if present (strip it out for rendering)
-      let cleanContent = rawText;
-      if (rawText.startsWith("---")) {
-        const nextDashIndex = rawText.indexOf("---", 3);
+      let cleanContent = blogData.content || "";
+      if (cleanContent.startsWith("---")) {
+        const nextDashIndex = cleanContent.indexOf("---", 3);
         if (nextDashIndex !== -1) {
-          cleanContent = rawText.slice(nextDashIndex + 3).trim();
+          cleanContent = cleanContent.slice(nextDashIndex + 3).trim();
         }
       }
 
       const mapped = {
-        id: blogMeta.id,
-        slug: blogMeta.slug,
-        title: blogMeta.title,
-        description: blogMeta.description,
+        id: blogData.id,
+        slug: blogData.slug,
+        title: blogData.title,
+        description: blogData.description,
         content: cleanContent,
-        coverEmoji: blogMeta.coverEmoji || "📝",
-        coverImg: blogMeta.coverImage,
-        categories: blogMeta.categories || [blogMeta.category || "General"],
-        tags: blogMeta.tags || [],
-        readTime: blogMeta.readTime || "5 min read",
-        date: new Date(blogMeta.publishedDate).toLocaleDateString("en-US", {
+        coverEmoji: blogData.cover_emoji || "📝",
+        coverImg: blogData.cover_img_url,
+        categories: blogData.categories || [],
+        tags: blogData.tags || [],
+        readTime: blogData.read_time || "5 min read",
+        isHtml: true, // Since Supabase blogs are HTML documents!
+        date: new Date(blogData.published_date).toLocaleDateString("en-US", {
           year: "numeric",
           month: "short",
           day: "numeric",
         }),
-        views: blogMeta.views || 0
+        views: blogData.views_count || 0
       };
       
       setBlog(mapped);
-      setViews(mapped.views + 1);
+      setViews(mapped.views);
+      
+      // Try to increment views via RPC if it succeeds
+      try {
+        await supabase.rpc("increment_blog_views", { blog_id: blogData.id });
+      } catch (rpcErr) {
+        console.warn("Views increment RPC failed:", rpcErr.message);
+      }
     } catch (e) {
       console.error("Failed to load blog data:", e);
       setBlog(null);
@@ -191,10 +243,12 @@ const BlogDetail = () => {
     )
   );
 
-  // Group these topic blogs by subtopic (categories[1] || "General")
+  // Group these topic blogs by subtopic (categories[1] || "General") with case-normalization
   const subtopicGroups = {};
   topicBlogs.forEach(b => {
-    const sub = b.categories[1] || "General";
+    const rawSub = b.categories[1] || "General";
+    // Normalize to Title Case (e.g. "recursion" -> "Recursion") to group matching names
+    const sub = rawSub.trim().charAt(0).toUpperCase() + rawSub.trim().slice(1).toLowerCase();
     if (!subtopicGroups[sub]) {
       subtopicGroups[sub] = [];
     }
@@ -309,7 +363,7 @@ const BlogDetail = () => {
       </div>
 
       {/* ======================== NAVBAR HEADER ======================== */}
-      <header className="sticky top-0 z-40 w-full h-14 bg-[#030014]/80 backdrop-blur-xl border-b border-white/6 flex items-center justify-between px-4 sm:px-6 relative z-30">
+      <header className="sticky top-0 z-40 w-full h-14 bg-[#050515]/75 backdrop-blur-xl border-b border-[#6366f1]/15 flex items-center justify-between px-4 sm:px-6 relative z-30 shadow-lg shadow-black/25">
         <div className="flex items-center gap-3">
           {/* Mobile Navigation Toggle (Only in Workbench View) */}
           {isWorkbench && (
@@ -356,8 +410,16 @@ const BlogDetail = () => {
         {/* Action Widgets */}
         <div className="flex items-center gap-3">
           <button
+            onClick={() => setTheme(prev => prev === "dark" ? "light" : "dark")}
+            className="p-2 rounded-lg border border-[#6366f1]/20 bg-[#6366f1]/5 text-indigo-300 hover:text-white hover:bg-[#6366f1]/15 hover:border-[#6366f1]/35 transition-all cursor-pointer"
+            title="Toggle theme mode"
+          >
+            {theme === "dark" ? <Sun size={14} /> : <Moon size={14} />}
+          </button>
+
+          <button
             onClick={() => navigate("/blog")}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/5 bg-white/4 text-[10px] font-mono font-bold text-gray-400 hover:text-white hover:bg-white/8 hover:border-white/10 transition-all cursor-pointer uppercase"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#6366f1]/20 bg-[#6366f1]/5 text-[10px] font-mono font-bold text-indigo-300 hover:text-white hover:bg-[#6366f1]/15 hover:border-[#6366f1]/35 transition-all cursor-pointer uppercase"
           >
             <ArrowLeft size={11} /> Home
           </button>
@@ -366,7 +428,7 @@ const BlogDetail = () => {
             <>
               <button
                 onClick={handleShare}
-                className="p-2 rounded-lg border border-white/5 bg-white/4 text-gray-400 hover:text-white hover:bg-white/8 hover:border-white/10 transition-all cursor-pointer"
+                className="p-2 rounded-lg border border-[#6366f1]/20 bg-[#6366f1]/5 text-indigo-300 hover:text-white hover:bg-[#6366f1]/15 hover:border-[#6366f1]/35 transition-all cursor-pointer"
                 title="Copy document URL"
               >
                 {copied ? <Check size={14} className="text-emerald-400" /> : <Share2 size={14} />}
@@ -374,7 +436,7 @@ const BlogDetail = () => {
 
               <button
                 onClick={() => setBookmarked(prev => !prev)}
-                className="p-2 rounded-lg border border-white/5 bg-white/4 hover:bg-white/8 hover:border-white/10 transition-all cursor-pointer"
+                className="p-2 rounded-lg border border-[#6366f1]/20 bg-[#6366f1]/5 hover:bg-[#6366f1]/15 hover:border-[#6366f1]/35 transition-all cursor-pointer"
                 title="Bookmark article"
                 style={{ color: bookmarked ? "#a855f7" : "#9ca3af" }}
               >
@@ -391,12 +453,12 @@ const BlogDetail = () => {
         {/* ── Left Sidebar (Topic Index Explorer) - Rendered only in Workbench Layout ── */}
         {isWorkbench && (
           <aside 
-            className={`fixed md:relative top-14 md:top-0 bottom-0 left-0 w-64 border-r border-white/6 bg-[#030014]/95 md:bg-[#030014]/40 z-30 transition-transform duration-300 select-none flex flex-col ${
+            className={`fixed md:relative top-14 md:top-0 bottom-0 left-0 w-64 border-r border-[#6366f1]/12 bg-[#050518]/95 md:bg-[#050518]/30 backdrop-blur-md z-30 transition-all duration-300 select-none flex flex-col ${
               mobileNavOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
             }`}
           >
             {/* Category overview banner */}
-            <div className="p-4 border-b border-white/6 text-left">
+            <div className="p-4 border-b border-[#6366f1]/12 text-left bg-gradient-to-b from-[#6366f1]/5 to-transparent">
               <div className="flex items-center gap-2 mb-1.5">
                 <span className="text-xl">
                   {targetTopic === "Java" ? "☕" : targetTopic === "Spring Boot" ? "🍃" : targetTopic === "DSA" ? "🧮" : "📝"}
@@ -411,14 +473,14 @@ const BlogDetail = () => {
             </div>
 
             {/* Local in-topic search */}
-            <div className="p-3 border-b border-white/6 relative">
-              <Search size={12} className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-600" />
+            <div className="p-3 border-b border-[#6366f1]/12 relative">
+              <Search size={12} className="absolute left-6 top-1/2 -translate-y-1/2 text-indigo-400/50" />
               <input
                 type="text"
                 value={localSearch}
                 onChange={(e) => setLocalSearch(e.target.value)}
                 placeholder={`Search in ${targetTopic}...`}
-                className="w-full pl-8 pr-3 py-1.5 rounded-lg bg-black/30 border border-white/5 text-[11px] text-gray-300 outline-none focus:border-[#6366f1]/40 focus:bg-white/[0.01] transition-all font-mono"
+                className="w-full pl-8 pr-3 py-1.5 rounded-lg bg-[#04040e]/60 border border-[#6366f1]/20 text-[11px] text-gray-200 outline-none focus:border-[#6366f1] focus:bg-[#04040e]/90 transition-all font-mono placeholder:text-gray-600"
               />
             </div>
 
@@ -458,8 +520,8 @@ const BlogDetail = () => {
                                 onClick={() => setMobileNavOpen(false)}
                                 className={`block w-full text-left py-1.5 px-2.5 rounded text-[11.5px] font-mono leading-tight border transition-all truncate ${
                                   isCurrent
-                                    ? "bg-[#6366f1]/10 border-[#6366f1]/20 text-[#22d3ee] font-semibold"
-                                    : "border-transparent text-gray-500 hover:text-gray-300 hover:bg-white/[0.01]"
+                                    ? "bg-gradient-to-r from-[#6366f1]/15 to-[#a855f7]/5 border-[#6366f1]/25 text-[#22d3ee] font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
+                                    : "border-transparent text-gray-400 hover:text-gray-200 hover:bg-white/[0.02]"
                                 }`}
                                 style={{ textDecoration: "none" }}
                               >
@@ -530,66 +592,9 @@ const BlogDetail = () => {
             /* Active Blog Reader Pane */
             <div className="max-w-3xl w-full mx-auto flex-1 flex flex-col animate-fade-in">
               
-              {/* Breadcrumbs */}
-              <div className="flex flex-wrap items-center gap-1 text-[10px] font-mono text-gray-500 mb-6 uppercase text-left">
-                <Link to="/blog" className="hover:text-white">Blogs</Link>
-                <ChevronRight size={10} />
-                <span>{targetTopic}</span>
-                {blog.categories[1] && (
-                  <>
-                    <ChevronRight size={10} />
-                    <span>{blog.categories[1]}</span>
-                  </>
-                )}
-                <ChevronRight size={10} />
-                <span className="text-gray-300 truncate max-w-[200px]">{blog.title}</span>
-              </div>
-
-              {/* Article Cover Image Header */}
-              {blog.coverImg && (
-                <div className="relative h-48 w-full rounded-2xl overflow-hidden mb-8 border border-white/6 shadow-xl">
-                  <img src={blog.coverImg} alt={blog.title} className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#030014] to-transparent opacity-60" />
-                </div>
-              )}
-
-              {/* Article Meta Header */}
-              <div className="text-left mb-8 pb-6 border-b border-white/6">
-                {/* Tags */}
-                {blog.tags && blog.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 mb-4">
-                    {blog.tags.map(tag => (
-                      <span 
-                        key={tag} 
-                        className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#6366f1]/10 border border-[#6366f1]/15 text-[#818cf8] uppercase tracking-wider"
-                      >
-                        #{tag}
-                      </span>
-                    ))}
-                  </div>
-                )}
-
-                {/* Title */}
-                <h1 
-                  className="text-3xl sm:text-4xl font-extrabold text-white leading-tight mb-4 tracking-tight"
-                  style={{ fontFamily: "'Sora', sans-serif" }}
-                >
-                  {blog.title}
-                </h1>
-
-                {/* Meta information row */}
-                <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500 font-mono">
-                  <span className="flex items-center gap-1"><Calendar size={12} /> {blog.date}</span>
-                  <span>•</span>
-                  <span className="flex items-center gap-1"><Clock size={12} /> {blog.readTime}</span>
-                  <span>•</span>
-                  <span className="flex items-center gap-1"><Eye size={12} /> {cleanViews(views)} views</span>
-                </div>
-              </div>
-
               {/* Render Content Body */}
               <div className="flex-1 text-left" style={{ fontSize: `${fontSize}px` }}>
-                <MarkdownRenderer content={blog.content} lineNumbers={lineNumbers} />
+                <BlogRenderer content={blog.content} lineNumbers={lineNumbers} isHtml={blog.isHtml} />
               </div>
 
               {/* ── Next / Previous Navigation Links ── */}
@@ -657,13 +662,13 @@ const BlogDetail = () => {
 
         {/* ── Right Sidebar (Sticky Table of Contents) - Rendered only when blog content has headers ── */}
         {blog && headingsList.length > 0 && (
-          <aside className="hidden xl:block w-52 border-l border-white/5 p-6 select-none bg-[#030014]/20">
+          <aside className="hidden xl:block w-52 border-l border-[#6366f1]/12 p-6 select-none bg-[#050518]/10">
             <div className="sticky top-20 text-left space-y-4">
               <h3 className="text-[10px] font-mono font-bold uppercase tracking-wider text-gray-500">
                 On this page
               </h3>
               
-              <div className="relative border-l border-white/6 pl-4 space-y-2 text-xs">
+              <div className="relative border-l border-[#6366f1]/15 pl-4 space-y-2 text-xs">
                 {headingsList.map((h, i) => {
                   const isActive = activeHeadingId === h.id;
                   return (
@@ -674,11 +679,11 @@ const BlogDetail = () => {
                         h.level === "h3" ? "pl-3 text-[11px]" : "font-medium"
                       } ${
                         isActive 
-                          ? "text-[#a855f7] font-semibold scale-[1.02]" 
-                          : "text-gray-500 hover:text-gray-300"
+                          ? "text-transparent bg-clip-text bg-gradient-to-r from-[#818cf8] to-[#c084fc] font-semibold scale-[1.02]" 
+                          : "text-gray-400 hover:text-gray-200"
                       }`}
                     >
-                      {isActive && <span className="absolute left-[-1px] w-[2px] h-4 bg-[#a855f7] rounded-full transition-all" />}
+                      {isActive && <span className="absolute left-[-1px] w-[2px] h-4 bg-gradient-to-b from-[#6366f1] to-[#a855f7] rounded-full transition-all shadow-[0_0_8px_rgba(99,102,241,0.5)]" />}
                       {h.text}
                     </button>
                   );
@@ -761,6 +766,88 @@ const BlogDetail = () => {
           border-style: solid;
           border-color: rgba(189, 147, 249, 0.3);
           transform: translateY(-3px);
+        }
+
+        /* Hide scrollbars for Webkit browsers (Chrome, Safari, Edge) */
+        .scrollbar-width-none::-webkit-scrollbar,
+        html::-webkit-scrollbar,
+        body::-webkit-scrollbar {
+          display: none !important;
+          width: 0 !important;
+          height: 0 !important;
+        }
+        .scrollbar-width-none,
+        html,
+        body {
+          -ms-overflow-style: none !important;
+          scrollbar-width: none !important;
+        }
+        /* Light mode layout overrides for Blog Detail Page */
+        body.light .min-h-screen {
+          background-color: #f6f5ff !important;
+          color: #1e1b4b !important;
+        }
+        body.light header {
+          background-color: rgba(246, 245, 255, 0.8) !important;
+          border-bottom-color: rgba(99, 102, 241, 0.15) !important;
+          box-shadow: 0 4px 20px rgba(99, 102, 241, 0.05) !important;
+        }
+        body.light aside {
+          background-color: rgba(246, 245, 255, 0.95) !important;
+          border-color: rgba(99, 102, 241, 0.15) !important;
+        }
+        body.light aside.xl\:block {
+          background-color: rgba(246, 245, 255, 0.2) !important;
+        }
+        body.light header button,
+        body.light header a {
+          color: #4f46e5 !important;
+        }
+        body.light .bg-\[\#04040e\]\/60 {
+          background-color: #ffffff !important;
+          border-color: rgba(99, 102, 241, 0.2) !important;
+        }
+        body.light .border-l {
+          border-left-color: rgba(99, 102, 241, 0.15) !important;
+        }
+        body.light .bg-\[\#0a0a1a\]\/40 {
+          background-color: rgba(99, 102, 241, 0.03) !important;
+          border-color: rgba(99, 102, 241, 0.1) !important;
+        }
+        body.light .bg-white\/\[0\.02\] {
+          background-color: #ffffff !important;
+          border-color: rgba(99, 102, 241, 0.12) !important;
+          color: #1e1b4b !important;
+        }
+        body.light .bg-gradient-to-r {
+          background: linear-gradient(to right, rgba(99, 102, 241, 0.08), rgba(168, 85, 247, 0.03)) !important;
+          border-color: rgba(99, 102, 241, 0.18) !important;
+        }
+
+        /* Bottom next/prev navigation & related read-ups light mode overrides */
+        body.light .grid a {
+          background-color: #ffffff !important;
+          border-color: rgba(99, 102, 241, 0.18) !important;
+          color: #1e1b4b !important;
+        }
+        body.light .grid a:hover {
+          background-color: #f5f4fe !important;
+          border-color: #4f46e5 !important;
+        }
+        body.light .grid a h4 {
+          color: #1e1b4b !important;
+        }
+        body.light .grid a p {
+          color: #475569 !important;
+        }
+        body.light .grid a span:first-of-type {
+          color: #4f46e5 !important;
+        }
+        body.light .grid a span:last-of-type {
+          color: #1e1b4b !important;
+        }
+        body.light h3.text-gray-500 {
+          color: #4f46e5 !important;
         }
       `}</style>
     </div>

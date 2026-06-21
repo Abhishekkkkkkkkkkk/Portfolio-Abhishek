@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Search, Eye, Clock, Calendar, ChevronRight, BookOpen, ArrowLeft, RefreshCw } from "lucide-react";
 import BlogCard from "../components/BlogCard";
 import FeaturedBlogCard from "../components/FeaturedBlogCard";
-import blogsIndex from "../data/blogs-index.json";
+import { supabase } from "../services/supabase";
 
 // ======================== TOPICS METADATA ========================
 
@@ -26,16 +26,52 @@ const FALLBACK_BLOGS = [];
 
 const BlogHome = () => {
   const navigate = useNavigate();
-  const [blogs, setBlogs] = useState(blogsIndex);
-  const [loading, setLoading] = useState(false);
+  const [blogs, setBlogs] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   
   // Popular searches suggestions
   const popularTags = ["DSA", "Java", "Security", "Scalability", "JWT"];
 
   useEffect(() => {
-    setBlogs(blogsIndex);
-    setLoading(false);
+    setLoading(true);
+    const fetchBlogs = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("blogs")
+          .select("*")
+          .order("published_date", { ascending: false });
+        
+        if (error) throw error;
+        
+        if (data) {
+          const mapped = data.map(b => ({
+            id: b.id,
+            slug: b.slug,
+            title: b.title,
+            description: b.description,
+            content: b.content || "",
+            coverEmoji: b.cover_emoji || "📝",
+            coverImage: b.cover_img_url,
+            categories: b.categories || [],
+            tags: b.tags || [],
+            featured: b.featured || false,
+            views: b.views_count || 0,
+            likes: b.likes_count || 0,
+            bookmarks: b.bookmarks_count || 0,
+            readTime: b.read_time || "5 min read",
+            publishedDate: b.published_date
+          }));
+          setBlogs(mapped);
+        }
+      } catch (err) {
+        console.error("Failed to load blogs from Supabase:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchBlogs();
   }, []);
 
   const getCleanDate = (dateStr) => {
@@ -77,7 +113,10 @@ const BlogHome = () => {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 relative z-10">
         {/* Back Link */}
         <button
-          onClick={() => navigate("/")}
+          onClick={() => {
+            sessionStorage.setItem("scrollToSection", "Portfolio");
+            navigate("/");
+          }}
           className="inline-flex items-center gap-2 text-xs font-mono text-gray-500 hover:text-white transition-colors duration-200 mb-8 cursor-pointer group"
         >
           <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" /> Back to Portfolio
@@ -114,26 +153,29 @@ const BlogHome = () => {
                 (topic.id === "spring-boot" && c.toLowerCase().includes("spring"))
               )).length;
 
-              return (
+               return (
                 <button
                   key={topic.id}
                   onClick={() => navigate(`/blog/topic/${topic.id}`)}
-                  className="group relative flex items-center justify-between p-4 rounded-xl border transition-all duration-300 hover:-translate-y-0.5 cursor-pointer text-left overflow-hidden bg-[#0a0a1a]/60 border-white/6 hover:border-[#6366f1]/50 hover:bg-white/[0.02]"
+                  className="group relative flex items-center justify-between p-4 rounded-xl border transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_10px_20px_-10px_rgba(99,102,241,0.2)] cursor-pointer text-left overflow-hidden bg-[#0a0a1a]/85 border-white/6 hover:border-indigo-500/35 backdrop-blur-md"
                 >
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl shrink-0 group-hover:scale-110 transition-transform duration-300">
+                  {/* Glowing background gradient on card hover */}
+                  <div className={`absolute inset-0 bg-gradient-to-br ${topic.color} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+                  
+                  <div className="flex items-center gap-3 relative z-10">
+                    <span className="text-2xl shrink-0 group-hover:scale-110 transition-transform duration-300 drop-shadow-md">
                       {topic.emoji}
                     </span>
                     <div>
-                      <div className="text-xs font-bold text-white group-hover:text-[#818cf8] transition-colors font-mono">
+                      <div className="text-xs font-bold text-white group-hover:text-[#a855f7] transition-colors font-mono tracking-wide">
                         {topic.name}
                       </div>
-                      <div className="text-[10px] text-gray-500 font-mono mt-0.5">
+                      <div className="text-[10px] text-gray-500 group-hover:text-gray-300 font-mono mt-0.5 transition-colors">
                         {count} {count === 1 ? "article" : "articles"}
                       </div>
                     </div>
                   </div>
-                  <ChevronRight className="w-3.5 h-3.5 text-gray-600 group-hover:text-white transition-colors" />
+                  <ChevronRight className="w-3.5 h-3.5 text-gray-600 group-hover:text-white transition-colors relative z-10" />
                 </button>
               );
             })}
@@ -236,6 +278,20 @@ const BlogHome = () => {
           </div>
         )}
       </div>
+      <style>{`
+        /* Hide scrollbars globally when visiting the blog home listing page */
+        html::-webkit-scrollbar,
+        body::-webkit-scrollbar {
+          display: none !important;
+          width: 0 !important;
+          height: 0 !important;
+        }
+        html,
+        body {
+          -ms-overflow-style: none !important;
+          scrollbar-width: none !important;
+        }
+      `}</style>
     </div>
   );
 };

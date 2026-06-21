@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useCallback, memo, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "../services/supabase";
-import blogsIndex from "../data/blogs-index.json";
 
 import BlogCard from "../components/BlogCard";
 import PropTypes from "prop-types";
@@ -165,6 +164,20 @@ export default function FullWidthTabs() {
     return () => window.removeEventListener("trigger-portfolio-tab", handleTriggerTab);
   }, []);
 
+  // Scroll to Portfolio section if navigated from back link
+  useEffect(() => {
+    const scrollTo = sessionStorage.getItem("scrollToSection");
+    if (scrollTo === "Portfolio") {
+      sessionStorage.removeItem("scrollToSection");
+      setTimeout(() => {
+        const element = document.getElementById("Portfolio");
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth" });
+        }
+      }, 700); // 700ms handles welcome screens or transition lags perfectly
+    }
+  }, []);
+
   const formatIndexDate = (dateStr) => {
     if (!dateStr) return "";
     try {
@@ -178,27 +191,9 @@ export default function FullWidthTabs() {
     }
   };
 
-  const initialBlogs = (blogsIndex || []).map((doc) => ({
-    id: doc.id,
-    slug: doc.slug,
-    title: doc.title,
-    description: doc.description,
-    content: "",
-    coverEmoji: doc.coverEmoji || "📝",
-    coverImg: doc.coverImage,
-    categories: doc.categories || [],
-    tags: doc.tags || [],
-    featured: doc.featured || false,
-    views: doc.views || 0,
-    likes: 0,
-    bookmarks: 0,
-    readTime: doc.readTime || null,
-    date: formatIndexDate(doc.publishedDate)
-  }));
-
   const [projects, setProjects] = useState([]);
   const [certificates, setCertificates] = useState([]);
-  const [blogs, setBlogs] = useState(initialBlogs);
+  const [blogs, setBlogs] = useState([]);
   const [notes, setNotes] = useState([]);
   const [showAllProjects, setShowAllProjects] = useState(false);
   const [showAllCertificates, setShowAllCertificates] = useState(false);
@@ -219,16 +214,19 @@ export default function FullWidthTabs() {
       const [
         { data: projectDataRaw, error: projectErr },
         { data: certDataRaw, error: certErr },
-        { data: notesDataRaw, error: notesErr }
+        { data: notesDataRaw, error: notesErr },
+        { data: blogDataRaw, error: blogErr }
       ] = await Promise.all([
         supabase.from("projects").select("*").order("created_at", { ascending: false }),
         supabase.from("certificates").select("*").order("issue_date", { ascending: false }),
-        supabase.from("notes").select("*").order("created_at", { ascending: false })
+        supabase.from("notes").select("*").order("created_at", { ascending: false }),
+        supabase.from("blogs").select("*").order("published_date", { ascending: false })
       ]);
 
       if (projectErr) throw projectErr;
       if (certErr) throw certErr;
       if (notesErr) throw notesErr;
+      if (blogErr) throw blogErr;
 
       const projectData = (projectDataRaw || []).map((doc) => ({
         id: doc.id,
@@ -278,14 +276,32 @@ export default function FullWidthTabs() {
         date: doc.publish_date || formatDate(doc.created_at)
       }));
 
+      const blogData = (blogDataRaw || []).map((doc) => ({
+        id: doc.id,
+        slug: doc.slug,
+        title: doc.title,
+        description: doc.description,
+        content: doc.content || "",
+        coverEmoji: doc.cover_emoji || "📝",
+        coverImg: doc.cover_img_url,
+        categories: doc.categories || [],
+        tags: doc.tags || [],
+        featured: doc.featured || false,
+        views: doc.views_count || 0,
+        likes: doc.likes_count || 0,
+        bookmarks: doc.bookmarks_count || 0,
+        readTime: doc.read_time || null,
+        date: formatDate(doc.published_date)
+      }));
+
       setProjects(projectData);
       setCertificates(certData);
-      setBlogs(initialBlogs);
+      setBlogs(blogData);
       setNotes(notesData);
 
       localStorage.setItem("projects",     JSON.stringify(projectData));
       localStorage.setItem("certificates", JSON.stringify(certData));
-      localStorage.setItem("blogs",        JSON.stringify(initialBlogs));
+      localStorage.setItem("blogs",        JSON.stringify(blogData));
       localStorage.setItem("notes",        JSON.stringify(notesData));
     } catch (error) {
       console.error("Error fetching data:", error);
