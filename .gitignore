@@ -39,3 +39,12 @@ scratch/
 # Headless blog content repository
 content/blogs/
 public/blogs/
+
+# Vercel
+.vercel/
+
+# Additional environment configurations
+.env.keys
+.env.local
+.env.*.local
+*.env
