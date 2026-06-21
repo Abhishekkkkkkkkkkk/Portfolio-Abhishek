@@ -803,18 +803,18 @@ const BlogDetail = () => {
         body.light header a {
           color: #4f46e5 !important;
         }
-        body.light .bg-\[\#04040e\]\/60 {
+        body.light [class*="bg-[#04040e]/60"] {
           background-color: #ffffff !important;
           border-color: rgba(99, 102, 241, 0.2) !important;
         }
         body.light .border-l {
           border-left-color: rgba(99, 102, 241, 0.15) !important;
         }
-        body.light .bg-\[\#0a0a1a\]\/40 {
+        body.light [class*="bg-[#0a0a1a]/40"] {
           background-color: rgba(99, 102, 241, 0.03) !important;
           border-color: rgba(99, 102, 241, 0.1) !important;
         }
-        body.light .bg-white\/\[0\.02\] {
+        body.light [class*="bg-white/[0.02]"] {
           background-color: #ffffff !important;
           border-color: rgba(99, 102, 241, 0.12) !important;
           color: #1e1b4b !important;
