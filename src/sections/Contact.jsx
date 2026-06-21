@@ -109,7 +109,7 @@ const FunSection = () => {
   const [hovered, setHovered] = useState(null);
 
   return (
-    <div className="relative rounded-2xl border border-white/10 overflow-hidden" data-aos="fade-up" data-aos-delay="150">
+    <div className="fun-card relative rounded-2xl border border-white/10 overflow-hidden" data-aos="fade-up" data-aos-delay="150">
       <CodeRain />
 
       {/* Gradient overlay */}

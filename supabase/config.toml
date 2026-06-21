@@ -418,3 +418,7 @@ s3_secret_key = "env(S3_SECRET_KEY)"
 [functions.send-blog-notification]
 verify_jwt = false
 entrypoint = "./functions/send-blog-notification/index.js"
+
+[functions.send-subscription-welcome]
+verify_jwt = false
+entrypoint = "./functions/send-subscription-welcome/index.ts"

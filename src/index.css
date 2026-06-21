@@ -33,22 +33,9 @@ body {
   }
 }
 
-@keyframes shine {
-  from {
-    left: -100%;
-  }
-  to {
-    left: 200%;
-  }
-}
-
 /* Animations */
 .animate-blob {
   animation: blob 8s infinite;
-}
-
-.animate-shine {
-  animation: shine 1.5s ease-in-out infinite;
 }
 
 .animation-delay-2000 {
@@ -61,42 +48,14 @@ body {
 
 /* Custom Scrollbar Styles */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-  background-color: transparent;
+  display: none !important;
+  width: 0px !important;
+  height: 0px !important;
 }
 
-::-webkit-scrollbar-track {
-  background: rgba(3, 0, 20, 0.4);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(99, 102, 241, 0.1);
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(99, 102, 241, 0.3);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: inset 0 0 20px rgba(168, 85, 247, 0.2), 0 0 10px rgba(99, 102, 241, 0.2);
-  transition: all 0.3s ease;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(99, 102, 241, 0.5);
-  border: 1px solid rgba(168, 85, 247, 0.3);
-  box-shadow: inset 0 0 30px rgba(168, 85, 247, 0.3), 0 0 15px rgba(99, 102, 241, 0.3);
-}
-
-::-webkit-scrollbar-thumb:active {
-  background: rgba(99, 102, 241, 0.6);
-  border: 1px solid rgba(168, 85, 247, 0.4);
-  box-shadow: inset 0 0 40px rgba(168, 85, 247, 0.4), 0 0 20px rgba(99, 102, 241, 0.4);
-}
-
-::-webkit-scrollbar-corner {
-  background: transparent;
+* {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
 }
 
 /* Prevent horizontal scrolling caused by large elements */
@@ -138,4 +97,262 @@ footer a {
 
 footer a:hover {
   text-decoration: underline;
+}
+
+/* ==========================================================================
+   GLOBAL LIGHT THEME SYSTEM
+   ========================================================================== */
+
+/* Page Background & Global Variables */
+body.light {
+  background: #f6f5ff !important;
+  color: #1e1b4b !important;
+}
+
+/* Light mode overrides for layout wrapper sections */
+body.light .bg-\[\#030014\] {
+  background-color: #f6f5ff !important;
+}
+body.light footer.bg-\[\#030014\],
+body.light footer {
+  background-color: #ededfa !important;
+  color: #1e293b !important;
+  border-top: 1px solid rgba(99, 102, 241, 0.15) !important;
+}
+
+/* Light mode Navbar fixed background */
+body.light nav.fixed {
+  background-color: rgba(246, 245, 255, 0.8) !important;
+  border-bottom: 1px solid rgba(99, 102, 241, 0.15) !important;
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.05) !important;
+}
+body.light nav.fixed .bg-\[\#030014\] {
+  background-color: #f6f5ff !important;
+}
+
+/* Color Palette Adjustments for Text readability */
+body.light .text-white:not(.vscode-container *):not(pre *):not(code *):not(.terminal *):not(.retro-terminal *):not(.welcome-screen *):not(.syntax-highlight *):not(.fun-card *) {
+  color: #0f172a !important;
+}
+body.light .text-gray-100:not(.vscode-container *):not(pre *):not(code *):not(.terminal *):not(.retro-terminal *):not(.welcome-screen *):not(.syntax-highlight *):not(.fun-card *) {
+  color: #0f172a !important;
+}
+body.light .text-gray-200:not(.vscode-container *):not(pre *):not(code *):not(.terminal *):not(.retro-terminal *):not(.welcome-screen *):not(.syntax-highlight *):not(.fun-card *) {
+  color: #1e293b !important;
+}
+body.light .text-gray-300:not(.vscode-container *):not(pre *):not(code *):not(.terminal *):not(.retro-terminal *):not(.welcome-screen *):not(.syntax-highlight *):not(.fun-card *) {
+  color: #334155 !important;
+}
+body.light .text-gray-400:not(.vscode-container *):not(pre *):not(code *):not(.terminal *):not(.retro-terminal *):not(.welcome-screen *):not(.syntax-highlight *):not(.fun-card *) {
+  color: #475569 !important;
+}
+body.light .text-gray-500:not(.vscode-container *):not(pre *):not(code *):not(.terminal *):not(.retro-terminal *):not(.welcome-screen *):not(.syntax-highlight *):not(.fun-card *) {
+  color: #64748b !important;
+}
+body.light .text-gray-600:not(.vscode-container *):not(pre *):not(code *):not(.terminal *):not(.retro-terminal *):not(.welcome-screen *):not(.syntax-highlight *):not(.fun-card *) {
+  color: #94a3b8 !important;
+}
+
+/* Specific Accent colors adjustment for Light contrast */
+body.light .text-\[\#e2d3fd\]:not(.vscode-container *):not(pre *):not(code *):not(.terminal *):not(.retro-terminal *):not(.fun-card *) {
+  color: #4f46e5 !important;
+}
+body.light .text-\[\#818cf8\]:not(.vscode-container *):not(pre *):not(code *):not(.terminal *):not(.retro-terminal *):not(.fun-card *) {
+  color: #4f46e5 !important;
+}
+body.light .text-\[\#a78bfa\]:not(.vscode-container *):not(pre *):not(code *):not(.terminal *):not(.retro-terminal *):not(.fun-card *) {
+  color: #7c3aed !important;
+}
+body.light .text-\[\#22d3ee\]:not(.vscode-container *):not(pre *):not(code *):not(.terminal *):not(.retro-terminal *):not(.fun-card *) {
+  color: #0891b2 !important;
+}
+
+/* Opacity-based white text overrides for light mode */
+body.light .text-white\/90:not(.vscode-container *):not(pre *):not(code *):not(.terminal *):not(.retro-terminal *):not(.welcome-screen *):not(.fun-card *) {
+  color: rgba(15, 23, 42, 0.9) !important;
+}
+body.light .text-white\/80:not(.vscode-container *):not(pre *):not(code *):not(.terminal *):not(.retro-terminal *):not(.welcome-screen *):not(.fun-card *) {
+  color: rgba(15, 23, 42, 0.8) !important;
+}
+body.light .text-white\/70:not(.vscode-container *):not(pre *):not(code *):not(.terminal *):not(.retro-terminal *):not(.welcome-screen *):not(.fun-card *) {
+  color: rgba(15, 23, 42, 0.7) !important;
+}
+body.light .text-white\/60:not(.vscode-container *):not(pre *):not(code *):not(.terminal *):not(.retro-terminal *):not(.welcome-screen *):not(.fun-card *) {
+  color: rgba(15, 23, 42, 0.6) !important;
+}
+
+/* Custom Text class contrast overrides */
+body.light .text-\[\#e2e8f0\]:not(.vscode-container *):not(.retro-terminal *):not(.fun-card *) {
+  color: #0f172a !important;
+}
+body.light .text-indigo-300:not(.vscode-container *):not(.retro-terminal *):not(.fun-card *) {
+  color: #4f46e5 !important;
+}
+
+/* Light Glassmorphic card styling overrides */
+body.light .bg-\[\#0a0a1a\]\/80:not(.vscode-container *):not(.retro-terminal *),
+body.light .bg-\[\#0a0a1a\]\/85:not(.vscode-container *):not(.retro-terminal *),
+body.light .bg-\[\#0a0a1a\]\/60:not(.vscode-container *):not(.retro-terminal *),
+body.light .bg-\[\#0a0a1a\]:not(.vscode-container *):not(.retro-terminal *),
+body.light .bg-\[\#0c0c1e\]:not(.vscode-container *):not(.retro-terminal *),
+body.light .bg-\[\#0c0c1e\]\/90:not(.vscode-container *):not(.retro-terminal *),
+body.light .bg-\[\#050117\]\/60:not(.vscode-container *):not(.retro-terminal *),
+body.light .bg-\[\#050117\]\/80:not(.vscode-container *):not(.retro-terminal *),
+body.light .bg-\[\#07071a\]:not(.vscode-container *):not(.retro-terminal *),
+body.light .bg-\[\#0f172a\]:not(.vscode-container *):not(.retro-terminal *) {
+  background-color: rgba(255, 255, 255, 0.82) !important;
+  border-color: rgba(99, 102, 241, 0.16) !important;
+  box-shadow: 0 10px 30px -10px rgba(99, 102, 241, 0.1), 0 1px 3px rgba(99, 102, 241, 0.05) !important;
+}
+
+/* Project / Certificate Card background gradients */
+body.light .from-slate-900\/95,
+body.light .from-slate-900\/90 {
+  --tw-gradient-from: rgba(255, 255, 255, 0.82) !important;
+  --tw-gradient-to: rgba(255, 255, 255, 0.82) !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+}
+
+/* Featured Blog cover image mask fade */
+body.light .to-\[\#07071a\] {
+  --tw-gradient-to: #ededfa !important;
+}
+
+/* Hover style overrides for guestbook cards */
+body.light .hover\:bg-\[\#070222\]\/80:hover {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+}
+
+/* Project details title override */
+body.light .project-title {
+  background-image: linear-gradient(to right, #4f46e5, #7c3aed, #0891b2) !important;
+}
+
+/* Playground teaser float icon style overrides */
+body.light #PlaygroundTeaser .bg-\[\#0a0a1a\]\/90 {
+  background-color: rgba(99, 102, 241, 0.08) !important;
+  border-color: rgba(99, 102, 241, 0.2) !important;
+}
+body.light #PlaygroundTeaser .bg-black\/40 {
+  background-color: rgba(99, 102, 241, 0.05) !important;
+}
+
+body.light .bg-white\/5:not(.vscode-container *):not(.retro-terminal *):not(.welcome-screen *),
+body.light .bg-white\/3:not(.vscode-container *):not(.retro-terminal *):not(.welcome-screen *),
+body.light .bg-white\/4:not(.vscode-container *):not(.retro-terminal *):not(.welcome-screen *),
+body.light .bg-white\/8:not(.vscode-container *):not(.retro-terminal *):not(.welcome-screen *) {
+  background-color: rgba(99, 102, 241, 0.06) !important;
+}
+
+body.light .border-white\/10:not(.vscode-container *):not(.retro-terminal *):not(.welcome-screen *),
+body.light .border-white\/8:not(.vscode-container *):not(.retro-terminal *):not(.welcome-screen *),
+body.light .border-white\/5:not(.vscode-container *):not(.retro-terminal *):not(.welcome-screen *),
+body.light .border-white\/15:not(.vscode-container *):not(.retro-terminal *):not(.welcome-screen *) {
+  border-color: rgba(99, 102, 241, 0.15) !important;
+}
+
+/* Form inputs & interactive components */
+body.light input:not(.vscode-container *):not(.terminal *):not(.retro-terminal *),
+body.light textarea:not(.vscode-container *):not(.terminal *):not(.retro-terminal *),
+body.light select:not(.vscode-container *):not(.terminal *):not(.retro-terminal *) {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  border-color: rgba(99, 102, 241, 0.2) !important;
+  color: #0f172a !important;
+}
+body.light input:not(.vscode-container *):not(.terminal *):not(.retro-terminal *)::placeholder,
+body.light textarea:not(.vscode-container *):not(.terminal *):not(.retro-terminal *)::placeholder {
+  color: #64748b !important;
+}
+
+/* Timeline components adjustments */
+body.light .border-l-2.border-white\/10 {
+  border-color: rgba(99, 102, 241, 0.2) !important;
+}
+body.light .bg-\[\#6366f1\]\/10 {
+  background-color: rgba(99, 102, 241, 0.1) !important;
+}
+
+/* VSCode tabs and UI panel adjustments for light background compatibility */
+body.light .vscode-theme-container, 
+body.light .terminal-container {
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.35) !important;
+}
+
+/* Scrollbar override for light mode */
+body.light ::-webkit-scrollbar-track {
+  background: rgba(246, 245, 255, 0.8) !important;
+}
+body.light ::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.2) !important;
+}
+
+/* Mui Tabs light mode styling overrides */
+body.light .MuiTab-root {
+  color: #475569 !important;
+}
+body.light .MuiTab-root:hover {
+  color: #312e81 !important;
+  background-color: rgba(99, 102, 241, 0.08) !important;
+}
+body.light .MuiTab-root.Mui-selected {
+  color: #4f46e5 !important;
+  background: rgba(99, 102, 241, 0.12) !important;
+  box-shadow: 0 4px 20px -4px rgba(99, 102, 241, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
+}
+body.light .MuiTab-root.Mui-selected .tab-icon {
+  color: #7c3aed !important;
+}
+
+/* Hover and Group-Hover text white invisibility fixes in light mode */
+body.light .hover\:text-white:hover:not(.vscode-container *):not(pre *):not(code *):not(.terminal *):not(.retro-terminal *):not(.welcome-screen *):not(.fun-card *) {
+  color: #0f172a !important;
+}
+body.light .group:hover .group-hover\:text-white:not(.vscode-container *):not(pre *):not(code *):not(.terminal *):not(.retro-terminal *):not(.welcome-screen *):not(.fun-card *) {
+  color: #0f172a !important;
+}
+body.light .group:hover .group-hover\:text-gray-100:not(.vscode-container *):not(pre *):not(code *):not(.terminal *):not(.retro-terminal *):not(.welcome-screen *):not(.fun-card *) {
+  color: #0f172a !important;
+}
+body.light .group:hover .group-hover\:text-gray-200:not(.vscode-container *):not(pre *):not(code *):not(.terminal *):not(.retro-terminal *):not(.welcome-screen *):not(.fun-card *) {
+  color: #1e293b !important;
+}
+body.light .group:hover .group-hover\:text-gray-300:not(.vscode-container *):not(pre *):not(code *):not(.terminal *):not(.retro-terminal *):not(.welcome-screen *):not(.fun-card *) {
+  color: #334155 !important;
+}
+body.light .group:hover .group-hover\:text-gray-400:not(.vscode-container *):not(pre *):not(code *):not(.terminal *):not(.retro-terminal *):not(.welcome-screen *):not(.fun-card *) {
+  color: #475569 !important;
+}
+body.light .group:hover .group-hover\:text-indigo-200:not(.vscode-container *):not(pre *):not(code *):not(.terminal *):not(.retro-terminal *):not(.welcome-screen *):not(.fun-card *) {
+  color: #4f46e5 !important;
+}
+body.light .hover\:text-gray-100:hover:not(.vscode-container *):not(pre *):not(code *):not(.terminal *):not(.retro-terminal *):not(.welcome-screen *):not(.fun-card *) {
+  color: #0f172a !important;
+}
+body.light .hover\:text-gray-200:hover:not(.vscode-container *):not(pre *):not(code *):not(.terminal *):not(.retro-terminal *):not(.welcome-screen *):not(.fun-card *) {
+  color: #1e293b !important;
+}
+body.light .hover\:text-gray-300:hover:not(.vscode-container *):not(pre *):not(code *):not(.terminal *):not(.retro-terminal *):not(.welcome-screen *):not(.fun-card *) {
+  color: #334155 !important;
+}
+body.light .hover\:text-gray-400:hover:not(.vscode-container *):not(pre *):not(code *):not(.terminal *):not(.retro-terminal *):not(.welcome-screen *):not(.fun-card *) {
+  color: #475569 !important;
+}
+
+/* Headless Blog Media Zoom-in & Fade-in Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes zoomIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+.animate-zoom-in {
+  animation: zoomIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }

@@ -17,7 +17,6 @@ import "aos/dist/aos.css";
 import { educationData, experienceData } from "../data/TimelineData";
 import EducationTimelineItem from "../components/EducationTimelineItem";
 import ExperienceTimelineItem from "../components/ExperienceTimelineItem";
-import SyntaxInvaders from "../components/games/SyntaxInvaders";
 
 /* ─── Floating Orb Background ─── */
 const FloatingOrbs = memo(() => (
@@ -190,9 +189,7 @@ const ProfileImage = memo(() => (
     </div>
 ));
 
-/* ─── Main About ─── */
 const About = () => {
-  const [viewMode, setViewMode] = useState("photo"); // "photo" or "game"
 
   useEffect(() => {
     AOS.init({ once: false, duration: 700, easing: "ease-out-cubic" });
@@ -280,34 +277,10 @@ const About = () => {
             </div>
           </div>
 
-          {/* Right column: Image or Game */}
+          {/* Right column: Image */}
           <div className="flex flex-col items-center justify-center gap-5" data-aos="fade-left">
-            {/* Toggle tabs */}
-            <div className="flex gap-1 p-1 rounded-xl border border-white/10 bg-white/4 backdrop-blur-md">
-              <button
-                onClick={() => setViewMode("photo")}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-300 ${
-                  viewMode === "photo"
-                    ? "bg-[#6366f1]/20 text-[#a78bfa] border border-[#6366f1]/30"
-                    : "text-gray-400 hover:text-white border border-transparent"
-                }`}
-              >
-                Profile Photo
-              </button>
-              <button
-                onClick={() => setViewMode("game")}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-300 ${
-                  viewMode === "game"
-                    ? "bg-[#6366f1]/20 text-[#a78bfa] border border-[#6366f1]/30"
-                    : "text-gray-400 hover:text-white border border-transparent"
-                }`}
-              >
-                Syntax Invaders 👾
-              </button>
-            </div>
-
             <div className="relative">
-              {viewMode === "photo" ? <ProfileImage /> : <SyntaxInvaders />}
+              <ProfileImage />
             </div>
           </div>
         </div>

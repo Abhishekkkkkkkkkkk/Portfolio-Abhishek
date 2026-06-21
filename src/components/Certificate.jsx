@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { X, Award, ZoomIn } from "lucide-react";
+import { X, Award, ZoomIn, ExternalLink, Calendar, ShieldCheck } from "lucide-react";
 
-const Certificate = ({ ImgSertif }) => {
+const Certificate = ({ ImgSertif, Name, Issuer, IssueDate, CredentialUrl }) => {
   const [open, setOpen] = useState(false);
   const [imgLoaded, setImgLoaded] = useState(false);
 
@@ -21,86 +21,118 @@ const Certificate = ({ ImgSertif }) => {
     };
   }, [open, handleKeyDown]);
 
+  const formattedDate = (dateStr) => {
+    if (!dateStr) return "";
+    try {
+      return new Date(dateStr).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long"
+      });
+    } catch (e) {
+      return dateStr;
+    }
+  };
+
   return (
     <>
-      {/* ── Thumbnail Card ── */}
-      <div
-        className="group relative cursor-pointer w-full"
-        onClick={() => setOpen(true)}
-      >
-        {/* Outer glow */}
-        <div
-          className="absolute -inset-0.5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-          style={{ background: "linear-gradient(135deg, rgba(99,102,241,0.4), rgba(168,85,247,0.3))", filter: "blur(8px)" }}
-        />
+      {/* ── Premium Certificate Card ── */}
+      <div className="group relative w-full h-full flex flex-col">
+        {/* Hover Glow Behind Card */}
+        <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-br from-[#6366f1]/0 to-[#a855f7]/0 group-hover:from-[#6366f1]/25 group-hover:to-[#a855f7]/20 blur-md transition-all duration-500 pointer-events-none" />
 
-        {/* Card */}
-        <div
-          className="relative rounded-2xl border border-white/10 overflow-hidden transition-all duration-400 group-hover:border-[#6366f1]/50 group-hover:-translate-y-1.5"
-          style={{ boxShadow: "0 4px 24px rgba(0,0,0,0.3)" }}
-        >
-          {/* Skeleton */}
-          {!imgLoaded && (
-            <div
-              className="w-full h-44 flex items-center justify-center animate-pulse"
-              style={{ background: "linear-gradient(135deg, rgba(99,102,241,0.08), rgba(168,85,247,0.05))" }}
-            >
-              <Award style={{ width: 40, height: 40, color: "rgba(99,102,241,0.2)" }} />
-            </div>
-          )}
+        {/* Main Card Container */}
+        <div className="relative flex flex-col h-full rounded-2xl border border-white/10 bg-gradient-to-br from-slate-900/90 to-slate-800/90 backdrop-blur-xl overflow-hidden shadow-xl group-hover:border-[#6366f1]/40 transition-all duration-400">
+          
+          {/* Shine overlay sweep */}
+          <div className="absolute inset-0 z-10 pointer-events-none overflow-hidden rounded-2xl">
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+          </div>
 
-          {/* Image */}
-          <img
-            src={ImgSertif}
-            alt="Certificate"
-            onLoad={() => setImgLoaded(true)}
-            className={`w-full h-auto block transition-all duration-500 group-hover:scale-105 group-hover:brightness-75 ${imgLoaded ? "opacity-100" : "opacity-0 h-0"}`}
-            style={{ filter: "contrast(1.05) saturate(1.05)" }}
-          />
+          {/* ── Image & Hover Overlay Preview ── */}
+          <div 
+            className="relative overflow-hidden cursor-pointer bg-slate-950/40 border-b border-white/5 shrink-0" 
+            style={{ height: "180px" }}
+            onClick={() => setOpen(true)}
+          >
+            {/* Skeleton / Placeholder Loader */}
+            {!imgLoaded && (
+              <div className="absolute inset-0 flex items-center justify-center animate-pulse bg-gradient-to-br from-[#6366f1]/5 to-[#a855f7]/5">
+                <Award className="w-10 h-10 text-indigo-500/30" />
+              </div>
+            )}
 
-          {/* Shine sweep */}
-          <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl" style={{ zIndex: 20 }}>
-            <div
-              className="absolute inset-0 transition-transform duration-700 group-hover:translate-x-full -translate-x-full"
-              style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.07), transparent)" }}
+            {/* Certificate Image */}
+            <img
+              src={ImgSertif}
+              alt={Name || "Certificate"}
+              onLoad={() => setImgLoaded(true)}
+              className={`w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out ${
+                imgLoaded ? "opacity-100" : "opacity-0"
+              }`}
             />
-          </div>
 
-          {/* Hover overlay */}
-          <div
-            className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-all duration-400 flex flex-col items-center justify-center gap-3"
-            style={{ zIndex: 10, background: "linear-gradient(to top, rgba(3,0,20,0.85) 0%, rgba(3,0,20,0.3) 50%, transparent 100%)" }}
-          >
-            <div
-              className="p-3.5 rounded-2xl border border-white/20 backdrop-blur-sm translate-y-2 group-hover:translate-y-0 transition-transform duration-400"
-              style={{ background: "rgba(99,102,241,0.25)" }}
-            >
-              <ZoomIn style={{ width: 22, height: 22, color: "white" }} />
+            {/* Verification / Certified Shield - Top Left */}
+            <div className="absolute top-3 left-3 z-20 flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-sm border border-white/10">
+              <ShieldCheck className="w-3.5 h-3.5 text-green-400" />
+              <span className="text-[9px] font-bold text-white/80 uppercase tracking-widest">Verified</span>
             </div>
-            <span
-              className="text-white text-sm font-bold tracking-wide translate-y-2 group-hover:translate-y-0 transition-transform duration-400"
-              style={{ textShadow: "0 2px 8px rgba(0,0,0,0.8)", transitionDelay: "75ms" }}
+          </div>
+
+          {/* ── Content Details Area ── */}
+          <div className="flex flex-col flex-1 p-5 gap-3 text-left">
+            {/* Issuer Name Tag */}
+            <div className="flex items-center gap-2">
+              <span className="px-2 py-0.5 rounded bg-indigo-500/10 border border-indigo-500/20 text-[#a78bfa] text-[9px] font-bold uppercase tracking-wider">
+                {Issuer || "Issuer"}
+              </span>
+            </div>
+
+            {/* Certificate Title */}
+            <h3 
+              className="text-sm font-black text-[#e2e8f0] group-hover:text-white transition-colors duration-300 leading-snug line-clamp-2"
+              title={Name}
             >
-              View Certificate
-            </span>
-          </div>
+              {Name || "Certificate"}
+            </h3>
 
-          {/* Badge */}
-          <div
-            className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-white/15 backdrop-blur-sm opacity-0 group-hover:opacity-100 -translate-y-1 group-hover:translate-y-0 transition-all duration-300"
-            style={{ zIndex: 30, background: "rgba(0,0,0,0.55)" }}
-          >
-            <Award style={{ width: 12, height: 12, color: "#a78bfa" }} />
-            <span style={{ fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.8)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
-              Certificate
-            </span>
-          </div>
+            {/* Date Metadata */}
+            {IssueDate && (
+              <div className="flex items-center gap-1.5 text-[11px] text-gray-500 font-mono">
+                <Calendar className="w-3.5 h-3.5 text-indigo-400/60" />
+                <span>Issued {formattedDate(IssueDate)}</span>
+              </div>
+            )}
 
-          {/* Bottom accent line */}
-          <div
-            className="absolute bottom-0 left-0 right-0 h-px opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-            style={{ zIndex: 30, background: "linear-gradient(90deg, transparent, rgba(99,102,241,0.7), transparent)" }}
-          />
+            {/* Spacer */}
+            <div className="flex-1" />
+
+            {/* Divider */}
+            <div className="h-px bg-gradient-to-r from-transparent via-white/5 to-transparent w-full my-1" />
+
+            {/* ── Verification Actions ── */}
+            <div className="flex items-center justify-between gap-4 pt-1 z-20">
+              {CredentialUrl ? (
+                <a
+                  href={CredentialUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 text-xs font-bold text-sky-400 hover:text-white hover:underline transition-all duration-200"
+                >
+                  Verify Credential
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              ) : (
+                <span className="text-[10px] text-gray-600 font-medium italic">Credential link unavailable</span>
+              )}
+
+              <button
+                onClick={() => setOpen(true)}
+                className="text-[11px] font-bold text-indigo-400 hover:text-white transition-colors duration-200"
+              >
+                Full Preview
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -159,22 +191,22 @@ const Certificate = ({ ImgSertif }) => {
               </div>
 
               <button
-              onClick={() => setOpen(false)}
-              className="flex items-center justify-center rounded-xl transition-all duration-300"
-              style={{ width: 32, height: 32, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", cursor: "pointer" }}
-              onMouseEnter={e => { e.currentTarget.style.background = "rgba(239,68,68,0.15)"; e.currentTarget.style.borderColor = "rgba(239,68,68,0.4)"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; }}
-            >
-              <X style={{ width: 14, height: 14, color: "#9ca3af" }} />
-            </button>
+                onClick={() => setOpen(false)}
+                className="flex items-center justify-center rounded-xl transition-all duration-300"
+                style={{ width: 32, height: 32, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", cursor: "pointer" }}
+                onMouseEnter={e => { e.currentTarget.style.background = "rgba(239,68,68,0.15)"; e.currentTarget.style.borderColor = "rgba(239,68,68,0.4)"; }}
+                onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; }}
+              >
+                <X style={{ width: 14, height: 14, color: "#9ca3af" }} />
+              </button>
             </div>
 
             {/* Image — scrollable */}
-            <div className="flex-1 overflow-auto p-4 sm:p-5" style={{ minHeight: 0 }}>
+            <div className="flex-1 overflow-auto p-4 sm:p-5 text-center" style={{ minHeight: 0 }}>
               <img
                 src={ImgSertif}
                 alt="Certificate Full View"
-                className="w-full h-auto block rounded-xl"
+                className="max-w-full h-auto inline-block rounded-xl"
                 style={{
                   border: "1px solid rgba(255,255,255,0.1)",
                   boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
@@ -185,13 +217,13 @@ const Certificate = ({ ImgSertif }) => {
 
             {/* Footer */}
             <div
-  className="flex items-center justify-center px-5 py-3 shrink-0"
-  style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}
->
-  <span style={{ fontSize: 11, color: "#4b5563", fontFamily: "monospace", letterSpacing: "0.05em" }}>
-    Press ESC or click outside to close
-  </span>
-</div>
+              className="flex items-center justify-center px-5 py-3 shrink-0"
+              style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}
+            >
+              <span style={{ fontSize: 11, color: "#4b5563", fontFamily: "monospace", letterSpacing: "0.05em" }}>
+                Press ESC or click outside to close
+              </span>
+            </div>
 
             {/* Bottom accent */}
             <div

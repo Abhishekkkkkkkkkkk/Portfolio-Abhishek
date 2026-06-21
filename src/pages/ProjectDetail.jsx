@@ -184,7 +184,7 @@ const ProjectDetails = () => {
                 <Sparkles className="w-3 h-3" />
                 Project
               </div>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-black leading-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-200 via-purple-200 to-pink-200">
+              <h1 className="project-title text-3xl sm:text-4xl md:text-5xl font-black leading-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-200 via-purple-200 to-pink-200">
                 {project.Title}
               </h1>
               {/* Animated underline */}
