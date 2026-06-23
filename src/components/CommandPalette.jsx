@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   Search, Home, User, Code, MessageSquare, Mail, Terminal, 
   Gamepad2, Cpu, Moon, Sun, ShieldAlert, Copy, Check, Keyboard,
-  Award, BookOpen, FileText
+  Award, BookOpen, FileText, HelpCircle
 } from "lucide-react";
 import { playTap, playSuccess } from "../services/soundEffects";
 
@@ -124,7 +124,7 @@ const CommandPalette = () => {
           const cachedProj = localStorage.getItem("projects");
           const cachedCert = localStorage.getItem("certificates");
           const cachedBlog = localStorage.getItem("blogs");
-          const cachedNote = localStorage.getItem("notes");
+          const cachedQuestions = localStorage.getItem("interview_questions");
           
           if (cachedProj) {
             const list = JSON.parse(cachedProj);
@@ -172,41 +172,37 @@ const CommandPalette = () => {
           if (cachedBlog) {
             const list = JSON.parse(cachedBlog);
             list.forEach(b => {
+              const isNote = b.contentType === 'note' || b.content_type === 'note';
               items.push({
                 id: `blog-${b.id || b.slug}`,
-                title: `${b.title || b.Title}`,
-                category: "Blogs",
-                icon: BookOpen,
+                title: isNote ? `${b.title} (Study Note)` : `${b.title || b.Title}`,
+                category: isNote ? "Study Notes" : "Blogs",
+                icon: isNote ? FileText : BookOpen,
                 action: () => {
                   setIsOpen(false);
-                  navigate(`/blog/${b.slug || b.id}`);
+                  if (isNote) {
+                    const primaryCat = b.categories && b.categories[0] ? b.categories[0].toLowerCase() : 'java';
+                    const topicId = primaryCat.includes('spring') ? 'spring-boot' : primaryCat.replace(/\s+/g, '-');
+                    navigate(`/blog/topic/${topicId}/${b.slug || b.id}`);
+                  } else {
+                    navigate(`/blog/${b.slug || b.id}`);
+                  }
                 }
               });
             });
           }
 
-          if (cachedNote) {
-            const list = JSON.parse(cachedNote);
-            list.forEach(n => {
+          if (cachedQuestions) {
+            const list = JSON.parse(cachedQuestions);
+            list.forEach(q => {
               items.push({
-                id: `note-${n.id}`,
-                title: `${n.title || n.Title} (Subject: ${n.subject})`,
-                category: "Study Notes",
-                icon: FileText,
+                id: `iq-${q.id}`,
+                title: `${q.question} (Category: ${q.category} - ${q.subcategory})`,
+                category: "Interview Prep",
+                icon: HelpCircle,
                 action: () => {
                   setIsOpen(false);
-                  if (location.pathname === "/") {
-                    const el = document.getElementById("Portfolio");
-                    if (el) el.scrollIntoView({ behavior: "smooth" });
-                    window.dispatchEvent(new CustomEvent("trigger-portfolio-tab", { detail: 3 }));
-                  } else {
-                    navigate("/");
-                    setTimeout(() => {
-                      const el = document.getElementById("Portfolio");
-                      if (el) el.scrollIntoView({ behavior: "smooth" });
-                      window.dispatchEvent(new CustomEvent("trigger-portfolio-tab", { detail: 3 }));
-                    }, 100);
-                  }
+                  navigate(`/interview-prep/topic/${q.category.toLowerCase()}?q=${q.id}`);
                 }
               });
             });

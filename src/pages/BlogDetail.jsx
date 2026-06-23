@@ -112,7 +112,7 @@ const BlogDetail = () => {
       // Always fetch the list of all blogs to populate the sidebar and directory tree
       const { data: listData, error: listErr } = await supabase
         .from("blogs")
-        .select("id, title, categories, slug, published_date, views_count");
+        .select("id, title, categories, slug, published_date, views_count, content_type");
 
       if (listErr) {
         console.error("Failed to load blogs list:", listErr);
@@ -121,7 +121,8 @@ const BlogDetail = () => {
       if (listData) {
         const mappedList = listData.map(b => ({
           ...b,
-          topicId: getTopicId(b.categories)
+          topicId: getTopicId(b.categories),
+          contentType: b.content_type || 'article'
         }));
         setAllBlogs(mappedList);
       }
@@ -172,13 +173,16 @@ const BlogDetail = () => {
         categories: blogData.categories || [],
         tags: blogData.tags || [],
         readTime: blogData.read_time || "5 min read",
-        isHtml: true, // Since Supabase blogs are HTML documents!
+        isHtml: blogData.content_type !== 'note', // If it's a note, we render PDF reader instead
         date: new Date(blogData.published_date).toLocaleDateString("en-US", {
           year: "numeric",
           month: "short",
           day: "numeric",
         }),
-        views: blogData.views_count || 0
+        views: blogData.views_count || 0,
+        contentType: blogData.content_type || 'article',
+        pdfUrl: blogData.pdf_url,
+        pageCount: blogData.page_count
       };
       
       setBlog(mapped);
@@ -525,7 +529,7 @@ const BlogDetail = () => {
                                 }`}
                                 style={{ textDecoration: "none" }}
                               >
-                                • {item.title}
+                                {item.contentType === 'note' ? "📚 " : "• "}{item.title}
                               </Link>
                             );
                           })}
@@ -577,7 +581,7 @@ const BlogDetail = () => {
                           style={{ textDecoration: "none" }}
                         >
                           <div className="flex items-center gap-2">
-                            <span className="text-[#6366f1]">📄</span>
+                            <span className="text-[#6366f1]">{item.contentType === 'note' ? "📚" : "📄"}</span>
                             <span className="font-mono text-gray-300 font-semibold">{item.title}</span>
                           </div>
                           <span className="text-[9px] font-mono text-gray-500 uppercase tracking-wider flex items-center gap-1">Open <ChevronRight size={10} /></span>
@@ -594,7 +598,31 @@ const BlogDetail = () => {
               
               {/* Render Content Body */}
               <div className="flex-1 text-left" style={{ fontSize: `${fontSize}px` }}>
-                <BlogRenderer content={blog.content} lineNumbers={lineNumbers} isHtml={blog.isHtml} />
+                {blog.contentType === 'note' ? (
+                  <div className="w-full flex flex-col border border-white/10 bg-[#070718]/60 rounded-2xl overflow-hidden p-1 mb-8" style={{ minHeight: "750px", height: "calc(100vh - 250px)" }}>
+                    <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/5 bg-white/[0.02]">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl">📚</span>
+                        <span className="text-xs font-mono font-bold text-gray-300">{blog.title} ({blog.pageCount || 0} pages)</span>
+                      </div>
+                      <a
+                        href={blog.pdfUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-[10px] font-mono font-bold text-gray-400 hover:text-white hover:bg-indigo-500/20 hover:border-indigo-500/30 transition-all text-decoration-none"
+                      >
+                        <ExternalLink size={11} /> Open PDF
+                      </a>
+                    </div>
+                    <iframe
+                      src={`${blog.pdfUrl}#toolbar=0&navpanes=0&scrollbar=1`}
+                      title={blog.title}
+                      className="w-full flex-1 border-none"
+                    />
+                  </div>
+                ) : (
+                  <BlogRenderer content={blog.content} lineNumbers={lineNumbers} isHtml={blog.isHtml} />
+                )}
               </div>
 
               {/* ── Next / Previous Navigation Links ── */}

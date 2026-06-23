@@ -20,6 +20,9 @@ const BlogDetail = React.lazy(() => import("./pages/BlogDetail"));
 const UnsubscribePage = React.lazy(() => import("./pages/Unsubscribe"));
 const Playground = React.lazy(() => import("./pages/Playground"));
 const BlogHome = React.lazy(() => import("./pages/BlogHome"));
+const InterviewPrep = React.lazy(() => import("./pages/InterviewPrep"));
+const InterviewCategoryDetail = React.lazy(() => import("./pages/InterviewCategoryDetail"));
+const CompanyDetail = React.lazy(() => import("./pages/CompanyDetail"));
 
 /* ─── Landing Page ─── */
 const LandingPage = ({ showWelcome, setShowWelcome }) => {
@@ -184,6 +187,42 @@ function App() {
               </div>
             }>
               <Playground />
+            </React.Suspense>
+          } 
+        />
+        <Route 
+          path="/interview-prep" 
+          element={
+            <React.Suspense fallback={
+              <div className="min-h-screen bg-[#030014] flex items-center justify-center">
+                <div className="w-12 h-12 rounded-full border-2 border-[#6366f1]/20 border-t-[#6366f1] animate-spin" />
+              </div>
+            }>
+              <InterviewPrep />
+            </React.Suspense>
+          } 
+        />
+        <Route 
+          path="/interview-prep/topic/:categoryId" 
+          element={
+            <React.Suspense fallback={
+              <div className="min-h-screen bg-[#030014] flex items-center justify-center">
+                <div className="w-12 h-12 rounded-full border-2 border-[#6366f1]/20 border-t-[#6366f1] animate-spin" />
+              </div>
+            }>
+              <InterviewCategoryDetail />
+            </React.Suspense>
+          } 
+        />
+        <Route 
+          path="/interview-prep/company/:companyName" 
+          element={
+            <React.Suspense fallback={
+              <div className="min-h-screen bg-[#030014] flex items-center justify-center">
+                <div className="w-12 h-12 rounded-full border-2 border-[#6366f1]/20 border-t-[#6366f1] animate-spin" />
+              </div>
+            }>
+              <CompanyDetail />
             </React.Suspense>
           } 
         />

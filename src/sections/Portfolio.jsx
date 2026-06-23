@@ -19,7 +19,7 @@ import AOS from "aos";
 import "aos/dist/aos.css";
 import Certificate from "../components/Certificate";
 import NoteCard from "../components/NoteCard";
-import { Code, Award, Boxes, ChevronDown, ChevronUp, Sparkles, BookOpen, FileText, Search, X, ExternalLink } from "lucide-react";
+import { Code, Award, Boxes, ChevronDown, ChevronUp, Sparkles, BookOpen, FileText, Search, X, ExternalLink, HelpCircle, ArrowRight, CheckCircle } from "lucide-react";
 
 /* ─── Toggle Button ─── */
 const ToggleButton = memo(({ onClick, isShowingMore }) => (
@@ -194,13 +194,11 @@ export default function FullWidthTabs() {
   const [projects, setProjects] = useState([]);
   const [certificates, setCertificates] = useState([]);
   const [blogs, setBlogs] = useState([]);
-  const [notes, setNotes] = useState([]);
+  const [questions, setQuestions] = useState([]);
   const [showAllProjects, setShowAllProjects] = useState(false);
   const [showAllCertificates, setShowAllCertificates] = useState(false);
   const [showAllBlogs, setShowAllBlogs] = useState(false);
-  const [showAllNotes, setShowAllNotes] = useState(false);
   const [blogFilter, setBlogFilter] = useState("All");
-  const [notesFilter, setNotesFilter] = useState("All");
   const [blogSearch, setBlogSearch] = useState("");
   const isMobile = window.innerWidth < 768;
   const initialItems = isMobile ? 4 : 6;
@@ -214,18 +212,21 @@ export default function FullWidthTabs() {
       const [
         { data: projectDataRaw, error: projectErr },
         { data: certDataRaw, error: certErr },
-        { data: notesDataRaw, error: notesErr },
+        { data: questionsDataRaw, error: questionsErr },
         { data: blogDataRaw, error: blogErr }
       ] = await Promise.all([
         supabase.from("projects").select("*").order("created_at", { ascending: false }),
         supabase.from("certificates").select("*").order("issue_date", { ascending: false }),
-        supabase.from("notes").select("*").order("created_at", { ascending: false }),
+        supabase.from("interview_questions").select("id, category, subcategory, difficulty_level, company_tags"),
         supabase.from("blogs").select("*").order("published_date", { ascending: false })
       ]);
 
       if (projectErr) throw projectErr;
       if (certErr) throw certErr;
-      if (notesErr) throw notesErr;
+      if (questionsErr) {
+        // If tables are not created yet on Supabase, print a warn instead of crashing page
+        console.warn("Interview questions table not found or query error:", questionsErr);
+      }
       if (blogErr) throw blogErr;
 
       const projectData = (projectDataRaw || []).map((doc) => ({
@@ -263,17 +264,12 @@ export default function FullWidthTabs() {
         }
       };
 
-      const notesData = (notesDataRaw || []).map((doc) => ({
+      const questionsData = (questionsDataRaw || []).map((doc) => ({
         id: doc.id,
-        title: doc.title,
-        description: doc.description,
-        subject: doc.subject,
-        tags: doc.tags || [],
-        pdfUrl: doc.pdf_url,
-        coverEmoji: doc.cover_emoji || "📚",
-        pages: doc.page_count || 0,
-        featured: doc.featured || false,
-        date: doc.publish_date || formatDate(doc.created_at)
+        category: doc.category,
+        subcategory: doc.subcategory,
+        difficultyLevel: doc.difficulty_level,
+        companyTags: doc.company_tags || []
       }));
 
       const blogData = (blogDataRaw || []).map((doc) => ({
@@ -291,18 +287,19 @@ export default function FullWidthTabs() {
         likes: doc.likes_count || 0,
         bookmarks: doc.bookmarks_count || 0,
         readTime: doc.read_time || null,
-        date: formatDate(doc.published_date)
+        date: formatDate(doc.published_date),
+        contentType: doc.content_type || 'article'
       }));
 
       setProjects(projectData);
       setCertificates(certData);
       setBlogs(blogData);
-      setNotes(notesData);
+      setQuestions(questionsData);
 
-      localStorage.setItem("projects",     JSON.stringify(projectData));
-      localStorage.setItem("certificates", JSON.stringify(certData));
-      localStorage.setItem("blogs",        JSON.stringify(blogData));
-      localStorage.setItem("notes",        JSON.stringify(notesData));
+      localStorage.setItem("projects",            JSON.stringify(projectData));
+      localStorage.setItem("certificates",        JSON.stringify(certData));
+      localStorage.setItem("blogs",               JSON.stringify(blogData));
+      localStorage.setItem("interview_questions", JSON.stringify(questionsData));
     } catch (error) {
       console.error("Error fetching data:", error);
     }
@@ -314,12 +311,12 @@ export default function FullWidthTabs() {
       const cachedProjects = localStorage.getItem("projects");
       const cachedCerts    = localStorage.getItem("certificates");
       const cachedBlogs    = localStorage.getItem("blogs");
-      const cachedNotes    = localStorage.getItem("notes");
+      const cachedQuestions = localStorage.getItem("interview_questions");
 
       if (cachedProjects) setProjects(JSON.parse(cachedProjects));
       if (cachedCerts)    setCertificates(JSON.parse(cachedCerts));
       if (cachedBlogs)    setBlogs(JSON.parse(cachedBlogs));
-      if (cachedNotes)    setNotes(JSON.parse(cachedNotes));
+      if (cachedQuestions) setQuestions(JSON.parse(cachedQuestions));
     } catch (e) {
       console.warn("Failed to load portfolio cache from localStorage:", e);
     }
@@ -352,10 +349,10 @@ export default function FullWidthTabs() {
     if (type === "projects")     setShowAllProjects((p) => !p);
     else if (type === "certificates") setShowAllCertificates((p) => !p);
     else if (type === "blogs")        setShowAllBlogs((p) => !p);
-    else                         setShowAllNotes((p) => !p);
   }, []);
 
   const filteredBlogs = blogs.filter((b) => {
+    const matchesContentType = b.contentType !== 'note';
     const matchesCategory = blogFilter === "All" || 
       b.categories?.some((c) => c.toLowerCase().includes(blogFilter.toLowerCase())) || 
       b.tags?.some((t) => t.toLowerCase().includes(blogFilter.toLowerCase()));
@@ -364,26 +361,18 @@ export default function FullWidthTabs() {
       b.description?.toLowerCase().includes(blogSearch.toLowerCase()) ||
       b.categories?.some((c) => c.toLowerCase().includes(blogSearch.toLowerCase())) ||
       b.tags?.some((t) => t.toLowerCase().includes(blogSearch.toLowerCase()));
-    return matchesCategory && matchesSearch;
+    return matchesContentType && matchesCategory && matchesSearch;
   });
-
-  const filteredNotes = notesFilter === "All"
-    ? notes
-    : notes.filter((n) => n.subject === notesFilter || n.tags?.some((t) => t.toLowerCase().includes(notesFilter.toLowerCase())));
-
-  const featuredNote  = filteredNotes.find((n) => n.featured);
-  const regularNotes  = filteredNotes.filter((n) => !n.featured);
 
   const displayedProjects      = showAllProjects      ? projects      : projects.slice(0, initialItems);
   const displayedCertificates  = showAllCertificates  ? certificates  : certificates.slice(0, initialItems);
-  const displayedRegularNotes  = showAllNotes         ? regularNotes  : regularNotes.slice(0, initialItems);
 
   const TAB_CONFIG = [
-    { icon: Code,      label: "Projects",     count: projects.length },
-    { icon: Award,     label: "Certificates", count: certificates.length },
-    { icon: Boxes,     label: "Tech Stack",   count: techStacks.length },
-    { icon: FileText,  label: "Notes",        count: notes.length },
-    { icon: BookOpen,  label: "Blogs",         count: blogs.length },
+    { icon: Code,       label: "Projects",       count: projects.length },
+    { icon: Award,      label: "Certificates",   count: certificates.length },
+    { icon: Boxes,      label: "Tech Stack",     count: techStacks.length },
+    { icon: HelpCircle, label: "Interview Prep", count: questions.length },
+    { icon: BookOpen,   label: "Blogs",          count: blogs.length },
   ];
 
   return (
@@ -596,96 +585,105 @@ export default function FullWidthTabs() {
               ))}
             </div>
           </TabPanel>
-
-          {/* ── Notes ── */}
           <TabPanel value={value} index={3} dir={theme.direction}>
             {/* Centered Title */}
             <div className="text-center mb-10 relative">
               <h3 
                 className="text-3xl md:text-4xl font-extrabold tracking-[0.18em] text-[#e2e8f0] uppercase select-none font-sans"
-                style={{ textShadow: "0 0 15px rgba(226, 232, 240, 0.35), 0 0 30px rgba(16, 185, 129, 0.15)" }}
+                style={{ textShadow: "0 0 15px rgba(226, 232, 240, 0.35), 0 0 30px rgba(139, 92, 246, 0.15)" }}
               >
-                MY NOTES
+                INTERVIEW PREP
               </h3>
               <div className="mt-3 flex justify-center">
-                <div className="h-0.5 w-24 bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                <div className="h-0.5 w-24 bg-gradient-to-r from-transparent via-violet-500/50 to-transparent shadow-[0_0_8px_rgba(139,92,246,0.5)]" />
               </div>
             </div>
-            <FilterBar categories={NOTES_CATEGORIES} active={notesFilter} onChange={(cat) => { setNotesFilter(cat); setShowAllNotes(false); }} />
 
-            {filteredNotes.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
-                <span className="text-5xl">📂</span>
-                <p className="text-gray-500 text-sm">No notes found for this subject.</p>
+            {/* Intro text + Open full prep portal button */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-6 mb-10 bg-[#0a0a1a]/60 border border-white/5 rounded-2xl p-6" data-aos="fade-up">
+              <div className="text-left">
+                <h4 className="text-base font-bold text-white font-sans flex items-center gap-2">
+                  <span className="flex h-2 w-2 rounded-full bg-indigo-500 animate-ping" />
+                  Structured Interview Preparation Platform
+                </h4>
+                <p className="text-xs text-gray-400 mt-1.5 leading-relaxed max-w-2xl">
+                  Master your coding and system design interviews. Solve category-wise questions sorted from Basic to Advanced, read detailed answers with executable code snippets, and search by top tech companies.
+                </p>
               </div>
-            ) : (
-              <>
-                {/* Featured note */}
-                {featuredNote && (
-                  <div className="mb-6" data-aos="fade-up">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="h-px flex-1 bg-gradient-to-r from-transparent to-[#6366f1]/20" />
-                      <span className="text-[11px] font-mono text-gray-600 uppercase tracking-widest">Featured</span>
-                      <div className="h-px flex-1 bg-gradient-to-l from-transparent to-[#6366f1]/20" />
-                    </div>
-                    <div className="max-w-sm">
-                      <NoteCard
-                        id={featuredNote.id}
-                        title={featuredNote.title}
-                        description={featuredNote.description}
-                        subject={featuredNote.subject}
-                        tags={featuredNote.tags}
-                        pdfUrl={featuredNote.pdfUrl}
-                        coverEmoji={featuredNote.coverEmoji}
-                        pages={featuredNote.pages}
-                        date={featuredNote.date}
-                        featured={true}
-                      />
-                    </div>
-                  </div>
-                )}
+              <button
+                onClick={() => navigate("/interview-prep")}
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[#6366f1] to-[#a855f7] text-white text-xs font-bold hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 shadow-lg shadow-indigo-500/20 cursor-pointer shrink-0 font-sans"
+              >
+                Open Interview Portal
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
 
-                {/* Notes grid */}
-                {regularNotes.length > 0 && (
-                  <>
-                    <div className="flex items-center gap-3 mb-5" data-aos="fade-right">
-                      <div className="h-px flex-1 bg-gradient-to-r from-transparent to-[#6366f1]/20" />
-                      <span className="text-[11px] font-mono text-gray-600 uppercase tracking-widest">{regularNotes.length} Notes</span>
-                      <div className="h-px flex-1 bg-gradient-to-l from-transparent to-[#6366f1]/20" />
-                    </div>
+            {/* Preparation Statistics Dashboard */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-10" data-aos="fade-up" data-aos-delay="100">
+              <div className="p-5 rounded-2xl border border-white/5 bg-[#050515]/40 text-left">
+                <span className="text-2xl">🎯</span>
+                <div className="text-2xl font-black text-white font-mono mt-2">{questions.length || "50+"}</div>
+                <div className="text-[10px] text-gray-500 font-mono uppercase tracking-wider mt-1">Total Curated Questions</div>
+              </div>
+              <div className="p-5 rounded-2xl border border-white/5 bg-[#050515]/40 text-left">
+                <span className="text-2xl">🏢</span>
+                <div className="text-xs text-gray-300 font-bold font-mono mt-2.5 truncate">Google, Amazon, Microsoft, TCS & 20+</div>
+                <div className="text-[10px] text-gray-500 font-mono uppercase tracking-wider mt-1.5">Company Specific Tagging</div>
+              </div>
+              <div className="p-5 rounded-2xl border border-white/5 bg-[#050515]/40 text-left">
+                <span className="text-2xl">⚡</span>
+                <div className="text-xs text-gray-300 font-bold font-mono mt-2.5">Basic → Intermediate → Advanced</div>
+                <div className="text-[10px] text-gray-500 font-mono uppercase tracking-wider mt-1.5">Structured Difficulty Ordering</div>
+              </div>
+            </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-                      {displayedRegularNotes.map((note, index) => (
-                        <div key={note.id}
-                          data-aos={index % 3 === 0 ? "fade-up-right" : index % 3 === 1 ? "fade-up" : "fade-up-left"}
-                          data-aos-duration="900"
-                          data-aos-delay={index * 60}
-                        >
-                          <NoteCard
-                            id={note.id}
-                            title={note.title}
-                            description={note.description}
-                            subject={note.subject}
-                            tags={note.tags}
-                            pdfUrl={note.pdfUrl}
-                            coverEmoji={note.coverEmoji}
-                            pages={note.pages}
-                            date={note.date}
-                            featured={false}
-                          />
-                        </div>
-                      ))}
+            {/* Practice Categories */}
+            <div className="mb-10 text-left" data-aos="fade-up" data-aos-delay="150">
+              <h4 className="text-xs font-mono font-bold uppercase tracking-widest text-gray-500 mb-5">
+                Practice by Technology
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {[
+                  { id: "java", name: "Java Language", emoji: "☕", count: "OOPs, Collections, Stream API, Concurrency" },
+                  { id: "spring-boot", name: "Spring Boot", emoji: "🍃", count: "IOC, MVC, Security, Hibernate, Microservices" },
+                  { id: "dsa", name: "Data Structures & Algos", emoji: "🧮", count: "Arrays, Stack, Queue, Recursion, DP, Graphs" },
+                  { id: "system-design", name: "System Design", emoji: "🏛️", count: "Scalability, Caching, Saga, Distributed Systems" },
+                  { id: "frontend", name: "Frontend Dev", emoji: "⚛️", count: "JS, React, Next.js, Redux, Performance" },
+                  { id: "backend", name: "Backend Dev", emoji: "💾", count: "Node.js, Express, REST APIs, JWT, Security" }
+                ].map((cat) => (
+                  <button
+                    key={cat.id}
+                    onClick={() => navigate(`/interview-prep/topic/${cat.id}`)}
+                    className="flex items-start gap-4 p-5 rounded-2xl border border-white/5 bg-[#050515]/30 hover:bg-[#0a0a20]/65 hover:border-indigo-500/30 hover:-translate-y-1 transition-all duration-300 text-left cursor-pointer group"
+                  >
+                    <span className="text-3xl p-2.5 rounded-xl bg-white/4 group-hover:scale-110 transition-transform duration-300">{cat.emoji}</span>
+                    <div className="min-w-0">
+                      <div className="text-xs font-bold text-white font-mono group-hover:text-indigo-400 transition-colors">{cat.name}</div>
+                      <div className="text-[10px] text-gray-500 font-mono mt-1 leading-relaxed line-clamp-2">{cat.count}</div>
                     </div>
+                  </button>
+                ))}
+              </div>
+            </div>
 
-                    {regularNotes.length > initialItems && (
-                      <div className="mt-8 w-full flex justify-center">
-                        <ToggleButton onClick={() => toggleShowMore("notes")} isShowingMore={showAllNotes} />
-                      </div>
-                    )}
-                  </>
-                )}
-              </>
-            )}
+            {/* Company Tagging Shortcuts */}
+            <div className="text-left" data-aos="fade-up" data-aos-delay="200">
+              <h4 className="text-xs font-mono font-bold uppercase tracking-widest text-gray-500 mb-5">
+                Target Top Tech Companies
+              </h4>
+              <div className="flex flex-wrap gap-2.5">
+                {["Google", "Amazon", "Microsoft", "Meta", "Netflix", "Uber", "Adobe", "Goldman Sachs", "JPMorgan Chase", "TCS", "Infosys", "Wipro", "Cognizant", "Accenture", "Zoho", "Paytm", "PhonePe", "Razorpay"].map((company) => (
+                  <button
+                    key={company}
+                    onClick={() => navigate(`/interview-prep/company/${company.toLowerCase().replace(/\s+/g, "-")}`)}
+                    className="px-4 py-2 text-xs font-semibold rounded-xl border border-white/5 bg-[#050515]/30 text-gray-400 hover:text-[#22d3ee] hover:border-[#22d3ee]/30 hover:bg-[#22d3ee]/5 transition-all cursor-pointer font-mono"
+                  >
+                    🏢 {company}
+                  </button>
+                ))}
+              </div>
+            </div>
           </TabPanel>
 
           {/* ── Blog ── */}
