@@ -60,8 +60,10 @@ const BlogRenderer = ({ content, lineNumbers, isHtml }) => {
         Array.from(script.attributes).forEach(attr => {
           newScript.setAttribute(attr.name, attr.value);
         });
-        // Copy inner code content
-        newScript.textContent = script.textContent;
+        // Copy inner code content wrapped in an IIFE to isolate scope and prevent redeclaration errors
+        if (script.textContent.trim()) {
+          newScript.textContent = `(function(){\n${script.textContent}\n})();`;
+        }
         // Append to DOM to trigger execution
         document.body.appendChild(newScript);
         // Remove it immediately to keep DOM clean (scripts will have run already)
