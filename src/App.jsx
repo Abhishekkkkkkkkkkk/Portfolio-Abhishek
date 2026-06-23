@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useParams } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import "./index.css";
 import Home from "./sections/Home";
@@ -23,6 +23,7 @@ const BlogHome = React.lazy(() => import("./pages/BlogHome"));
 const InterviewPrep = React.lazy(() => import("./pages/InterviewPrep"));
 const InterviewCategoryDetail = React.lazy(() => import("./pages/InterviewCategoryDetail"));
 const CompanyDetail = React.lazy(() => import("./pages/CompanyDetail"));
+const InterviewAdminEditor = React.lazy(() => import("./pages/InterviewAdminEditor"));
 
 /* ─── Landing Page ─── */
 const LandingPage = ({ showWelcome, setShowWelcome }) => {
@@ -79,6 +80,16 @@ const ProjectPageLayout = () => (
 
 /* ─── Blog Page Layout ─── */
 const BlogPageLayout = () => <BlogDetail />;
+
+/* ─── Redirect Helper for Dynamic Params ─── */
+const RedirectWithParams = ({ to }) => {
+  const params = useParams();
+  let target = to;
+  Object.entries(params).forEach(([key, val]) => {
+    target = target.replace(`:${key}`, val);
+  });
+  return <Navigate to={target} replace />;
+};
 
 function App() {
   const [showWelcome, setShowWelcome] = useState(true);
@@ -191,7 +202,7 @@ function App() {
           } 
         />
         <Route 
-          path="/interview-prep" 
+          path="/interview-questions" 
           element={
             <React.Suspense fallback={
               <div className="min-h-screen bg-[#030014] flex items-center justify-center">
@@ -203,7 +214,7 @@ function App() {
           } 
         />
         <Route 
-          path="/interview-prep/topic/:categoryId" 
+          path="/interview-questions/topic/:categoryId" 
           element={
             <React.Suspense fallback={
               <div className="min-h-screen bg-[#030014] flex items-center justify-center">
@@ -215,7 +226,7 @@ function App() {
           } 
         />
         <Route 
-          path="/interview-prep/company/:companyName" 
+          path="/interview-questions/company/:companyName" 
           element={
             <React.Suspense fallback={
               <div className="min-h-screen bg-[#030014] flex items-center justify-center">
@@ -226,6 +237,22 @@ function App() {
             </React.Suspense>
           } 
         />
+        <Route 
+          path="/admin/interview-editor" 
+          element={
+            <React.Suspense fallback={
+              <div className="min-h-screen bg-[#030014] flex items-center justify-center">
+                <div className="w-12 h-12 rounded-full border-2 border-[#6366f1]/20 border-t-[#6366f1] animate-spin" />
+              </div>
+            }>
+              <InterviewAdminEditor />
+            </React.Suspense>
+          } 
+        />
+        {/* Fallbacks / redirects for backward compatibility */}
+        <Route path="/interview-prep" element={<Navigate to="/interview-questions" replace />} />
+        <Route path="/interview-prep/topic/:categoryId" element={<RedirectWithParams to="/interview-questions/topic/:categoryId" />} />
+        <Route path="/interview-prep/company/:companyName" element={<RedirectWithParams to="/interview-questions/company/:companyName" />} />
       </Routes>
     </BrowserRouter>
   );

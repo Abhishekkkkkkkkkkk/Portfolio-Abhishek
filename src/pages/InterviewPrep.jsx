@@ -1,108 +1,88 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Search, HelpCircle, Building2, CheckCircle, Bookmark, Star, ArrowRight, BookOpen, ShieldAlert, Award, Play } from "lucide-react";
+import { ArrowLeft, Search, Building2, HelpCircle as HelpIcon, ArrowRight } from "lucide-react";
 import { supabase } from "../services/supabase";
 
-// Category configuration
+// Category configurations mapped exactly to your 15 folders
 const CATEGORIES = [
-  { id: "java", name: "Java", emoji: "☕", desc: "Core Java, OOPs, Collections, JVM, Multithreading, Streams", color: "from-orange-500/20 to-amber-500/10", border: "border-orange-500/20 text-orange-400" },
-  { id: "spring-boot", name: "Spring Boot", emoji: "🍃", desc: "Dependency Injection, MVC, REST APIs, Security, JPA, Microservices", color: "from-emerald-500/20 to-teal-500/10", border: "border-emerald-500/20 text-emerald-400" },
-  { id: "dsa", name: "DSA", emoji: "🧮", desc: "Arrays, Strings, Recursion, Trees, Graphs, DP, Binary Search", color: "from-violet-500/20 to-indigo-500/10", border: "border-violet-500/20 text-violet-400" },
-  { id: "system-design", name: "System Design", emoji: "🏛️", desc: "HLD, LLD, Scalability, Distributed Transactions, Saga Pattern", color: "from-amber-500/20 to-yellow-500/10", border: "border-amber-500/20 text-amber-400" },
-  { id: "frontend", name: "Frontend", emoji: "⚛️", desc: "HTML, CSS, JS, ES6+, TypeScript, React, Next.js, Redux, Performance", color: "from-cyan-500/20 to-blue-500/10", border: "border-cyan-500/20 text-cyan-400" },
-  { id: "backend", name: "Backend", emoji: "💾", desc: "Node.js, Express, REST APIs, Security, Auth, System Design", color: "from-blue-600/20 to-indigo-600/10", border: "border-blue-500/20 text-blue-400" },
-  { id: "mern-stack", name: "MERN Stack", emoji: "🥞", desc: "MongoDB, Express, React, Node, Full Stack architecture", color: "from-pink-500/20 to-rose-500/10", border: "border-pink-500/20 text-pink-400" }
+  { id: "java", name: "Java", emoji: "☕", desc: "Core Java, OOPs, Collections, JVM, Multithreading, Streams, GC", color: "from-orange-500/20 to-amber-500/10", border: "border-orange-500/20 text-orange-400" },
+  { id: "spring-boot", name: "Spring Boot", emoji: "🍃", desc: "Dependency Injection, MVC, REST APIs, Beans, Transactions", color: "from-emerald-500/20 to-teal-500/10", border: "border-emerald-500/20 text-emerald-400" },
+  { id: "microservices", name: "Microservices", emoji: "⚙️", desc: "Architecture, Resiliency, Service Registry, Saga, Bulkhead, Outbox", color: "from-indigo-500/20 to-purple-500/10", border: "border-indigo-500/20 text-indigo-400" },
+  { id: "dbms", name: "DBMS", emoji: "🗄️", desc: "Normalization, Relational/Non-relational, Zero-downtime schema migrations", color: "from-rose-500/20 to-pink-500/10", border: "border-rose-500/20 text-rose-400" },
+  { id: "dsa", name: "DSA", emoji: "🧮", desc: "Array & String Algorithms, Sliding Window, Stack, Cache Design", color: "from-violet-500/20 to-fuchsia-500/10", border: "border-violet-500/20 text-violet-400" },
+  { id: "design-patterns", name: "Design Patterns", emoji: "📐", desc: "Singleton, Factory, Builder, Strategy, Observer, SOLID principles", color: "from-blue-500/20 to-cyan-500/10", border: "border-blue-500/20 text-blue-400" },
+  { id: "docker", name: "Docker", emoji: "🐳", desc: "Containerization, Dockerfiles, Volumes, Networking, CLI cheat sheet", color: "from-sky-500/20 to-blue-500/10", border: "border-sky-500/20 text-sky-400" },
+  { id: "hibernate-jpa", name: "Hibernate & JPA", emoji: "💾", desc: "FetchType, Lazy vs Eager, Pagination, Caching, N+1 Select Problem", color: "from-teal-500/20 to-emerald-500/10", border: "border-teal-500/20 text-teal-400" },
+  { id: "jms", name: "JMS", emoji: "✉️", desc: "Queue vs Topic models, Spring JmsTemplate, Message Listeners", color: "from-pink-500/20 to-rose-500/10", border: "border-pink-500/20 text-pink-400" },
+  { id: "kafka", name: "Kafka", emoji: "🧲", desc: "Producers, Brokers, Consumer Groups, Partitions, Durability, ISR", color: "from-red-500/20 to-orange-500/10", border: "border-red-500/20 text-red-400" },
+  { id: "oops", name: "OOPs", emoji: "🧩", desc: "Classes, Objects, Inheritance, Polymorphism, Encapsulation, SOLID", color: "from-cyan-500/20 to-teal-500/10", border: "border-cyan-500/20 text-cyan-400" },
+  { id: "redis", name: "Redis", emoji: "⚡", desc: "In-memory caching, TTL, Key-value eviction policies, Session storage", color: "from-yellow-500/20 to-amber-500/10", border: "border-yellow-500/20 text-yellow-400" },
+  { id: "sql", name: "SQL", emoji: "📊", desc: "Queries, Joins, Indexing, Stored Procedures, Optimization, B+ Trees", color: "from-amber-500/20 to-orange-500/10", border: "border-amber-500/20 text-amber-400" },
+  { id: "spring-security", name: "Spring Security", emoji: "🔒", desc: "Authentication, Authorization, JWT, OAuth2, Inter-service security", color: "from-emerald-500/20 to-green-500/10", border: "border-emerald-500/20 text-green-400" },
+  { id: "system-design", name: "System Design", emoji: "🏛️", desc: "HLD, LLD, Scalability, Rate Limiting, High Availability, Ledgers", color: "from-violet-500/20 to-indigo-500/10", border: "border-violet-500/20 text-violet-400" }
 ];
 
-// Famous companies list
+// Map of page id to database category name (if they differ)
+const DB_CAT_MAP = {
+  "hibernate-jpa": "Hibernate_JPA",
+  "design-patterns": "Design Patterns",
+  "spring-boot": "Spring Boot",
+  "spring-security": "Spring Security",
+  "system-design": "System Design"
+};
+
 const POPULAR_COMPANIES = [
   "Google", "Amazon", "Microsoft", "Meta", "Apple", "Netflix", "Uber", 
   "LinkedIn", "Adobe", "Atlassian", "Walmart", "Goldman Sachs", "JPMorgan Chase", 
   "Visa", "Salesforce", "TCS", "Infosys", "Wipro", "Cognizant", "Accenture", 
-  "Zoho", "Paytm", "PhonePe", "Razorpay", "Swiggy", "Zomato", "Flipkart"
+  "Accenture", "Zoho", "Paytm", "PhonePe", "Razorpay", "Swiggy", "Zomato", "Flipkart"
 ];
 
 const InterviewPrep = () => {
   const navigate = useNavigate();
-  const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  
-  // Progress states
-  const [completedIds, setCompletedIds] = useState(new Set());
-  const [bookmarkedIds, setBookmarkedIds] = useState(new Set());
-  const [favoritedIds, setFavoritedIds] = useState(new Set());
-
-  // Stats
-  const [totalQuestions, setTotalQuestions] = useState(0);
-  const [completedCount, setCompletedCount] = useState(0);
   const [categoryStats, setCategoryStats] = useState({});
+  const [totalQuestions, setTotalQuestions] = useState(0);
 
   useEffect(() => {
-    // Load local progress
-    try {
-      const completed = JSON.parse(localStorage.getItem("iq-completed") || "[]");
-      const bookmarked = JSON.parse(localStorage.getItem("iq-bookmarked") || "[]");
-      const favorited = JSON.parse(localStorage.getItem("iq-favorited") || "[]");
-      
-      setCompletedIds(new Set(completed));
-      setBookmarkedIds(new Set(bookmarked));
-      setFavoritedIds(new Set(favorited));
-      setCompletedCount(completed.length);
-    } catch (e) {
-      console.warn("Failed to load local progress:", e);
-    }
-
-    // Fetch questions
-    const fetchQuestions = async () => {
+    const fetchStats = async () => {
       setLoading(true);
       try {
         const { data, error } = await supabase
           .from("interview_questions")
-          .select("id, category, subcategory, difficulty_level, company_tags");
+          .select("category");
 
         if (error) throw error;
 
         if (data) {
-          setQuestions(data);
           setTotalQuestions(data.length);
-
-          // Calculate stats
           const stats = {};
           data.forEach(q => {
-            const cat = q.category.toLowerCase();
-            if (!stats[cat]) stats[cat] = { total: 0, completed: 0 };
-            stats[cat].total += 1;
+            // Normalize to lower case for stat mapping
+            const cat = q.category.toLowerCase().trim();
+            if (!stats[cat]) stats[cat] = 0;
+            stats[cat] += 1;
           });
-          
-          // Re-sync completed count with database IDs
-          const completedList = JSON.parse(localStorage.getItem("iq-completed") || "[]");
-          const validCompleted = completedList.filter(id => data.some(q => q.id === id));
-          setCompletedCount(validCompleted.length);
-          
-          validCompleted.forEach(id => {
-            const questionObj = data.find(q => q.id === id);
-            if (questionObj) {
-              const cat = questionObj.category.toLowerCase();
-              if (stats[cat]) stats[cat].completed += 1;
-            }
-          });
-
           setCategoryStats(stats);
         }
       } catch (err) {
-        console.error("Failed to fetch questions:", err);
+        console.error("Failed to fetch questions stats:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchQuestions();
+    fetchStats();
   }, []);
 
-  const progressPercent = totalQuestions > 0 ? Math.round((completedCount / totalQuestions) * 100) : 0;
+  const getCount = (catId) => {
+    // Check both standard id and DB mapped category name
+    const dbName = DB_CAT_MAP[catId] || catId;
+    const count = categoryStats[dbName.toLowerCase()] || categoryStats[catId.toLowerCase()] || 0;
+    return count;
+  };
 
-  // Filter companies by search query if any
   const filteredCompanies = POPULAR_COMPANIES.filter(c =>
     c.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -128,56 +108,32 @@ const InterviewPrep = () => {
         </button>
 
         {/* Hero Header */}
-        <div className="text-left mb-12 animate-fade-in">
-          <div className="flex items-center gap-2 mb-3">
-            <span className="h-1 w-8 rounded-full bg-gradient-to-r from-[#6366f1] to-[#a855f7]" />
-            <span className="text-[10px] font-mono font-bold tracking-widest text-[#818cf8] uppercase">
-              Interactive Preparation Platform
-            </span>
+        <div className="text-left mb-12 animate-fade-in flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div className="max-w-2xl">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="h-1 w-8 rounded-full bg-gradient-to-r from-[#6366f1] to-[#a855f7]" />
+              <span className="text-[10px] font-mono font-bold tracking-widest text-[#818cf8] uppercase">
+                Technical Reference Library
+              </span>
+            </div>
+            <h1 className="text-4xl sm:text-5xl font-black text-white leading-none tracking-tight mb-4" style={{ fontFamily: "'Sora', sans-serif" }}>
+              Interview Q&As
+            </h1>
+            <p className="text-sm text-gray-400 leading-relaxed">
+              Browse through my structured repository of technical interview questions and high-quality answers. Grouped by core domains, subtopics, and companies for convenient reference.
+            </p>
           </div>
-          <h1 className="text-4xl sm:text-6xl font-black text-white leading-none tracking-tight mb-4" style={{ fontFamily: "'Sora', sans-serif" }}>
-            Interview Prep
-          </h1>
-          <p className="text-base sm:text-lg text-gray-400 max-w-2xl leading-relaxed">
-            Crack your coding and system design rounds. Solve structured topic-wise questions sorted by difficulty, track your readiness score, and filter by top tier companies.
-          </p>
-        </div>
 
-        {/* Progress Tracker Card */}
-        <div className="mb-12 p-6 rounded-2xl border border-white/8 bg-[#0a0a1a]/60 backdrop-blur-md relative overflow-hidden" data-aos="fade-up">
-          <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/4 to-transparent pointer-events-none" />
-          <div className="flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
-            <div className="text-left w-full md:w-auto">
-              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-indigo-400">Your Prep Progress</span>
-              <div className="flex items-baseline gap-2 mt-2">
-                <span className="text-4xl font-extrabold text-white font-mono">{progressPercent}%</span>
-                <span className="text-xs text-gray-500 font-mono">Readiness Index</span>
-              </div>
-              <p className="text-xs text-gray-400 mt-2 max-w-md">
-                You have completed <span className="text-white font-bold font-mono">{completedCount}</span> out of <span className="text-white font-bold font-mono">{totalQuestions || 7}</span> available questions. Keep going!
-              </p>
-            </div>
-            
-            <div className="flex-1 w-full md:max-w-md">
-              <div className="h-3 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
-                <div 
-                  className="h-full bg-gradient-to-r from-[#6366f1] to-[#a855f7] rounded-full transition-all duration-1000 ease-out shadow-[0_0_12px_rgba(99,102,241,0.5)]"
-                  style={{ width: `${progressPercent}%` }}
-                />
-              </div>
-              <div className="flex justify-between items-center text-[10px] font-mono text-gray-500 mt-2">
-                <span>0% Beginner</span>
-                <span>50% Intermediate</span>
-                <span>100% Interview Ready</span>
-              </div>
-            </div>
+          <div className="p-4 rounded-xl border border-white/5 bg-[#050512]/40 text-left font-mono shrink-0">
+            <div className="text-[10px] text-gray-500 uppercase tracking-widest">Total Q&A Articles</div>
+            <div className="text-2xl font-black text-indigo-400 mt-1">{totalQuestions} Q&As</div>
           </div>
         </div>
 
         {/* Categories Section */}
         <div className="mb-14">
           <h2 className="text-xs font-mono font-bold uppercase tracking-widest text-gray-400 mb-6 text-left">
-            Select a Practice Track
+            Technology Categories
           </h2>
           
           {loading ? (
@@ -188,13 +144,11 @@ const InterviewPrep = () => {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {CATEGORIES.map((cat) => {
-                const stats = categoryStats[cat.id] || { total: 0, completed: 0 };
-                const catPercent = stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0;
-
+                const count = getCount(cat.id);
                 return (
                   <button
                     key={cat.id}
-                    onClick={() => navigate(`/interview-prep/topic/${cat.id}`)}
+                    onClick={() => navigate(`/interview-questions/topic/${cat.id}`)}
                     className="group relative flex flex-col p-6 rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_24px_-12px_rgba(99,102,241,0.25)] cursor-pointer text-left overflow-hidden bg-[#0a0a1a]/85 border-white/6 hover:border-indigo-500/35 backdrop-blur-md"
                   >
                     {/* Hover Glow */}
@@ -205,7 +159,7 @@ const InterviewPrep = () => {
                         {cat.emoji}
                       </span>
                       <div className="text-[10px] font-mono text-indigo-400 group-hover:text-white transition-colors bg-indigo-500/10 px-2 py-0.5 rounded-md border border-indigo-500/20">
-                        {stats.completed}/{stats.total} Solved
+                        {count} {count === 1 ? 'Question' : 'Questions'}
                       </div>
                     </div>
 
@@ -213,17 +167,14 @@ const InterviewPrep = () => {
                       <h3 className="text-sm font-bold text-white font-mono uppercase tracking-wide group-hover:text-[#a855f7] transition-colors">
                         {cat.name}
                       </h3>
-                      <p className="text-xs text-gray-500 mt-1.5 leading-relaxed">
+                      <p className="text-xs text-gray-500 mt-1.5 leading-relaxed line-clamp-3">
                         {cat.desc}
                       </p>
                     </div>
-
-                    {/* Miniature Progress Line */}
-                    <div className="w-full mt-6 bg-white/5 h-1.5 rounded-full overflow-hidden relative z-10">
-                      <div 
-                        className="h-full bg-indigo-500 rounded-full transition-all duration-500" 
-                        style={{ width: `${catPercent}%` }}
-                      />
+                    
+                    <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between text-[10px] font-mono text-gray-500 group-hover:text-indigo-400 transition-colors w-full relative z-10">
+                      <span>Browse Library</span>
+                      <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
                     </div>
                   </button>
                 );
@@ -237,10 +188,10 @@ const InterviewPrep = () => {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <div>
               <h2 className="text-xs font-mono font-bold uppercase tracking-widest text-gray-400">
-                Company-Specific Collections
+                Browse by Company Tag
               </h2>
               <p className="text-xs text-gray-500 mt-1">
-                Filter questions frequently reported in interview cycles of target tech companies.
+                View interview questions compiled from recent hiring cycles of top tech companies.
               </p>
             </div>
             
@@ -266,7 +217,7 @@ const InterviewPrep = () => {
               {filteredCompanies.map((company) => (
                 <button
                   key={company}
-                  onClick={() => navigate(`/interview-prep/company/${company.toLowerCase().replace(/\s+/g, "-")}`)}
+                  onClick={() => navigate(`/interview-questions/company/${company.toLowerCase().replace(/\s+/g, "-")}`)}
                   className="flex items-center gap-2 p-3 rounded-xl border border-white/5 bg-[#050512]/40 hover:bg-[#07071e]/70 hover:border-indigo-500/25 transition-all text-xs font-semibold font-mono text-gray-400 hover:text-[#22d3ee] cursor-pointer group"
                 >
                   <Building2 className="w-3.5 h-3.5 text-gray-600 group-hover:text-[#22d3ee] transition-colors" />

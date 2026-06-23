@@ -1,22 +1,29 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, Link, useLocation } from "react-router-dom";
-import { ArrowLeft, Search, CheckCircle, Bookmark, Star, Calendar, Clock, Award, ChevronRight, Check, BookOpen, ExternalLink, HelpCircle, AlertCircle, MessageSquare } from "lucide-react";
+import { ArrowLeft, Search, HelpCircle, AlertCircle, MessageSquare, ChevronRight, ExternalLink } from "lucide-react";
 import { supabase } from "../services/supabase";
 
 const CATEGORY_NAME_MAP = {
   "java": "Java",
   "spring-boot": "Spring Boot",
+  "spring_boot": "Spring Boot",
+  "microservices": "Microservices",
+  "dbms": "DBMS",
   "dsa": "DSA",
+  "design-patterns": "Design Patterns",
+  "design_patterns": "Design Patterns",
+  "docker": "Docker",
+  "hibernate-jpa": "Hibernate_JPA",
+  "hibernate_jpa": "Hibernate_JPA",
+  "jms": "JMS",
+  "kafka": "Kafka",
+  "oops": "OOPs",
+  "redis": "Redis",
+  "sql": "SQL",
+  "spring-security": "Spring Security",
+  "spring_security": "Spring Security",
   "system-design": "System Design",
-  "frontend": "Frontend",
-  "backend": "Backend",
-  "mern-stack": "MERN Stack"
-};
-
-const DIFFICULTY_ORDER = {
-  "Beginner": 1,
-  "Intermediate": 2,
-  "Advanced": 3
+  "system_design": "System Design"
 };
 
 const DIFFICULTY_CLASSES = {
@@ -31,15 +38,61 @@ const FREQUENCY_CLASSES = {
   "Low": "bg-gray-500/10 text-gray-400 border-gray-500/20"
 };
 
+// Helper: Custom simple markdown parser to render detailed answer
+const renderMarkdown = (text) => {
+  if (!text) return null;
+  return text.split('\n\n').map((paragraph, idx) => {
+    // Check if paragraph is a code block
+    if (paragraph.startsWith('```') && paragraph.endsWith('```')) {
+      const code = paragraph.replace(/^```[a-z]*\n|```$/g, '');
+      return (
+        <pre key={idx} className="bg-[#050510] border border-white/8 rounded-xl p-4 overflow-x-auto text-[11.5px] font-mono text-[#a5d6ff] text-left my-4">
+          <code>{code}</code>
+        </pre>
+      );
+    }
+
+    // Check if paragraph is a bullet list
+    if (paragraph.startsWith('- ') || paragraph.startsWith('* ')) {
+      const items = paragraph.split(/\n[-*]\s+/);
+      return (
+        <ul key={idx} className="list-disc pl-5 space-y-1 my-3 text-left">
+          {items.map((item, i) => {
+            const cleanItem = item.replace(/^[-*]\s+/, '');
+            return <li key={i}>{parseInlineMarkdown(cleanItem)}</li>;
+          })}
+        </ul>
+      );
+    }
+
+    // Default paragraph
+    return (
+      <p key={idx} className="mb-4 text-left leading-relaxed">
+        {parseInlineMarkdown(paragraph)}
+      </p>
+    );
+  });
+};
+
+const parseInlineMarkdown = (text) => {
+  const parts = text.split('**');
+  if (parts.length > 1) {
+    return parts.map((p, i) => i % 2 === 1 ? <strong className="text-white font-bold" key={i}>{p}</strong> : p);
+  }
+  return text;
+};
+
 const InterviewCategoryDetail = () => {
   const { categoryId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
   const contentContainerRef = useRef(null);
 
-  const activeCategory = CATEGORY_NAME_MAP[categoryId.toLowerCase()] || categoryId;
+  const dbCategoryName = CATEGORY_NAME_MAP[categoryId.toLowerCase()] || categoryId;
+  
+  // Dynamic display name
+  const displayCategoryName = dbCategoryName.replace(/_/g, " & ");
 
-  // Question lists
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeQuestion, setActiveQuestion] = useState(null);
@@ -48,12 +101,6 @@ const InterviewCategoryDetail = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDifficulty, setSelectedDifficulty] = useState("All");
   const [selectedCompany, setSelectedCompany] = useState("All");
-  const [selectedStatus, setSelectedStatus] = useState("All");
-
-  // Local state progress lists
-  const [completedList, setCompletedList] = useState([]);
-  const [bookmarkedList, setBookmarkedList] = useState([]);
-  const [favoritedList, setFavoritedList] = useState([]);
 
   // Fetch Questions
   useEffect(() => {
@@ -63,16 +110,13 @@ const InterviewCategoryDetail = () => {
         const { data, error } = await supabase
           .from("interview_questions")
           .select("*")
-          .eq("category", activeCategory);
+          .eq("category", dbCategoryName);
 
         if (error) throw error;
 
         if (data) {
-          // Sort strictly: Beginner -> Intermediate -> Advanced, then sort_order, then question text
+          // Sort by sort_order first, then question text
           const sorted = [...data].sort((a, b) => {
-            const diffA = DIFFICULTY_ORDER[a.difficulty_level] || 99;
-            const diffB = DIFFICULTY_ORDER[b.difficulty_level] || 99;
-            if (diffA !== diffB) return diffA - diffB;
             if (a.sort_order !== b.sort_order) return (a.sort_order || 0) - (b.sort_order || 0);
             return a.question.localeCompare(b.question);
           });
@@ -93,81 +137,7 @@ const InterviewCategoryDetail = () => {
     };
 
     loadQuestions();
-  }, [activeCategory]);
-
-  // Load progress from localStorage
-  useEffect(() => {
-    try {
-      setCompletedList(JSON.parse(localStorage.getItem("iq-completed") || "[]"));
-      setBookmarkedList(JSON.parse(localStorage.getItem("iq-bookmarked") || "[]"));
-      setFavoritedList(JSON.parse(localStorage.getItem("iq-favorited") || "[]"));
-    } catch (e) {
-      console.warn("Failed to load local progress lists:", e);
-    }
-  }, []);
-
-  // Update progress in database client-sync and localStorage
-  const toggleProgress = (type, qId) => {
-    let list;
-    let setListFunc;
-    let lsKey;
-
-    if (type === "completed") {
-      list = [...completedList];
-      setListFunc = setCompletedList;
-      lsKey = "iq-completed";
-    } else if (type === "bookmarked") {
-      list = [...bookmarkedList];
-      setListFunc = setBookmarkedList;
-      lsKey = "iq-bookmarked";
-    } else {
-      list = [...favoritedList];
-      setListFunc = setFavoritedList;
-      lsKey = "iq-favorited";
-    }
-
-    const index = list.indexOf(qId);
-    if (index > -1) {
-      list.splice(index, 1);
-    } else {
-      list.push(qId);
-    }
-
-    // Save to LocalStorage
-    localStorage.setItem(lsKey, JSON.stringify(list));
-    setListFunc(list);
-
-    // Dynamic database sync
-    syncProgressWithDb(qId, type, index === -1);
-  };
-
-  const syncProgressWithDb = async (qId, type, activeState) => {
-    try {
-      // Get or create client UUID
-      let clientId = localStorage.getItem("iq-client-uuid");
-      if (!clientId) {
-        clientId = crypto.randomUUID();
-        localStorage.setItem("iq-client-uuid", clientId);
-      }
-
-      // Upsert progress
-      const row = {
-        client_id: clientId,
-        question_id: qId,
-        updated_at: new Date().toISOString()
-      };
-      
-      if (type === "completed") row.completed = activeState;
-      else if (type === "bookmarked") row.bookmarked = activeState;
-      else if (type === "favorited") row.favorited = activeState;
-
-      await supabase
-        .from("user_question_progress")
-        .upsert(row, { onConflict: "client_id, question_id" });
-    } catch (err) {
-      console.warn("Failed to sync progress to cloud:", err.message);
-    }
-  };
+  }, [dbCategoryName, location.search]);
 
   // Extract all unique companies from these questions
   const companiesList = ["All"];
@@ -183,9 +153,6 @@ const InterviewCategoryDetail = () => {
 
   // Filter Logic
   const filteredQuestions = questions.filter(q => {
-    const isCompleted = completedList.includes(q.id);
-    const isBookmarked = bookmarkedList.includes(q.id);
-
     // Search query matches question, answer, subtopic or tags
     const query = searchQuery.toLowerCase().trim();
     const matchesSearch = !query ||
@@ -195,19 +162,11 @@ const InterviewCategoryDetail = () => {
       (q.tags && q.tags.some(t => t.toLowerCase().includes(query))) ||
       (q.company_tags && q.company_tags.some(c => c.toLowerCase().includes(query)));
 
-    // Match Difficulty
     const matchesDifficulty = selectedDifficulty === "All" || q.difficulty_level === selectedDifficulty;
 
-    // Match Company
     const matchesCompany = selectedCompany === "All" || (q.company_tags && q.company_tags.includes(selectedCompany));
 
-    // Match Status
-    const matchesStatus = selectedStatus === "All" ||
-      (selectedStatus === "Completed" && isCompleted) ||
-      (selectedStatus === "Incomplete" && !isCompleted) ||
-      (selectedStatus === "Bookmarked" && isBookmarked);
-
-    return matchesSearch && matchesDifficulty && matchesCompany && matchesStatus;
+    return matchesSearch && matchesDifficulty && matchesCompany;
   });
 
   // Group filtered questions by subcategory
@@ -234,24 +193,24 @@ const InterviewCategoryDetail = () => {
       </div>
 
       {/* Header bar */}
-      <header className="sticky top-0 z-40 w-full h-14 bg-[#050515]/75 backdrop-blur-xl border-b border-[#6366f1]/15 flex items-center justify-between px-4 sm:px-6 relative z-30 shadow-lg">
+      <header className="sticky top-0 z-40 w-full h-14 bg-[#050515]/75 backdrop-blur-xl border-b border-[#6366f1]/15 flex items-center justify-between px-4 sm:px-6 relative z-30 shadow-lg shadow-black/20">
         <div className="flex items-center gap-3">
-          <Link to="/interview-prep" className="flex items-center gap-2 select-none group" style={{ textDecoration: "none" }}>
+          <Link to="/interview-questions" className="flex items-center gap-2 select-none group" style={{ textDecoration: "none" }}>
             <div className="w-6 h-6 rounded-lg bg-gradient-to-tr from-[#6366f1] to-[#a855f7] flex items-center justify-center text-white text-[10px] font-black group-hover:scale-105 transition-transform duration-300">
               IP
             </div>
             <span className="text-xs font-mono font-bold text-gray-400 group-hover:text-white transition-colors">
-              InterviewPrep
+              InterviewQuestions
             </span>
           </Link>
           <span className="text-gray-700">/</span>
           <span className="text-xs font-mono text-[#a855f7] font-bold uppercase tracking-wider">
-            {activeCategory}
+            {displayCategoryName}
           </span>
         </div>
 
         <button
-          onClick={() => navigate("/interview-prep")}
+          onClick={() => navigate("/interview-questions")}
           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#6366f1]/20 bg-[#6366f1]/5 text-[10px] font-mono font-bold text-indigo-300 hover:text-white hover:bg-[#6366f1]/15 transition-all cursor-pointer uppercase"
         >
           <ArrowLeft size={11} /> Dashboard
@@ -294,37 +253,20 @@ const InterviewCategoryDetail = () => {
                 </select>
               </div>
 
-              {/* Status Filter */}
+              {/* Company selection */}
               <div className="flex flex-col gap-1">
-                <span className="text-gray-500 uppercase tracking-wide">Status</span>
-                <select
-                  value={selectedStatus}
-                  onChange={(e) => setSelectedStatus(e.target.value)}
-                  className="bg-[#04040e]/80 border border-[#6366f1]/15 text-gray-300 rounded px-1.5 py-1 outline-none"
-                >
-                  <option value="All">All Status</option>
-                  <option value="Completed">Completed</option>
-                  <option value="Incomplete">Incomplete</option>
-                  <option value="Bookmarked">Bookmarked</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Company selection */}
-            {companiesList.length > 2 && (
-              <div className="flex flex-col gap-1 text-[10px] font-mono">
-                <span className="text-gray-500 uppercase tracking-wide">Filter by Company</span>
+                <span className="text-gray-500 uppercase tracking-wide">Company Tag</span>
                 <select
                   value={selectedCompany}
                   onChange={(e) => setSelectedCompany(e.target.value)}
-                  className="w-full bg-[#04040e]/80 border border-[#6366f1]/15 text-gray-300 rounded px-1.5 py-1 outline-none"
+                  className="bg-[#04040e]/80 border border-[#6366f1]/15 text-gray-300 rounded px-1.5 py-1 outline-none"
                 >
                   {companiesList.map(comp => (
-                    <option key={comp} value={comp}>{comp === "All" ? "All Companies" : comp}</option>
+                    <option key={comp} value={comp}>{comp === "All" ? "All" : comp}</option>
                   ))}
                 </select>
               </div>
-            )}
+            </div>
           </div>
 
           {/* Collapsible Subcategories and Questions */}
@@ -346,9 +288,6 @@ const InterviewCategoryDetail = () => {
                     <div className="border-l border-white/5 ml-2 pl-2 space-y-1">
                       {list.map((item) => {
                         const isCurrent = activeQuestion && activeQuestion.id === item.id;
-                        const isCompleted = completedList.includes(item.id);
-                        const isBookmarked = bookmarkedList.includes(item.id);
-
                         return (
                           <button
                             key={item.id}
@@ -359,20 +298,13 @@ const InterviewCategoryDetail = () => {
                                 : "border-transparent text-gray-400 hover:text-gray-200 hover:bg-white/[0.02]"
                             }`}
                           >
-                            <span className="shrink-0 mt-0.5">
-                              {isCompleted ? (
-                                <CheckCircle size={10} className="text-emerald-400 fill-emerald-500/10" />
-                              ) : (
-                                <span className="block w-2.5 h-2.5 rounded-full border border-gray-600 shrink-0" />
-                              )}
-                            </span>
+                            <span className="shrink-0 mt-1 block w-1.5 h-1.5 rounded-full bg-indigo-500/60" />
                             <span className="flex-1 line-clamp-2">
                               {item.question}
                             </span>
                             
                             <span className="shrink-0 flex items-center gap-0.5 text-[8px] uppercase tracking-wider font-bold">
-                              {isBookmarked && <Bookmark size={8} className="text-indigo-400 fill-indigo-400" />}
-                              <span className={`px-1 rounded ${
+                              <span className={`px-1.5 py-0.5 rounded ${
                                 item.difficulty_level === "Beginner" ? "text-emerald-400 bg-emerald-500/10" :
                                 item.difficulty_level === "Intermediate" ? "text-amber-400 bg-amber-500/10" :
                                 "text-rose-400 bg-rose-500/10"
@@ -412,64 +344,17 @@ const InterviewCategoryDetail = () => {
             <div className="max-w-3xl w-full mx-auto flex-1 flex flex-col text-left animate-fade-in">
               
               {/* Question badges */}
-              <div className="flex flex-wrap items-center gap-2 mb-4">
-                <span className={`px-2 py-0.5 border rounded-md text-[9px] font-mono font-bold uppercase tracking-wider ${DIFFICULTY_CLASSES[activeQuestion.difficulty_level]}`}>
-                  ⚡ {activeQuestion.difficulty_level}
-                </span>
-                <span className={`px-2 py-0.5 border rounded-md text-[9px] font-mono font-bold uppercase tracking-wider ${FREQUENCY_CLASSES[activeQuestion.interview_frequency]}`}>
-                  🔥 Frequency: {activeQuestion.interview_frequency}
-                </span>
-                <span className="px-2 py-0.5 border border-white/5 bg-white/4 rounded-md text-[9px] font-mono text-gray-400">
-                  📁 {activeQuestion.subcategory}
-                </span>
-              </div>
-
-              {/* Question Text */}
-              <h1 className="text-xl sm:text-2xl font-bold text-white leading-snug tracking-tight mb-6 font-sans">
-                {activeQuestion.question}
-              </h1>
-
-              {/* Action Toolbar */}
-              <div className="flex flex-wrap items-center justify-between gap-4 border-y border-white/6 py-3.5 mb-8">
-                <div className="flex items-center gap-2">
-                  {/* Mark completed */}
-                  <button
-                    onClick={() => toggleProgress("completed", activeQuestion.id)}
-                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[10px] font-mono font-bold transition-all cursor-pointer ${
-                      completedList.includes(activeQuestion.id)
-                        ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
-                        : "bg-white/4 border-white/8 text-gray-400 hover:text-white hover:bg-white/8"
-                    }`}
-                  >
-                    <CheckCircle size={12} fill={completedList.includes(activeQuestion.id) ? "rgba(16,185,129,0.1)" : "none"} />
-                    {completedList.includes(activeQuestion.id) ? "Solved" : "Mark as Solved"}
-                  </button>
-
-                  {/* Bookmark */}
-                  <button
-                    onClick={() => toggleProgress("bookmarked", activeQuestion.id)}
-                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[10px] font-mono font-bold transition-all cursor-pointer ${
-                      bookmarkedList.includes(activeQuestion.id)
-                        ? "bg-indigo-500/10 border-indigo-500/30 text-[#818cf8]"
-                        : "bg-white/4 border-white/8 text-gray-400 hover:text-white hover:bg-white/8"
-                    }`}
-                  >
-                    <Bookmark size={12} fill={bookmarkedList.includes(activeQuestion.id) ? "#818cf8" : "none"} />
-                    {bookmarkedList.includes(activeQuestion.id) ? "Bookmarked" : "Bookmark"}
-                  </button>
-
-                  {/* Favorite */}
-                  <button
-                    onClick={() => toggleProgress("favorited", activeQuestion.id)}
-                    className={`p-1.5 rounded-lg border transition-all cursor-pointer ${
-                      favoritedList.includes(activeQuestion.id)
-                        ? "bg-rose-500/10 border-rose-500/30 text-rose-400"
-                        : "bg-white/4 border-white/8 text-gray-400 hover:text-white"
-                    }`}
-                    title="Favorite question"
-                  >
-                    <Star size={12} fill={favoritedList.includes(activeQuestion.id) ? "#f43f5e" : "none"} />
-                  </button>
+              <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/6 pb-4 mb-6">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className={`px-2 py-0.5 border rounded-md text-[9px] font-mono font-bold uppercase tracking-wider ${DIFFICULTY_CLASSES[activeQuestion.difficulty_level]}`}>
+                    ⚡ {activeQuestion.difficulty_level}
+                  </span>
+                  <span className={`px-2 py-0.5 border rounded-md text-[9px] font-mono font-bold uppercase tracking-wider ${FREQUENCY_CLASSES[activeQuestion.interview_frequency]}`}>
+                    🔥 Frequency: {activeQuestion.interview_frequency}
+                  </span>
+                  <span className="px-2 py-0.5 border border-white/5 bg-white/4 rounded-md text-[9px] font-mono text-gray-400">
+                    📁 {activeQuestion.subcategory}
+                  </span>
                 </div>
 
                 {/* Company Tag Badges */}
@@ -478,7 +363,7 @@ const InterviewCategoryDetail = () => {
                     {activeQuestion.company_tags.map(comp => (
                       <span
                         key={comp}
-                        onClick={() => navigate(`/interview-prep/company/${comp.toLowerCase().replace(/\s+/g, "-")}`)}
+                        onClick={() => navigate(`/interview-questions/company/${comp.toLowerCase().replace(/\s+/g, "-")}`)}
                         className="px-2 py-0.5 bg-[#0e0d21] border border-cyan-500/25 hover:border-cyan-500/50 hover:bg-[#22d3ee]/5 text-[9px] font-mono text-[#22d3ee] rounded-md transition-all cursor-pointer"
                         title={`View other ${comp} questions`}
                       >
@@ -488,6 +373,11 @@ const InterviewCategoryDetail = () => {
                   </div>
                 )}
               </div>
+
+              {/* Question Text */}
+              <h1 className="text-xl sm:text-2xl font-bold text-white leading-snug tracking-tight mb-6 font-sans">
+                {activeQuestion.question}
+              </h1>
 
               {/* Short Answer Summary Box */}
               {activeQuestion.short_answer && (
@@ -505,19 +395,7 @@ const InterviewCategoryDetail = () => {
                 <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-white border-b border-white/5 pb-1 mb-3">
                   Detailed Answer
                 </h3>
-                {/* Parse newline to paragraphs or simple markdown layout */}
-                {activeQuestion.detailed_answer.split('\n\n').map((paragraph, index) => {
-                  // Check if bold markdown is used
-                  const parts = paragraph.split('**');
-                  if (parts.length > 1) {
-                    return (
-                      <p key={index}>
-                        {parts.map((p, i) => i % 2 === 1 ? <strong className="text-white font-bold" key={i}>{p}</strong> : p)}
-                      </p>
-                    );
-                  }
-                  return <p key={index}>{paragraph}</p>;
-                })}
+                {renderMarkdown(activeQuestion.detailed_answer)}
               </div>
 
               {/* Example block */}

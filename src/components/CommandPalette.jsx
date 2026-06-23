@@ -198,11 +198,12 @@ const CommandPalette = () => {
               items.push({
                 id: `iq-${q.id}`,
                 title: `${q.question} (Category: ${q.category} - ${q.subcategory})`,
-                category: "Interview Prep",
+                category: "Interview Q&As",
                 icon: HelpCircle,
                 action: () => {
                   setIsOpen(false);
-                  navigate(`/interview-prep/topic/${q.category.toLowerCase()}?q=${q.id}`);
+                  const cleanCat = q.category.toLowerCase().trim().replace(/\s+/g, "-");
+                  navigate(`/interview-questions/topic/${cleanCat}?q=${q.id}`);
                 }
               });
             });

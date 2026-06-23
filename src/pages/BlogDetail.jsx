@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import {
   ArrowLeft, Eye, Clock, Calendar, Share2, Check, Bookmark, 
   ChevronRight, ChevronDown, BookOpen, Search, Menu, X, ArrowRight, ArrowLeft as ArrowLeftIcon,
-  Sun, Moon
+  Sun, Moon, ExternalLink
 } from "lucide-react";
 import { supabase } from "../services/supabase";
 import BlogRenderer from "../components/blog/BlogRenderer";

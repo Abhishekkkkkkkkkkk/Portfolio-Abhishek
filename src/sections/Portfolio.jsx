@@ -592,34 +592,34 @@ export default function FullWidthTabs() {
                 className="text-3xl md:text-4xl font-extrabold tracking-[0.18em] text-[#e2e8f0] uppercase select-none font-sans"
                 style={{ textShadow: "0 0 15px rgba(226, 232, 240, 0.35), 0 0 30px rgba(139, 92, 246, 0.15)" }}
               >
-                INTERVIEW PREP
+                INTERVIEW Q&AS
               </h3>
               <div className="mt-3 flex justify-center">
                 <div className="h-0.5 w-24 bg-gradient-to-r from-transparent via-violet-500/50 to-transparent shadow-[0_0_8px_rgba(139,92,246,0.5)]" />
               </div>
             </div>
 
-            {/* Intro text + Open full prep portal button */}
+            {/* Intro text + Open full Q&A archive button */}
             <div className="flex flex-col sm:flex-row items-center justify-between gap-6 mb-10 bg-[#0a0a1a]/60 border border-white/5 rounded-2xl p-6" data-aos="fade-up">
               <div className="text-left">
                 <h4 className="text-base font-bold text-white font-sans flex items-center gap-2">
                   <span className="flex h-2 w-2 rounded-full bg-indigo-500 animate-ping" />
-                  Structured Interview Preparation Platform
+                  Technical Interview Question Bank
                 </h4>
                 <p className="text-xs text-gray-400 mt-1.5 leading-relaxed max-w-2xl">
-                  Master your coding and system design interviews. Solve category-wise questions sorted from Basic to Advanced, read detailed answers with executable code snippets, and search by top tech companies.
+                  A structured, categorized repository of software engineering interview questions and high-quality answers. Browse by topic or search by target companies.
                 </p>
               </div>
               <button
-                onClick={() => navigate("/interview-prep")}
+                onClick={() => navigate("/interview-questions")}
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[#6366f1] to-[#a855f7] text-white text-xs font-bold hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 shadow-lg shadow-indigo-500/20 cursor-pointer shrink-0 font-sans"
               >
-                Open Interview Portal
+                Open Q&A Archive
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
 
-            {/* Preparation Statistics Dashboard */}
+            {/* Q&A Statistics Dashboard */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-10" data-aos="fade-up" data-aos-delay="100">
               <div className="p-5 rounded-2xl border border-white/5 bg-[#050515]/40 text-left">
                 <span className="text-2xl">🎯</span>
@@ -641,7 +641,7 @@ export default function FullWidthTabs() {
             {/* Practice Categories */}
             <div className="mb-10 text-left" data-aos="fade-up" data-aos-delay="150">
               <h4 className="text-xs font-mono font-bold uppercase tracking-widest text-gray-500 mb-5">
-                Practice by Technology
+                Browse by Technology
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {[
@@ -654,7 +654,7 @@ export default function FullWidthTabs() {
                 ].map((cat) => (
                   <button
                     key={cat.id}
-                    onClick={() => navigate(`/interview-prep/topic/${cat.id}`)}
+                    onClick={() => navigate(`/interview-questions/topic/${cat.id}`)}
                     className="flex items-start gap-4 p-5 rounded-2xl border border-white/5 bg-[#050515]/30 hover:bg-[#0a0a20]/65 hover:border-indigo-500/30 hover:-translate-y-1 transition-all duration-300 text-left cursor-pointer group"
                   >
                     <span className="text-3xl p-2.5 rounded-xl bg-white/4 group-hover:scale-110 transition-transform duration-300">{cat.emoji}</span>
@@ -673,10 +673,10 @@ export default function FullWidthTabs() {
                 Target Top Tech Companies
               </h4>
               <div className="flex flex-wrap gap-2.5">
-                {["Google", "Amazon", "Microsoft", "Meta", "Netflix", "Uber", "Adobe", "Goldman Sachs", "JPMorgan Chase", "TCS", "Infosys", "Wipro", "Cognizant", "Accenture", "Zoho", "Paytm", "PhonePe", "Razorpay"].map((company) => (
+                {["Google", "Amazon", "Microsoft", "Meta", "Netflix", "Uber", "Adobe", "Goldman Sachs", "JPMorgan Chase", "TCS", "Infosys", "Wipro", "Cognizant", "Accenture", "Accenture", "Zoho", "Paytm", "PhonePe", "Razorpay"].map((company) => (
                   <button
                     key={company}
-                    onClick={() => navigate(`/interview-prep/company/${company.toLowerCase().replace(/\s+/g, "-")}`)}
+                    onClick={() => navigate(`/interview-questions/company/${company.toLowerCase().replace(/\s+/g, "-")}`)}
                     className="px-4 py-2 text-xs font-semibold rounded-xl border border-white/5 bg-[#050515]/30 text-gray-400 hover:text-[#22d3ee] hover:border-[#22d3ee]/30 hover:bg-[#22d3ee]/5 transition-all cursor-pointer font-mono"
                   >
                     🏢 {company}
