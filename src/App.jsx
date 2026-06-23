@@ -23,7 +23,7 @@ const BlogHome = React.lazy(() => import("./pages/BlogHome"));
 const InterviewPrep = React.lazy(() => import("./pages/InterviewPrep"));
 const InterviewCategoryDetail = React.lazy(() => import("./pages/InterviewCategoryDetail"));
 const CompanyDetail = React.lazy(() => import("./pages/CompanyDetail"));
-const InterviewAdminEditor = React.lazy(() => import("./pages/InterviewAdminEditor"));
+const PortfolioAdminHub = React.lazy(() => import("./pages/PortfolioAdminHub"));
 
 /* ─── Landing Page ─── */
 const LandingPage = ({ showWelcome, setShowWelcome }) => {
@@ -238,18 +238,19 @@ function App() {
           } 
         />
         <Route 
-          path="/admin/interview-editor" 
+          path="/admin" 
           element={
             <React.Suspense fallback={
               <div className="min-h-screen bg-[#030014] flex items-center justify-center">
                 <div className="w-12 h-12 rounded-full border-2 border-[#6366f1]/20 border-t-[#6366f1] animate-spin" />
               </div>
             }>
-              <InterviewAdminEditor />
+              <PortfolioAdminHub />
             </React.Suspense>
           } 
         />
         {/* Fallbacks / redirects for backward compatibility */}
+        <Route path="/admin/interview-editor" element={<Navigate to="/admin?tab=interview" replace />} />
         <Route path="/interview-prep" element={<Navigate to="/interview-questions" replace />} />
         <Route path="/interview-prep/topic/:categoryId" element={<RedirectWithParams to="/interview-questions/topic/:categoryId" />} />
         <Route path="/interview-prep/company/:companyName" element={<RedirectWithParams to="/interview-questions/company/:companyName" />} />
