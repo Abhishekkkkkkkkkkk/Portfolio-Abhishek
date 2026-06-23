@@ -352,7 +352,7 @@ export default function FullWidthTabs() {
   }, []);
 
   const filteredBlogs = blogs.filter((b) => {
-    const matchesContentType = b.contentType !== 'note';
+    const matchesContentType = b.contentType !== 'note' || b.featured;
     const matchesCategory = blogFilter === "All" || 
       b.categories?.some((c) => c.toLowerCase().includes(blogFilter.toLowerCase())) || 
       b.tags?.some((t) => t.toLowerCase().includes(blogFilter.toLowerCase()));
@@ -769,22 +769,41 @@ export default function FullWidthTabs() {
                       data-aos-duration="900"
                       data-aos-delay={index * 50}
                     >
-                      <BlogCard
-                        id={blog.slug || blog.id}
-                        title={blog.title}
-                        description={blog.description}
-                        tags={blog.tags}
-                        date={new Date(blog.published_date || blog.date).toLocaleDateString("en-US", {
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric"
-                        })}
-                        readTime={blog.read_time || blog.readTime}
-                        views={blog.views_count || blog.views || 0}
-                        coverEmoji={blog.cover_emoji || blog.coverEmoji}
-                        coverImg={blog.cover_img_url || blog.coverImg}
-                        bgClass={blog.bgClass || `bg${(index % 6) + 1}`}
-                      />
+                      {blog.contentType === 'note' ? (
+                        <NoteCard
+                          id={blog.slug || blog.id}
+                          title={blog.title}
+                          description={blog.description}
+                          subject={blog.categories?.[0] || "default"}
+                          tags={blog.tags}
+                          pdfUrl={blog.pdfUrl || blog.pdf_url}
+                          coverEmoji={blog.coverEmoji || blog.cover_emoji || "📄"}
+                          pages={blog.pageCount || blog.page_count || 1}
+                          date={new Date(blog.published_date || blog.date).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric"
+                          })}
+                          featured={blog.featured}
+                        />
+                      ) : (
+                        <BlogCard
+                          id={blog.slug || blog.id}
+                          title={blog.title}
+                          description={blog.description}
+                          tags={blog.tags}
+                          date={new Date(blog.published_date || blog.date).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric"
+                          })}
+                          readTime={blog.read_time || blog.readTime}
+                          views={blog.views_count || blog.views || 0}
+                          coverEmoji={blog.cover_emoji || blog.coverEmoji}
+                          coverImg={blog.cover_img_url || blog.coverImg}
+                          bgClass={blog.bgClass || `bg${(index % 6) + 1}`}
+                        />
+                      )}
                     </div>
                   ))}
                 </div>
