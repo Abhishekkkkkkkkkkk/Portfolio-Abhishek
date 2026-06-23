@@ -49,9 +49,11 @@ const BlogDetail = () => {
 
   // Layout mode indicators
   const isWorkbench = !!topicId;
-  const activeTopicId = topicId ? topicId.toLowerCase() : "";
-  const activeTopic = topicId
-    ? (TOPIC_MAP[activeTopicId] || topicId)
+  const activeTopicId = topicId 
+    ? topicId.toLowerCase() 
+    : (blog && blog.categories && blog.categories[0] ? getTopicId(blog.categories) : "");
+  const activeTopic = activeTopicId
+    ? (TOPIC_MAP[activeTopicId] || activeTopicId)
     : "";
 
   // Core state
@@ -153,6 +155,12 @@ const BlogDetail = () => {
         return;
       }
 
+      if (!isWorkbench) {
+        const topicId = getTopicId(blogData.categories);
+        navigate(`/blog/topic/${topicId}/${blogData.slug || blogData.id}`, { replace: true });
+        return;
+      }
+
       // Parse YAML frontmatter if present (strip it out for rendering)
       let cleanContent = blogData.content || "";
       if (cleanContent.startsWith("---")) {
@@ -241,9 +249,9 @@ const BlogDetail = () => {
 
   // Filter all blogs to show only those belonging to the current main category
   const topicBlogs = allBlogs.filter(b => 
-    b.categories && b.categories[0] && (
-      b.categories[0].toLowerCase() === targetTopic.toLowerCase() ||
-      (targetTopic.toLowerCase() === "spring boot" && b.categories[0].toLowerCase().includes("spring"))
+    b.categories && b.categories.some(c => 
+      c.toLowerCase().replace(/[^a-z0-9]+/g, "-") === activeTopicId ||
+      (activeTopicId === "spring-boot" && c.toLowerCase().includes("spring"))
     )
   );
 
