@@ -23,7 +23,9 @@ const CATEGORY_NAME_MAP = {
   "spring-security": "Spring Security",
   "spring_security": "Spring Security",
   "system-design": "System Design",
-  "system_design": "System Design"
+  "system_design": "System Design",
+  "Angular": "Angular",
+  "JavaScript": "JavaScript"
 };
 
 const DIFFICULTY_CLASSES = {
@@ -39,47 +41,337 @@ const FREQUENCY_CLASSES = {
 };
 
 // Helper: Custom simple markdown parser to render detailed answer
-const renderMarkdown = (text) => {
-  if (!text) return null;
-  return text.split('\n\n').map((paragraph, idx) => {
-    // Check if paragraph is a code block
-    if (paragraph.startsWith('```') && paragraph.endsWith('```')) {
-      const code = paragraph.replace(/^```[a-z]*\n|```$/g, '');
-      return (
-        <pre key={idx} className="bg-[#050510] border border-white/8 rounded-xl p-4 overflow-x-auto text-[11.5px] font-mono text-[#a5d6ff] text-left my-4">
-          <code>{code}</code>
-        </pre>
-      );
-    }
+const parseInlineMarkdown = (text) => {
+  if (!text) return "";
 
-    // Check if paragraph is a bullet list
-    if (paragraph.startsWith('- ') || paragraph.startsWith('* ')) {
-      const items = paragraph.split(/\n[-*]\s+/);
-      return (
-        <ul key={idx} className="list-disc pl-5 space-y-1 my-3 text-left">
-          {items.map((item, i) => {
-            const cleanItem = item.replace(/^[-*]\s+/, '');
-            return <li key={i}>{parseInlineMarkdown(cleanItem)}</li>;
-          })}
-        </ul>
-      );
-    }
+  const codeRegex = /`([^`]+)`/;
+  const boldRegex = /\*\*(.*?)\*\*/;
+  const italicRegex = /\*([^*]+)\*/;
 
-    // Default paragraph
-    return (
-      <p key={idx} className="mb-4 text-left leading-relaxed">
-        {parseInlineMarkdown(paragraph)}
-      </p>
+  const codeMatch = codeRegex.exec(text);
+  const boldMatch = boldRegex.exec(text);
+  const italicMatch = italicRegex.exec(text);
+
+  let firstMatch = null;
+  let firstIndex = Infinity;
+  let matchType = null; // 'code' | 'bold' | 'italic'
+
+  if (codeMatch && codeMatch.index < firstIndex) {
+    firstIndex = codeMatch.index;
+    firstMatch = codeMatch;
+    matchType = 'code';
+  }
+  if (boldMatch && boldMatch.index < firstIndex) {
+    firstIndex = boldMatch.index;
+    firstMatch = boldMatch;
+    matchType = 'bold';
+  }
+  if (italicMatch && italicMatch.index < firstIndex) {
+    if (!boldMatch || boldMatch.index !== italicMatch.index) {
+      firstIndex = italicMatch.index;
+      firstMatch = italicMatch;
+      matchType = 'italic';
+    }
+  }
+
+  if (!firstMatch) {
+    return text;
+  }
+
+  const beforeText = text.substring(0, firstIndex);
+  const matchedText = firstMatch[1];
+  const afterText = text.substring(firstIndex + firstMatch[0].length);
+
+  const result = [];
+  if (beforeText) {
+    result.push(parseInlineMarkdown(beforeText));
+  }
+
+  if (matchType === 'code') {
+    result.push(
+      <code className="bg-white/10 text-amber-200 px-1.5 py-0.5 rounded font-mono text-[11px] border border-white/5">
+        {matchedText}
+      </code>
     );
+  } else if (matchType === 'bold') {
+    result.push(
+      <strong className="text-white font-semibold">
+        {parseInlineMarkdown(matchedText)}
+      </strong>
+    );
+  } else if (matchType === 'italic') {
+    result.push(
+      <em className="italic text-gray-300">
+        {parseInlineMarkdown(matchedText)}
+      </em>
+    );
+  }
+
+  if (afterText) {
+    result.push(parseInlineMarkdown(afterText));
+  }
+
+  const flat = [];
+  const walk = (node) => {
+    if (Array.isArray(node)) {
+      node.forEach(walk);
+    } else if (node !== null && node !== undefined && node !== '') {
+      flat.push(node);
+    }
+  };
+  walk(result);
+
+  return flat.map((node, i) => {
+    if (React.isValidElement(node)) {
+      return React.cloneElement(node, { key: i });
+    }
+    return node;
   });
 };
 
-const parseInlineMarkdown = (text) => {
-  const parts = text.split('**');
-  if (parts.length > 1) {
-    return parts.map((p, i) => i % 2 === 1 ? <strong className="text-white font-bold" key={i}>{p}</strong> : p);
+const renderMarkdown = (text) => {
+  if (!text) return null;
+  
+  const lines = text.replace(/\r\n/g, '\n').split('\n');
+  const elements = [];
+  
+  let currentType = null; // 'code' | 'ul' | 'ol' | 'table' | 'p'
+  let codeContent = [];
+  let listItems = [];
+  let tableLines = [];
+  let paragraphLines = [];
+
+  const ALIGN_CLASSES = {
+    left: "text-left",
+    center: "text-center",
+    right: "text-right"
+  };
+
+  const flushCurrent = (keyPrefix) => {
+    if (currentType === 'code') {
+      elements.push(
+        <pre key={`code-${keyPrefix}`} className="bg-[#050510] border border-white/8 rounded-xl p-4 overflow-x-auto text-[11.5px] font-mono text-[#a5d6ff] text-left my-4 leading-relaxed">
+          <code>{codeContent.join('\n')}</code>
+        </pre>
+      );
+      codeContent = [];
+      currentType = null;
+    } else if (currentType === 'ul') {
+      elements.push(
+        <ul key={`ul-${keyPrefix}`} className="list-disc pl-5 space-y-1.5 my-3 text-left">
+          {listItems.map((item, i) => (
+            <li key={i} className="text-gray-300 leading-relaxed text-xs sm:text-[13px]">
+              {parseInlineMarkdown(item)}
+            </li>
+          ))}
+        </ul>
+      );
+      listItems = [];
+      currentType = null;
+    } else if (currentType === 'ol') {
+      elements.push(
+        <ol key={`ol-${keyPrefix}`} className="list-decimal pl-5 space-y-1.5 my-3 text-left">
+          {listItems.map((item, i) => (
+            <li key={i} className="text-gray-300 leading-relaxed text-xs sm:text-[13px]">
+              {parseInlineMarkdown(item)}
+            </li>
+          ))}
+        </ol>
+      );
+      listItems = [];
+      currentType = null;
+    } else if (currentType === 'table') {
+      const parsedRows = tableLines.map(row => {
+        const cells = row.split('|').map(c => c.trim());
+        if (cells[0] === '') cells.shift();
+        if (cells[cells.length - 1] === '') cells.pop();
+        return cells;
+      });
+
+      const delimiterIdx = parsedRows.findIndex(row => 
+        row.length > 0 && row.every(cell => /^:?-+:?$/.test(cell))
+      );
+
+      let headers = [];
+      let bodyRows = [];
+      let alignments = [];
+
+      if (delimiterIdx !== -1) {
+        alignments = parsedRows[delimiterIdx].map(cell => {
+          const left = cell.startsWith(':');
+          const right = cell.endsWith(':');
+          if (left && right) return 'center';
+          if (right) return 'right';
+          return 'left';
+        });
+        headers = parsedRows.slice(0, delimiterIdx);
+        bodyRows = parsedRows.slice(delimiterIdx + 1);
+      } else {
+        if (parsedRows.length > 1) {
+          headers = [parsedRows[0]];
+          bodyRows = parsedRows.slice(1);
+        } else {
+          bodyRows = parsedRows;
+        }
+      }
+
+      elements.push(
+        <div key={`table-${keyPrefix}`} className="overflow-x-auto my-4 rounded-xl border border-white/8">
+          <table className="min-w-full divide-y divide-white/8 text-[12px] sm:text-[13px]">
+            {headers.length > 0 && (
+              <thead className="bg-white/[0.03]">
+                {headers.map((row, rIdx) => (
+                  <tr key={rIdx}>
+                    {row.map((cell, cIdx) => {
+                      const align = alignments[cIdx] || 'left';
+                      const alignClass = ALIGN_CLASSES[align] || 'text-left';
+                      return (
+                        <th 
+                          key={cIdx} 
+                          className={`px-4 py-3 ${alignClass} font-semibold text-white tracking-wider border-r border-white/5 last:border-r-0`}
+                        >
+                          {parseInlineMarkdown(cell)}
+                        </th>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </thead>
+            )}
+            <tbody className="divide-y divide-white/5 bg-transparent">
+              {bodyRows.map((row, rIdx) => (
+                <tr key={rIdx} className="hover:bg-white/[0.01] transition-colors">
+                  {row.map((cell, cIdx) => {
+                    const align = alignments[cIdx] || 'left';
+                    const alignClass = ALIGN_CLASSES[align] || 'text-left';
+                    return (
+                      <td 
+                        key={cIdx} 
+                        className={`px-4 py-2.5 ${alignClass} text-gray-300 border-r border-white/5 last:border-r-0`}
+                      >
+                        {parseInlineMarkdown(cell)}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
+      tableLines = [];
+      currentType = null;
+    } else if (currentType === 'p') {
+      if (paragraphLines.length > 0) {
+        elements.push(
+          <p key={`p-${keyPrefix}`} className="mb-4 text-left leading-relaxed text-gray-300 text-xs sm:text-[13px]">
+            {parseInlineMarkdown(paragraphLines.join(' '))}
+          </p>
+        );
+        paragraphLines = [];
+      }
+      currentType = null;
+    }
+  };
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const trimmed = line.trim();
+
+    // Handle code block toggle
+    if (trimmed.startsWith('```')) {
+      if (currentType === 'code') {
+        flushCurrent(i);
+      } else {
+        flushCurrent(i);
+        currentType = 'code';
+      }
+      continue;
+    }
+
+    if (currentType === 'code') {
+      codeContent.push(line);
+      continue;
+    }
+
+    // Empty line
+    if (trimmed === '') {
+      flushCurrent(i);
+      continue;
+    }
+
+    // Headings
+    const headingMatch = line.match(/^(#{1,6})\s+(.*)$/);
+    if (headingMatch) {
+      flushCurrent(i);
+      const level = headingMatch[1].length;
+      const content = headingMatch[2];
+      
+      let headingClass = "";
+      if (level === 1) headingClass = "text-base font-semibold text-white mt-6 mb-2 border-b border-white/5 pb-1";
+      else if (level === 2) headingClass = "text-sm font-semibold text-white mt-5 mb-2";
+      else if (level === 3) headingClass = "text-xs font-bold uppercase tracking-wider text-gray-200 mt-4 mb-2";
+      else headingClass = "text-xs font-semibold text-gray-300 mt-3 mb-1.5";
+
+      const HeadingTag = `h${level}`;
+      elements.push(
+        <HeadingTag key={`h-${i}`} className={headingClass}>
+          {parseInlineMarkdown(content)}
+        </HeadingTag>
+      );
+      continue;
+    }
+
+    // Tables
+    if (trimmed.startsWith('|')) {
+      if (currentType !== 'table') {
+        flushCurrent(i);
+        currentType = 'table';
+      }
+      tableLines.push(line);
+      continue;
+    }
+
+    // Unordered list item
+    const ulMatch = line.match(/^([*-]|\+)\s+(.*)$/);
+    if (ulMatch) {
+      if (currentType !== 'ul') {
+        flushCurrent(i);
+        currentType = 'ul';
+      }
+      listItems.push(ulMatch[2]);
+      continue;
+    }
+
+    // Ordered list item
+    const olMatch = line.match(/^(\d+)\.\s+(.*)$/);
+    if (olMatch) {
+      if (currentType !== 'ol') {
+        flushCurrent(i);
+        currentType = 'ol';
+      }
+      listItems.push(olMatch[2]);
+      continue;
+    }
+
+    // List item line continuation
+    if (currentType === 'ul' || currentType === 'ol') {
+      if (listItems.length > 0) {
+        listItems[listItems.length - 1] += ' ' + trimmed;
+        continue;
+      }
+    }
+
+    // Normal paragraph line
+    if (currentType !== 'p') {
+      flushCurrent(i);
+      currentType = 'p';
+    }
+    paragraphLines.push(line);
   }
-  return text;
+
+  flushCurrent(lines.length);
+  return elements;
 };
 
 const InterviewCategoryDetail = () => {
@@ -378,18 +670,6 @@ const InterviewCategoryDetail = () => {
               <h1 className="text-xl sm:text-2xl font-bold text-white leading-snug tracking-tight mb-6 font-sans">
                 {activeQuestion.question}
               </h1>
-
-              {/* Short Answer Summary Box */}
-              {activeQuestion.short_answer && (
-                <div className="mb-8 p-4 rounded-xl border border-indigo-500/15 bg-indigo-500/5 flex items-start gap-3">
-                  <AlertCircle size={16} className="text-indigo-400 shrink-0 mt-0.5" />
-                  <div className="text-xs">
-                    <span className="font-bold font-mono text-indigo-300 block mb-1">Quick Summary Answer</span>
-                    <p className="text-gray-300 leading-relaxed font-sans">{activeQuestion.short_answer}</p>
-                  </div>
-                </div>
-              )}
-
               {/* Detailed Answer Explanation */}
               <div className="prose prose-invert max-w-none text-gray-300 text-xs sm:text-[13px] leading-relaxed space-y-4 mb-8 font-sans">
                 <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-white border-b border-white/5 pb-1 mb-3">
@@ -397,30 +677,6 @@ const InterviewCategoryDetail = () => {
                 </h3>
                 {renderMarkdown(activeQuestion.detailed_answer)}
               </div>
-
-              {/* Example block */}
-              {activeQuestion.example && (
-                <div className="mb-8 text-xs">
-                  <h3 className="font-mono font-bold uppercase tracking-wider text-white border-b border-white/5 pb-1 mb-3">
-                    Conceptual Example
-                  </h3>
-                  <div className="p-4 rounded-xl border border-white/5 bg-white/[0.01] text-gray-400 leading-relaxed">
-                    {activeQuestion.example}
-                  </div>
-                </div>
-              )}
-
-              {/* Code Example block */}
-              {activeQuestion.code_example && (
-                <div className="mb-8">
-                  <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-white border-b border-white/5 pb-1 mb-3">
-                    Code Implementation
-                  </h3>
-                  <pre className="bg-[#050510] border border-white/8 rounded-xl p-4 overflow-x-auto text-[11.5px] font-mono text-[#a5d6ff] text-left leading-relaxed">
-                    <code>{activeQuestion.code_example}</code>
-                  </pre>
-                </div>
-              )}
 
               {/* Follow-up Questions */}
               {activeQuestion.follow_up_questions && activeQuestion.follow_up_questions.length > 0 && (
@@ -446,17 +702,26 @@ const InterviewCategoryDetail = () => {
                     References & Read-ups
                   </h3>
                   <div className="flex flex-col gap-2">
-                    {activeQuestion.references_links.map((refLink, idx) => (
-                      <a
-                        key={idx}
-                        href={refLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-gray-400 hover:text-white transition-colors text-decoration-none truncate font-mono"
-                      >
-                        <ExternalLink size={10} className="shrink-0" /> {refLink}
-                      </a>
-                    ))}
+                    {activeQuestion.references_links.map((refLink, idx) => {
+                      let label = refLink;
+                      let url = refLink;
+                      if (refLink.includes('|')) {
+                        const parts = refLink.split('|');
+                        label = parts[0].trim();
+                        url = parts[1].trim();
+                      }
+                      return (
+                        <a
+                          key={idx}
+                          href={url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-gray-400 hover:text-white transition-colors text-decoration-none truncate font-mono"
+                        >
+                          <ExternalLink size={10} className="shrink-0" /> {label}
+                        </a>
+                      );
+                    })}
                   </div>
                 </div>
               )}

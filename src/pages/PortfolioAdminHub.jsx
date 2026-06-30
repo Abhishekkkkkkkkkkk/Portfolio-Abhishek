@@ -28,48 +28,343 @@ const INTERVIEW_CATEGORIES = [
   { id: "Redis", name: "Redis" },
   { id: "SQL", name: "SQL" },
   { id: "Spring Security", name: "Spring Security" },
-  { id: "System Design", name: "System Design" }
+  { id: "System Design", name: "System Design" },
+  { id: "Angular", name: "Angular" },
+  { id: "JavaScript", name: "JavaScript" }
 ];
 
 // Helper: Custom simple markdown parser to render interview Q&A preview
-const renderMarkdown = (text) => {
-  if (!text) return null;
-  return text.split('\n\n').map((paragraph, idx) => {
-    if (paragraph.startsWith('```') && paragraph.endsWith('```')) {
-      const code = paragraph.replace(/^```[a-z]*\n|```$/g, '');
-      return (
-        <pre key={idx} className="bg-[#050510] border border-white/8 rounded-xl p-4 overflow-x-auto text-[11.5px] font-mono text-[#a5d6ff] text-left my-4">
-          <code>{code}</code>
-        </pre>
-      );
-    }
+const parseInlineMarkdown = (text) => {
+  if (!text) return "";
 
-    if (paragraph.startsWith('- ') || paragraph.startsWith('* ')) {
-      const items = paragraph.split(/\n[-*]\s+/);
-      return (
-        <ul key={idx} className="list-disc pl-5 space-y-1 my-3 text-left">
-          {items.map((item, i) => {
-            const cleanItem = item.replace(/^[-*]\s+/, '');
-            return <li key={i}>{parseInlineMarkdown(cleanItem)}</li>;
-          })}
-        </ul>
-      );
-    }
+  const codeRegex = /`([^`]+)`/;
+  const boldRegex = /\*\*(.*?)\*\*/;
+  const italicRegex = /\*([^*]+)\*/;
 
-    return (
-      <p key={idx} className="mb-4 text-left leading-relaxed">
-        {parseInlineMarkdown(paragraph)}
-      </p>
+  const codeMatch = codeRegex.exec(text);
+  const boldMatch = boldRegex.exec(text);
+  const italicMatch = italicRegex.exec(text);
+
+  let firstMatch = null;
+  let firstIndex = Infinity;
+  let matchType = null; // 'code' | 'bold' | 'italic'
+
+  if (codeMatch && codeMatch.index < firstIndex) {
+    firstIndex = codeMatch.index;
+    firstMatch = codeMatch;
+    matchType = 'code';
+  }
+  if (boldMatch && boldMatch.index < firstIndex) {
+    firstIndex = boldMatch.index;
+    firstMatch = boldMatch;
+    matchType = 'bold';
+  }
+  if (italicMatch && italicMatch.index < firstIndex) {
+    if (!boldMatch || boldMatch.index !== italicMatch.index) {
+      firstIndex = italicMatch.index;
+      firstMatch = italicMatch;
+      matchType = 'italic';
+    }
+  }
+
+  if (!firstMatch) {
+    return text;
+  }
+
+  const beforeText = text.substring(0, firstIndex);
+  const matchedText = firstMatch[1];
+  const afterText = text.substring(firstIndex + firstMatch[0].length);
+
+  const result = [];
+  if (beforeText) {
+    result.push(parseInlineMarkdown(beforeText));
+  }
+
+  if (matchType === 'code') {
+    result.push(
+      <code className="bg-white/10 text-amber-200 px-1.5 py-0.5 rounded font-mono text-[11px] border border-white/5">
+        {matchedText}
+      </code>
     );
+  } else if (matchType === 'bold') {
+    result.push(
+      <strong className="text-white font-semibold">
+        {parseInlineMarkdown(matchedText)}
+      </strong>
+    );
+  } else if (matchType === 'italic') {
+    result.push(
+      <em className="italic text-gray-300">
+        {parseInlineMarkdown(matchedText)}
+      </em>
+    );
+  }
+
+  if (afterText) {
+    result.push(parseInlineMarkdown(afterText));
+  }
+
+  const flat = [];
+  const walk = (node) => {
+    if (Array.isArray(node)) {
+      node.forEach(walk);
+    } else if (node !== null && node !== undefined && node !== '') {
+      flat.push(node);
+    }
+  };
+  walk(result);
+
+  return flat.map((node, i) => {
+    if (React.isValidElement(node)) {
+      return React.cloneElement(node, { key: i });
+    }
+    return node;
   });
 };
 
-const parseInlineMarkdown = (text) => {
-  const parts = text.split('**');
-  if (parts.length > 1) {
-    return parts.map((p, i) => i % 2 === 1 ? <strong className="text-white font-bold" key={i}>{p}</strong> : p);
+const renderMarkdown = (text) => {
+  if (!text) return null;
+  
+  const lines = text.replace(/\r\n/g, '\n').split('\n');
+  const elements = [];
+  
+  let currentType = null; // 'code' | 'ul' | 'ol' | 'table' | 'p'
+  let codeContent = [];
+  let listItems = [];
+  let tableLines = [];
+  let paragraphLines = [];
+
+  const ALIGN_CLASSES = {
+    left: "text-left",
+    center: "text-center",
+    right: "text-right"
+  };
+
+  const flushCurrent = (keyPrefix) => {
+    if (currentType === 'code') {
+      elements.push(
+        <pre key={`code-${keyPrefix}`} className="bg-[#050510] border border-white/8 rounded-xl p-4 overflow-x-auto text-[11.5px] font-mono text-[#a5d6ff] text-left my-4 leading-relaxed">
+          <code>{codeContent.join('\n')}</code>
+        </pre>
+      );
+      codeContent = [];
+      currentType = null;
+    } else if (currentType === 'ul') {
+      elements.push(
+        <ul key={`ul-${keyPrefix}`} className="list-disc pl-5 space-y-1.5 my-3 text-left">
+          {listItems.map((item, i) => (
+            <li key={i} className="text-gray-300 leading-relaxed text-xs sm:text-[13px]">
+              {parseInlineMarkdown(item)}
+            </li>
+          ))}
+        </ul>
+      );
+      listItems = [];
+      currentType = null;
+    } else if (currentType === 'ol') {
+      elements.push(
+        <ol key={`ol-${keyPrefix}`} className="list-decimal pl-5 space-y-1.5 my-3 text-left">
+          {listItems.map((item, i) => (
+            <li key={i} className="text-gray-300 leading-relaxed text-xs sm:text-[13px]">
+              {parseInlineMarkdown(item)}
+            </li>
+          ))}
+        </ol>
+      );
+      listItems = [];
+      currentType = null;
+    } else if (currentType === 'table') {
+      const parsedRows = tableLines.map(row => {
+        const cells = row.split('|').map(c => c.trim());
+        if (cells[0] === '') cells.shift();
+        if (cells[cells.length - 1] === '') cells.pop();
+        return cells;
+      });
+
+      const delimiterIdx = parsedRows.findIndex(row => 
+        row.length > 0 && row.every(cell => /^:?-+:?$/.test(cell))
+      );
+
+      let headers = [];
+      let bodyRows = [];
+      let alignments = [];
+
+      if (delimiterIdx !== -1) {
+        alignments = parsedRows[delimiterIdx].map(cell => {
+          const left = cell.startsWith(':');
+          const right = cell.endsWith(':');
+          if (left && right) return 'center';
+          if (right) return 'right';
+          return 'left';
+        });
+        headers = parsedRows.slice(0, delimiterIdx);
+        bodyRows = parsedRows.slice(delimiterIdx + 1);
+      } else {
+        if (parsedRows.length > 1) {
+          headers = [parsedRows[0]];
+          bodyRows = parsedRows.slice(1);
+        } else {
+          bodyRows = parsedRows;
+        }
+      }
+
+      elements.push(
+        <div key={`table-${keyPrefix}`} className="overflow-x-auto my-4 rounded-xl border border-white/8">
+          <table className="min-w-full divide-y divide-white/8 text-[12px] sm:text-[13px]">
+            {headers.length > 0 && (
+              <thead className="bg-white/[0.03]">
+                {headers.map((row, rIdx) => (
+                  <tr key={rIdx}>
+                    {row.map((cell, cIdx) => {
+                      const align = alignments[cIdx] || 'left';
+                      const alignClass = ALIGN_CLASSES[align] || 'text-left';
+                      return (
+                        <th 
+                          key={cIdx} 
+                          className={`px-4 py-3 ${alignClass} font-semibold text-white tracking-wider border-r border-white/5 last:border-r-0`}
+                        >
+                          {parseInlineMarkdown(cell)}
+                        </th>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </thead>
+            )}
+            <tbody className="divide-y divide-white/5 bg-transparent">
+              {bodyRows.map((row, rIdx) => (
+                <tr key={rIdx} className="hover:bg-white/[0.01] transition-colors">
+                  {row.map((cell, cIdx) => {
+                    const align = alignments[cIdx] || 'left';
+                    const alignClass = ALIGN_CLASSES[align] || 'text-left';
+                    return (
+                      <td 
+                        key={cIdx} 
+                        className={`px-4 py-2.5 ${alignClass} text-gray-300 border-r border-white/5 last:border-r-0`}
+                      >
+                        {parseInlineMarkdown(cell)}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
+      tableLines = [];
+      currentType = null;
+    } else if (currentType === 'p') {
+      if (paragraphLines.length > 0) {
+        elements.push(
+          <p key={`p-${keyPrefix}`} className="mb-4 text-left leading-relaxed text-gray-300 text-xs sm:text-[13px]">
+            {parseInlineMarkdown(paragraphLines.join(' '))}
+          </p>
+        );
+        paragraphLines = [];
+      }
+      currentType = null;
+    }
+  };
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const trimmed = line.trim();
+
+    // Handle code block toggle
+    if (trimmed.startsWith('```')) {
+      if (currentType === 'code') {
+        flushCurrent(i);
+      } else {
+        flushCurrent(i);
+        currentType = 'code';
+      }
+      continue;
+    }
+
+    if (currentType === 'code') {
+      codeContent.push(line);
+      continue;
+    }
+
+    // Empty line
+    if (trimmed === '') {
+      flushCurrent(i);
+      continue;
+    }
+
+    // Headings
+    const headingMatch = line.match(/^(#{1,6})\s+(.*)$/);
+    if (headingMatch) {
+      flushCurrent(i);
+      const level = headingMatch[1].length;
+      const content = headingMatch[2];
+      
+      let headingClass = "";
+      if (level === 1) headingClass = "text-base font-semibold text-white mt-6 mb-2 border-b border-white/5 pb-1";
+      else if (level === 2) headingClass = "text-sm font-semibold text-white mt-5 mb-2";
+      else if (level === 3) headingClass = "text-xs font-bold uppercase tracking-wider text-gray-200 mt-4 mb-2";
+      else headingClass = "text-xs font-semibold text-gray-300 mt-3 mb-1.5";
+
+      const HeadingTag = `h${level}`;
+      elements.push(
+        <HeadingTag key={`h-${i}`} className={headingClass}>
+          {parseInlineMarkdown(content)}
+        </HeadingTag>
+      );
+      continue;
+    }
+
+    // Tables
+    if (trimmed.startsWith('|')) {
+      if (currentType !== 'table') {
+        flushCurrent(i);
+        currentType = 'table';
+      }
+      tableLines.push(line);
+      continue;
+    }
+
+    // Unordered list item
+    const ulMatch = line.match(/^([*-]|\+)\s+(.*)$/);
+    if (ulMatch) {
+      if (currentType !== 'ul') {
+        flushCurrent(i);
+        currentType = 'ul';
+      }
+      listItems.push(ulMatch[2]);
+      continue;
+    }
+
+    // Ordered list item
+    const olMatch = line.match(/^(\d+)\.\s+(.*)$/);
+    if (olMatch) {
+      if (currentType !== 'ol') {
+        flushCurrent(i);
+        currentType = 'ol';
+      }
+      listItems.push(olMatch[2]);
+      continue;
+    }
+
+    // List item line continuation
+    if (currentType === 'ul' || currentType === 'ol') {
+      if (listItems.length > 0) {
+        listItems[listItems.length - 1] += ' ' + trimmed;
+        continue;
+      }
+    }
+
+    // Normal paragraph line
+    if (currentType !== 'p') {
+      flushCurrent(i);
+      currentType = 'p';
+    }
+    paragraphLines.push(line);
   }
-  return text;
+
+  flushCurrent(lines.length);
+  return elements;
 };
 
 const PortfolioAdminHub = () => {
@@ -122,6 +417,7 @@ const PortfolioAdminHub = () => {
   const [bContentType, setBContentType] = useState("article");
   const [bPdfUrl, setBPdfUrl] = useState("");
   const [bPageCount, setBPageCount] = useState("");
+  const [bReferences, setBReferences] = useState([{ label: "", url: "" }]);
 
   // 2. Projects Form States
   const [pId, setPId] = useState("");
@@ -148,15 +444,12 @@ const PortfolioAdminHub = () => {
   const [iSubcategory, setISubcategory] = useState("");
   const [iQuestionId, setIQuestionId] = useState("");
   const [iQuestionText, setIQuestionText] = useState("");
-  const [iShortAnswer, setIShortAnswer] = useState("");
   const [iDetailedAnswer, setIDetailedAnswer] = useState("");
-  const [iExampleText, setIExampleText] = useState("");
-  const [iCodeExample, setICodeExample] = useState("");
   const [iCompanyTags, setICompanyTags] = useState("");
   const [iDifficultyLevel, setIDifficultyLevel] = useState("Beginner");
   const [iInterviewFrequency, setIInterviewFrequency] = useState("Medium");
   const [iTagsInput, setITagsInput] = useState("");
-  const [iReferencesInput, setIReferencesInput] = useState("");
+  const [iReferences, setIReferences] = useState([{ label: "", url: "" }]);
   const [iSortOrder, setISortOrder] = useState(0);
 
   // ==================== SECURITY AUTHENTICATION ====================
@@ -243,6 +536,18 @@ const PortfolioAdminHub = () => {
         setBContentType(data.content_type || "article");
         setBPdfUrl(data.pdf_url || "");
         setBPageCount(data.page_count || "");
+        if (data.references_links) {
+          const parsed = data.references_links.map(ref => {
+            if (ref.includes('|')) {
+              const parts = ref.split('|');
+              return { label: parts[0].trim(), url: parts[1].trim() };
+            }
+            return { label: "", url: ref.trim() };
+          });
+          setBReferences(parsed.length > 0 ? parsed : [{ label: "", url: "" }]);
+        } else {
+          setBReferences([{ label: "", url: "" }]);
+        }
       }
     } catch (err) {
       console.error(err);
@@ -317,17 +622,25 @@ const PortfolioAdminHub = () => {
         setICategory(data.category);
         setISubcategory(data.subcategory || "");
         setIQuestionText(data.question || "");
-        setIShortAnswer(data.short_answer || "");
         setIDetailedAnswer(data.detailed_answer || "");
-        setIExampleText(data.example || "");
-        setICodeExample(data.code_example || "");
         setIDifficultyLevel(data.difficulty_level || "Beginner");
         setIInterviewFrequency(data.interview_frequency || "Medium");
         setISortOrder(data.sort_order || 0);
 
         setICompanyTags(data.company_tags ? data.company_tags.join(", ") : "");
         setITagsInput(data.tags ? data.tags.join(", ") : "");
-        setIReferencesInput(data.references_links ? data.references_links.join(", ") : "");
+        if (data.references_links) {
+          const parsed = data.references_links.map(ref => {
+            if (ref.includes('|')) {
+              const parts = ref.split('|');
+              return { label: parts[0].trim(), url: parts[1].trim() };
+            }
+            return { label: "", url: ref.trim() };
+          });
+          setIReferences(parsed.length > 0 ? parsed : [{ label: "", url: "" }]);
+        } else {
+          setIReferences([{ label: "", url: "" }]);
+        }
       }
     } catch (err) {
       console.error(err);
@@ -351,6 +664,7 @@ const PortfolioAdminHub = () => {
     setBContentType("article");
     setBPdfUrl("");
     setBPageCount("");
+    setBReferences([{ label: "", url: "" }]);
     setSelectedBlogId("");
   };
 
@@ -382,13 +696,10 @@ const PortfolioAdminHub = () => {
     setIQuestionId("");
     setISubcategory("");
     setIQuestionText("");
-    setIShortAnswer("");
     setIDetailedAnswer("");
-    setIExampleText("");
-    setICodeExample("");
     setICompanyTags("");
     setITagsInput("");
-    setIReferencesInput("");
+    setIReferences([{ label: "", url: "" }]);
     setISortOrder(0);
     setSelectedInterviewId("");
   };
@@ -436,6 +747,14 @@ const PortfolioAdminHub = () => {
 
     const categoriesArr = bCategories ? bCategories.split(",").map(c => c.trim()).filter(Boolean) : [];
     const tagsArr = bTags ? bTags.split(",").map(t => t.trim()).filter(Boolean) : [];
+    const refArr = bReferences
+      .filter(ref => ref.url.trim() !== "")
+      .map(ref => {
+        if (ref.label.trim() !== "") {
+          return `${ref.label.trim()} | ${ref.url.trim()}`;
+        }
+        return ref.url.trim();
+      });
 
     const payload = {
       id: bId,
@@ -452,6 +771,7 @@ const PortfolioAdminHub = () => {
       content_type: bContentType,
       pdf_url: bContentType === "note" ? bPdfUrl || null : null,
       page_count: bContentType === "note" ? (parseInt(bPageCount) || null) : null,
+      references_links: refArr,
       updated_at: new Date().toISOString()
     };
 
@@ -555,15 +875,19 @@ const PortfolioAdminHub = () => {
 
     const companyArr = iCompanyTags ? iCompanyTags.split(",").map(c => c.trim()).filter(Boolean) : [];
     const tagsArr = iTagsInput ? iTagsInput.split(",").map(t => t.trim()).filter(Boolean) : [];
-    const refArr = iReferencesInput ? iReferencesInput.split(",").map(r => r.trim()).filter(Boolean) : [];
+    const refArr = iReferences
+      .filter(ref => ref.url.trim() !== "")
+      .map(ref => {
+        if (ref.label.trim() !== "") {
+          return `${ref.label.trim()} | ${ref.url.trim()}`;
+        }
+        return ref.url.trim();
+      });
 
     const payload = {
       id: iQuestionId,
       question: iQuestionText,
       detailed_answer: iDetailedAnswer,
-      short_answer: iShortAnswer || null,
-      example: iExampleText || null,
-      code_example: iCodeExample || null,
       category: iCategory,
       subcategory: iSubcategory || "General",
       difficulty_level: iDifficultyLevel,
@@ -665,7 +989,7 @@ const PortfolioAdminHub = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#030014] text-[#e2e8f0] font-sans flex flex-col overflow-hidden relative">
+    <div className="h-screen bg-[#030014] text-[#e2e8f0] font-sans flex flex-col overflow-hidden relative">
       {/* Radial overlay glow background */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute top-[-10%] left-[-5%] w-[400px] h-[400px] rounded-full bg-[#6366f1]/3 blur-[120px]" />
@@ -957,6 +1281,60 @@ const PortfolioAdminHub = () => {
                     </div>
                   </div>
 
+                  {/* References & Read-ups editor */}
+                  <div className="space-y-2 pt-2 border-t border-white/5 font-sans">
+                    <div className="flex justify-between items-center">
+                      <label className="text-[10px] font-mono text-gray-500 uppercase">References & Read-ups</label>
+                      <button
+                        type="button"
+                        onClick={() => setBReferences([...bReferences, { label: "", url: "" }])}
+                        className="px-2.5 py-1 rounded-lg border border-purple-500/25 hover:bg-purple-500/10 text-[9px] font-mono text-purple-400 font-bold uppercase transition-all cursor-pointer"
+                      >
+                        + Add Reference
+                      </button>
+                    </div>
+                    
+                    <div className="space-y-2 max-h-48 overflow-y-auto pr-1 scrollbar-width-none">
+                      {bReferences.map((ref, idx) => (
+                        <div key={idx} className="flex gap-2 items-center">
+                          <input
+                            type="text"
+                            value={ref.label}
+                            onChange={(e) => {
+                              const newRefs = [...bReferences];
+                              newRefs[idx].label = e.target.value;
+                              setBReferences(newRefs);
+                            }}
+                            className="w-1/3 px-3 py-2 rounded-xl bg-[#04040e]/60 border border-[#6366f1]/25 text-xs text-gray-200 outline-none focus:border-[#6366f1] transition-all font-mono"
+                            placeholder="Title (e.g. Oracle Docs)"
+                          />
+                          <input
+                            type="text"
+                            value={ref.url}
+                            onChange={(e) => {
+                              const newRefs = [...bReferences];
+                              newRefs[idx].url = e.target.value;
+                              setBReferences(newRefs);
+                            }}
+                            className="flex-1 px-3 py-2 rounded-xl bg-[#04040e]/60 border border-[#6366f1]/25 text-xs text-gray-200 outline-none focus:border-[#6366f1] transition-all font-mono"
+                            placeholder="URL (https://...)"
+                          />
+                          {bReferences.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setBReferences(bReferences.filter((_, i) => i !== idx));
+                              }}
+                              className="p-2 rounded-xl hover:bg-rose-500/10 text-rose-400 border border-transparent hover:border-rose-500/20 transition-all cursor-pointer shrink-0"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
                   <div className="flex items-center gap-2 pt-2">
                     <input
                       type="checkbox"
@@ -1036,6 +1414,33 @@ const PortfolioAdminHub = () => {
                     ) : (
                       <div className="p-6 border border-white/5 rounded-2xl bg-[#030014]">
                         <BlogRenderer content={bContent || "<p class='text-gray-600 font-mono text-xs'>Write HTML body content to render preview...</p>"} lineNumbers={true} isHtml={true} />
+                      </div>
+                    )}
+
+                    {/* Preview Reference Links */}
+                    {bReferences.some(ref => ref.url.trim() !== "") && (
+                      <div className="text-xs border-t border-white/5 pt-6 mt-4">
+                        <h3 className="font-mono font-bold uppercase tracking-wider text-gray-500 mb-3">
+                          References & Read-ups
+                        </h3>
+                        <div className="flex flex-col gap-2">
+                          {bReferences
+                            .filter(ref => ref.url.trim() !== "")
+                            .map((ref, idx) => {
+                              const label = ref.label.trim() || ref.url.trim();
+                              return (
+                                <a
+                                  key={idx}
+                                  href={ref.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 text-indigo-400 hover:text-indigo-300 transition-colors text-decoration-none truncate font-mono"
+                                >
+                                  <ExternalLink size={10} className="shrink-0" /> {label}
+                                </a>
+                              );
+                            })}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -1546,46 +1951,13 @@ const PortfolioAdminHub = () => {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-mono text-gray-500 uppercase">Quick Summary Answer</label>
-                    <textarea
-                      value={iShortAnswer}
-                      onChange={(e) => setIShortAnswer(e.target.value)}
-                      rows={2}
-                      className="w-full px-3 py-2 rounded-xl bg-[#04040e]/60 border border-[#6366f1]/25 text-xs text-gray-200 outline-none focus:border-[#6366f1] transition-all"
-                      placeholder="Provide a quick 2-line summary answer..."
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
                     <label className="text-[10px] font-mono text-gray-500 uppercase">Detailed Answer explanation (Markdown allowed)</label>
                     <textarea
                       value={iDetailedAnswer}
                       onChange={(e) => setIDetailedAnswer(e.target.value)}
-                      rows={6}
+                      rows={10}
                       className="w-full px-3 py-2 rounded-xl bg-[#04040e]/60 border border-[#6366f1]/25 text-xs text-gray-200 outline-none focus:border-[#6366f1] transition-all font-sans"
                       placeholder="Use detailed paragraphs, bullet marks (- list), bold highlight (**text**), and inline code blocks (```) here..."
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-mono text-gray-500 uppercase">Conceptual Example Narrative</label>
-                    <textarea
-                      value={iExampleText}
-                      onChange={(e) => setIExampleText(e.target.value)}
-                      rows={2}
-                      className="w-full px-3 py-2 rounded-xl bg-[#04040e]/60 border border-[#6366f1]/25 text-xs text-gray-200 outline-none focus:border-[#6366f1] transition-all"
-                      placeholder="Real-world example explaining this concepts..."
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-mono text-gray-500 uppercase">Code Implementation example</label>
-                    <textarea
-                      value={iCodeExample}
-                      onChange={(e) => setICodeExample(e.target.value)}
-                      rows={4}
-                      className="w-full px-3 py-2 rounded-xl bg-[#04040e]/60 border border-[#6366f1]/25 text-xs text-[#a5d6ff] font-mono outline-none focus:border-[#6366f1] transition-all"
-                      placeholder="// Code here..."
                     />
                   </div>
 
@@ -1625,7 +1997,7 @@ const PortfolioAdminHub = () => {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-3 pt-2 border-t border-white/5">
+                  <div className="grid grid-cols-2 gap-3 pt-2 border-t border-white/5">
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-mono text-gray-500 uppercase">Company Tags</label>
                       <input
@@ -1646,15 +2018,58 @@ const PortfolioAdminHub = () => {
                         placeholder="gc, memory"
                       />
                     </div>
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-mono text-gray-500 uppercase">References Links</label>
-                      <input
-                        type="text"
-                        value={iReferencesInput}
-                        onChange={(e) => setIReferencesInput(e.target.value)}
-                        className="w-full px-3 py-2 rounded-xl bg-[#04040e]/60 border border-[#6366f1]/25 text-xs text-gray-200 outline-none focus:border-[#6366f1] transition-all font-mono"
-                        placeholder="https://..."
-                      />
+                  </div>
+
+                  <div className="space-y-2 pt-2 border-t border-white/5 font-sans">
+                    <div className="flex justify-between items-center">
+                      <label className="text-[10px] font-mono text-gray-500 uppercase">References & Read-ups</label>
+                      <button
+                        type="button"
+                        onClick={() => setIReferences([...iReferences, { label: "", url: "" }])}
+                        className="px-2.5 py-1 rounded-lg border border-purple-500/25 hover:bg-purple-500/10 text-[9px] font-mono text-purple-400 font-bold uppercase transition-all cursor-pointer"
+                      >
+                        + Add Reference
+                      </button>
+                    </div>
+                    
+                    <div className="space-y-2 max-h-48 overflow-y-auto pr-1 scrollbar-width-none">
+                      {iReferences.map((ref, idx) => (
+                        <div key={idx} className="flex gap-2 items-center">
+                          <input
+                            type="text"
+                            value={ref.label}
+                            onChange={(e) => {
+                              const newRefs = [...iReferences];
+                              newRefs[idx].label = e.target.value;
+                              setIReferences(newRefs);
+                            }}
+                            className="w-1/3 px-3 py-2 rounded-xl bg-[#04040e]/60 border border-[#6366f1]/25 text-xs text-gray-200 outline-none focus:border-[#6366f1] transition-all font-mono"
+                            placeholder="Title (e.g. Oracle Docs)"
+                          />
+                          <input
+                            type="text"
+                            value={ref.url}
+                            onChange={(e) => {
+                              const newRefs = [...iReferences];
+                              newRefs[idx].url = e.target.value;
+                              setIReferences(newRefs);
+                            }}
+                            className="flex-1 px-3 py-2 rounded-xl bg-[#04040e]/60 border border-[#6366f1]/25 text-xs text-gray-200 outline-none focus:border-[#6366f1] transition-all font-mono"
+                            placeholder="URL (https://...)"
+                          />
+                          {iReferences.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setIReferences(iReferences.filter((_, i) => i !== idx));
+                              }}
+                              className="p-2 rounded-xl hover:bg-rose-500/10 text-rose-400 border border-transparent hover:border-rose-500/20 transition-all cursor-pointer shrink-0"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          )}
+                        </div>
+                      ))}
                     </div>
                   </div>
 
@@ -1711,16 +2126,6 @@ const PortfolioAdminHub = () => {
                     {iQuestionText || "Draft Question Title"}
                   </h1>
 
-                  {iShortAnswer && (
-                    <div className="p-4 rounded-xl border border-[#6366f1]/15 bg-[#6366f1]/5 flex items-start gap-3">
-                      <AlertCircle size={16} className="text-[#6366f1] shrink-0 mt-0.5" />
-                      <div className="text-xs">
-                        <span className="font-bold font-mono text-indigo-300 block mb-1">Quick Summary Answer</span>
-                        <p className="text-gray-300 leading-relaxed font-sans">{iShortAnswer}</p>
-                      </div>
-                    </div>
-                  )}
-
                   <div className="prose prose-invert max-w-none text-gray-300 text-xs sm:text-[13px] leading-relaxed space-y-4">
                     <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-white border-b border-white/5 pb-1">
                       Detailed Answer
@@ -1728,25 +2133,30 @@ const PortfolioAdminHub = () => {
                     {renderMarkdown(iDetailedAnswer || "Detailed explanation goes here...")}
                   </div>
 
-                  {iExampleText && (
-                    <div className="text-xs">
-                      <h3 className="font-mono font-bold uppercase tracking-wider text-white border-b border-white/5 pb-1 mb-2">
-                        Conceptual Example
+                  {/* Preview Reference Links */}
+                  {iReferences.some(ref => ref.url.trim() !== "") && (
+                    <div className="text-xs border-t border-white/5 pt-6">
+                      <h3 className="font-mono font-bold uppercase tracking-wider text-gray-500 mb-3">
+                        References & Read-ups
                       </h3>
-                      <div className="p-4 rounded-xl border border-white/5 bg-white/[0.01] text-gray-400">
-                        {iExampleText}
+                      <div className="flex flex-col gap-2">
+                        {iReferences
+                          .filter(ref => ref.url.trim() !== "")
+                          .map((ref, idx) => {
+                            const label = ref.label.trim() || ref.url.trim();
+                            return (
+                              <a
+                                key={idx}
+                                href={ref.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-gray-400 hover:text-white transition-colors text-decoration-none truncate font-mono"
+                              >
+                                <ExternalLink size={10} className="shrink-0" /> {label}
+                              </a>
+                            );
+                          })}
                       </div>
-                    </div>
-                  )}
-
-                  {iCodeExample && (
-                    <div>
-                      <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-white border-b border-white/5 pb-1 mb-2">
-                        Code Implementation
-                      </h3>
-                      <pre className="bg-[#050510] border border-white/8 rounded-xl p-4 overflow-x-auto text-[11.5px] font-mono text-[#a5d6ff] text-left">
-                        <code>{iCodeExample}</code>
-                      </pre>
                     </div>
                   )}
                 </div>

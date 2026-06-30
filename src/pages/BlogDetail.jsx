@@ -46,6 +46,10 @@ const BlogDetail = () => {
   const { id, topicId, blogId } = useParams();
   const navigate = useNavigate();
   const contentContainerRef = useRef(null);
+  const tocContainerRef = useRef(null);
+
+  // Core state
+  const [blog, setBlog] = useState(null);
 
   // Layout mode indicators
   const isWorkbench = !!topicId;
@@ -55,9 +59,6 @@ const BlogDetail = () => {
   const activeTopic = activeTopicId
     ? (TOPIC_MAP[activeTopicId] || activeTopicId)
     : "";
-
-  // Core state
-  const [blog, setBlog] = useState(null);
   const [loading, setLoading] = useState(true);
   const [allBlogs, setAllBlogs] = useState([]);
   const [views, setViews] = useState(0);
@@ -190,7 +191,8 @@ const BlogDetail = () => {
         views: blogData.views_count || 0,
         contentType: blogData.content_type || 'article',
         pdfUrl: blogData.pdf_url,
-        pageCount: blogData.page_count
+        pageCount: blogData.page_count,
+        references_links: blogData.references_links || []
       };
       
       setBlog(mapped);
@@ -240,6 +242,33 @@ const BlogDetail = () => {
     elements.forEach((el) => observer.observe(el));
     return () => observer.disconnect();
   }, [blog, loading]);
+
+  // Auto-scroll active TOC item into view inside the sticky container
+  useEffect(() => {
+    if (activeHeadingId && tocContainerRef.current) {
+      const activeEl = document.getElementById(`toc-item-${activeHeadingId}`);
+      if (activeEl) {
+        const container = tocContainerRef.current;
+        const containerTop = container.scrollTop;
+        const containerBottom = containerTop + container.clientHeight;
+        
+        const elemTop = activeEl.offsetTop;
+        const elemBottom = elemTop + activeEl.clientHeight;
+        
+        if (elemTop < containerTop) {
+          container.scrollTo({
+            top: elemTop - 20,
+            behavior: "smooth"
+          });
+        } else if (elemBottom > containerBottom) {
+          container.scrollTo({
+            top: elemBottom - container.clientHeight + 20,
+            behavior: "smooth"
+          });
+        }
+      }
+    }
+  }, [activeHeadingId]);
 
   // ======================== TREE BUILDER (Left Sidebar) ========================
   // Determine active category for left directory tree
@@ -602,132 +631,168 @@ const BlogDetail = () => {
             </div>
           ) : (
             /* Active Blog Reader Pane */
-            <div className="max-w-3xl w-full mx-auto flex-1 flex flex-col animate-fade-in">
-              
-              {/* Render Content Body */}
-              <div className="flex-1 text-left" style={{ fontSize: `${fontSize}px` }}>
-                {blog.contentType === 'note' ? (
-                  <div className="w-full flex flex-col border border-white/10 bg-[#070718]/60 rounded-2xl overflow-hidden p-1 mb-8" style={{ minHeight: "750px", height: "calc(100vh - 250px)" }}>
-                    <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/5 bg-white/[0.02]">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xl">📚</span>
-                        <span className="text-xs font-mono font-bold text-gray-300">{blog.title} ({blog.pageCount || 0} pages)</span>
+            <div className="max-w-5xl w-full mx-auto flex-1 flex gap-8 animate-fade-in relative text-left">
+              <div className="flex-1 max-w-3xl flex flex-col">
+                {/* Render Content Body */}
+                <div className="flex-1 text-left" style={{ fontSize: `${fontSize}px` }}>
+                  {blog.contentType === 'note' ? (
+                    <div className="w-full flex flex-col border border-white/10 bg-[#070718]/60 rounded-2xl overflow-hidden p-1 mb-8" style={{ minHeight: "750px", height: "calc(100vh - 250px)" }}>
+                      <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/5 bg-white/[0.02]">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xl">📚</span>
+                          <span className="text-xs font-mono font-bold text-gray-300">{blog.title} ({blog.pageCount || 0} pages)</span>
+                        </div>
+                        <a
+                          href={blog.pdfUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-[10px] font-mono font-bold text-gray-400 hover:text-white hover:bg-indigo-500/20 hover:border-indigo-500/30 transition-all text-decoration-none"
+                        >
+                          <ExternalLink size={11} /> Open PDF
+                        </a>
                       </div>
-                      <a
-                        href={blog.pdfUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-[10px] font-mono font-bold text-gray-400 hover:text-white hover:bg-indigo-500/20 hover:border-indigo-500/30 transition-all text-decoration-none"
-                      >
-                        <ExternalLink size={11} /> Open PDF
-                      </a>
+                      <iframe
+                        src={`${blog.pdfUrl}#toolbar=0&navpanes=0&scrollbar=1`}
+                        title={blog.title}
+                        className="w-full flex-1 border-none"
+                      />
                     </div>
-                    <iframe
-                      src={`${blog.pdfUrl}#toolbar=0&navpanes=0&scrollbar=1`}
-                      title={blog.title}
-                      className="w-full flex-1 border-none"
-                    />
-                  </div>
-                ) : (
-                  <BlogRenderer content={blog.content} lineNumbers={lineNumbers} isHtml={blog.isHtml} />
-                )}
-              </div>
-
-              {/* ── Next / Previous Navigation Links ── */}
-              {(prevBlog || nextBlog) && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-12 pt-8 border-t border-white/6 text-left font-mono">
-                  {prevBlog ? (
-                    <Link 
-                      to={getNavUrl(prevBlog)}
-                      className="p-4 rounded-xl border border-white/5 bg-[#0a0a1a]/40 hover:bg-[#0a0a1a]/70 hover:border-[#6366f1]/30 transition-all flex flex-col gap-1.5 group select-none text-left"
-                      style={{ textDecoration: "none" }}
-                    >
-                      <span className="text-[10px] text-gray-600 font-bold uppercase tracking-wider flex items-center gap-1"><ArrowLeftIcon size={10} /> Previous Article</span>
-                      <span className="text-xs font-semibold text-gray-300 group-hover:text-white transition-colors truncate">{prevBlog.title}</span>
-                    </Link>
-                  ) : <div />}
-
-                  {nextBlog ? (
-                    <Link 
-                      to={getNavUrl(nextBlog)}
-                      className="p-4 rounded-xl border border-white/5 bg-[#0a0a1a]/40 hover:bg-[#0a0a1a]/70 hover:border-[#6366f1]/30 transition-all flex flex-col gap-1.5 items-end group select-none text-right"
-                      style={{ textDecoration: "none" }}
-                    >
-                      <span className="text-[10px] text-gray-600 font-bold uppercase tracking-wider flex items-center gap-1">Next Article <ArrowRight size={10} /></span>
-                      <span className="text-xs font-semibold text-gray-300 group-hover:text-white transition-colors truncate">{nextBlog.title}</span>
-                    </Link>
-                  ) : <div />}
+                  ) : (
+                    <BlogRenderer content={blog.content} lineNumbers={lineNumbers} isHtml={blog.isHtml} />
+                  )}
                 </div>
-              )}
 
-              {/* ── Related Articles Section ── */}
-              {relatedBlogs.length > 0 && (
-                <div className="mt-16 text-left">
-                  <h3 className="text-xs font-mono font-bold uppercase tracking-widest text-gray-500 mb-4">
-                    Related Read-ups
-                  </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {relatedBlogs.map((b) => (
-                      <Link
-                        key={b.id}
-                        to={isWorkbench ? `/blog/topic/${topicId}/${b.slug || b.id}` : `/blog/${b.slug || b.id}`}
-                        className="p-4 rounded-xl border border-white/5 bg-[#0a0a1a]/30 hover:bg-[#0a0a1a]/60 hover:border-white/12 hover:scale-[1.01] transition-all flex flex-col gap-2"
+                {/* Reference Links */}
+                {blog.references_links && blog.references_links.length > 0 && (
+                  <div className="text-xs border-t border-white/5 pt-6 mb-8 text-left">
+                    <h3 className="font-mono font-bold uppercase tracking-wider text-gray-500 mb-3">
+                      References & Read-ups
+                    </h3>
+                    <div className="flex flex-col gap-2">
+                      {blog.references_links.map((refLink, idx) => {
+                        let label = refLink;
+                        let url = refLink;
+                        if (refLink.includes('|')) {
+                          const parts = refLink.split('|');
+                          label = parts[0].trim();
+                          url = parts[1].trim();
+                        }
+                        return (
+                          <a
+                            key={idx}
+                            href={url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 text-gray-400 hover:text-white transition-colors text-decoration-none truncate font-mono"
+                          >
+                            <ExternalLink size={10} className="shrink-0" /> {label}
+                          </a>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* ── Next / Previous Navigation Links ── */}
+                {(prevBlog || nextBlog) && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-12 pt-8 border-t border-white/6 text-left font-mono">
+                    {prevBlog ? (
+                      <Link 
+                        to={getNavUrl(prevBlog)}
+                        className="p-4 rounded-xl border border-white/5 bg-[#0a0a1a]/40 hover:bg-[#0a0a1a]/70 hover:border-[#6366f1]/30 transition-all flex flex-col gap-1.5 group select-none text-left"
                         style={{ textDecoration: "none" }}
                       >
-                        <div className="flex items-center gap-2">
-                          <span className="text-lg">{b.coverEmoji || b.cover_emoji || "📝"}</span>
-                          <h4 className="text-xs font-bold text-white font-mono truncate">{b.title}</h4>
-                        </div>
-                        <p className="text-[11px] text-gray-500 line-clamp-2 leading-relaxed">
-                          {b.description}
-                        </p>
+                        <span className="text-[10px] text-gray-600 font-bold uppercase tracking-wider flex items-center gap-1"><ArrowLeftIcon size={10} /> Previous Article</span>
+                        <span className="text-xs font-semibold text-gray-300 group-hover:text-white transition-colors truncate">{prevBlog.title}</span>
                       </Link>
-                    ))}
-                  </div>
-                </div>
-              )}
+                    ) : <div />}
 
-              {/* Sticky footer signature */}
-              <div className="mt-20 border-t border-white/4 pt-6 pb-4 text-center text-[10px] font-mono text-gray-600">
-                Abhishek Kumar | Knowledge Hub Portal • v5.0.0
+                    {nextBlog ? (
+                      <Link 
+                        to={getNavUrl(nextBlog)}
+                        className="p-4 rounded-xl border border-white/5 bg-[#0a0a1a]/40 hover:bg-[#0a0a1a]/70 hover:border-[#6366f1]/30 transition-all flex flex-col gap-1.5 items-end group select-none text-right"
+                        style={{ textDecoration: "none" }}
+                      >
+                        <span className="text-[10px] text-gray-600 font-bold uppercase tracking-wider flex items-center gap-1">Next Article <ArrowRight size={10} /></span>
+                        <span className="text-xs font-semibold text-gray-300 group-hover:text-white transition-colors truncate">{nextBlog.title}</span>
+                      </Link>
+                    ) : <div />}
+                  </div>
+                )}
+
+                {/* ── Related Articles Section ── */}
+                {relatedBlogs.length > 0 && (
+                  <div className="mt-16 text-left">
+                    <h3 className="text-xs font-mono font-bold uppercase tracking-widest text-gray-500 mb-4">
+                      Related Read-ups
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {relatedBlogs.map((b) => (
+                        <Link
+                          key={b.id}
+                          to={isWorkbench ? `/blog/topic/${topicId}/${b.slug || b.id}` : `/blog/${b.slug || b.id}`}
+                          className="p-4 rounded-xl border border-white/5 bg-[#0a0a1a]/30 hover:bg-[#0a0a1a]/60 hover:border-white/12 hover:scale-[1.01] transition-all flex flex-col gap-2"
+                          style={{ textDecoration: "none" }}
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg">{b.coverEmoji || b.cover_emoji || "📝"}</span>
+                            <h4 className="text-xs font-bold text-white font-mono truncate">{b.title}</h4>
+                          </div>
+                          <p className="text-[11px] text-gray-500 line-clamp-2 leading-relaxed">
+                            {b.description}
+                          </p>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Sticky footer signature */}
+                <div className="mt-20 border-t border-white/4 pt-6 pb-4 text-center text-[10px] font-mono text-gray-600">
+                  Abhishek Kumar | Knowledge Hub Portal • v5.0.0
+                </div>
               </div>
 
+              {/* ── Right Sidebar (Sticky Table of Contents) - Rendered only when blog content has headers ── */}
+              {blog && headingsList.length > 0 && (
+                <aside className="hidden xl:block w-52 border-l border-[#6366f1]/12 pl-6 py-2 select-none shrink-0">
+                  <div 
+                    ref={tocContainerRef}
+                    className="sticky top-8 text-left space-y-4 max-h-[calc(100vh-120px)] overflow-y-auto pr-2 relative"
+                    style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+                  >
+                    <h3 className="text-[10px] font-mono font-bold uppercase tracking-wider text-gray-500">
+                      On this page
+                    </h3>
+                    
+                    <div className="relative border-l border-[#6366f1]/15 pl-4 space-y-2 text-xs">
+                      {headingsList.map((h, i) => {
+                        const isActive = activeHeadingId === h.id;
+                        return (
+                          <button
+                            key={i}
+                            id={`toc-item-${h.id}`}
+                            onClick={() => handleTOCScroll(h.id)}
+                            className={`block w-full text-left py-0.5 transition-all duration-200 cursor-pointer ${
+                              h.level === "h3" ? "pl-3 text-[11px]" : "font-medium"
+                            } ${
+                              isActive 
+                                ? "text-transparent bg-clip-text bg-gradient-to-r from-[#818cf8] to-[#c084fc] font-semibold scale-[1.02]" 
+                                : "text-gray-400 hover:text-gray-200"
+                            }`}
+                          >
+                            {isActive && <span className="absolute left-[-1px] w-[2px] h-4 bg-gradient-to-b from-[#6366f1] to-[#a855f7] rounded-full transition-all shadow-[0_0_8px_rgba(99,102,241,0.5)]" />}
+                            {h.text}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </aside>
+              )}
             </div>
           )}
         </main>
-
-        {/* ── Right Sidebar (Sticky Table of Contents) - Rendered only when blog content has headers ── */}
-        {blog && headingsList.length > 0 && (
-          <aside className="hidden xl:block w-52 border-l border-[#6366f1]/12 p-6 select-none bg-[#050518]/10">
-            <div className="sticky top-20 text-left space-y-4">
-              <h3 className="text-[10px] font-mono font-bold uppercase tracking-wider text-gray-500">
-                On this page
-              </h3>
-              
-              <div className="relative border-l border-[#6366f1]/15 pl-4 space-y-2 text-xs">
-                {headingsList.map((h, i) => {
-                  const isActive = activeHeadingId === h.id;
-                  return (
-                    <button
-                      key={i}
-                      onClick={() => handleTOCScroll(h.id)}
-                      className={`block w-full text-left py-0.5 transition-all duration-200 cursor-pointer ${
-                        h.level === "h3" ? "pl-3 text-[11px]" : "font-medium"
-                      } ${
-                        isActive 
-                          ? "text-transparent bg-clip-text bg-gradient-to-r from-[#818cf8] to-[#c084fc] font-semibold scale-[1.02]" 
-                          : "text-gray-400 hover:text-gray-200"
-                      }`}
-                    >
-                      {isActive && <span className="absolute left-[-1px] w-[2px] h-4 bg-gradient-to-b from-[#6366f1] to-[#a855f7] rounded-full transition-all shadow-[0_0_8px_rgba(99,102,241,0.5)]" />}
-                      {h.text}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </aside>
-        )}
 
       </div>
 

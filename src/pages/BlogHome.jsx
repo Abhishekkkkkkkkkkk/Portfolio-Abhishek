@@ -60,7 +60,12 @@ const BlogHome = () => {
             likes: b.likes_count || 0,
             bookmarks: b.bookmarks_count || 0,
             readTime: b.read_time || "5 min read",
-            publishedDate: b.published_date
+            publishedDate: b.published_date,
+            updatedAt: b.updated_at,
+            contentType: b.content_type || 'article',
+            pdfUrl: b.pdf_url,
+            pageCount: b.page_count,
+            referencesLinks: b.references_links || []
           }));
           setBlogs(mapped);
         }
@@ -99,7 +104,10 @@ const BlogHome = () => {
     );
   });
 
-  const featuredBlog = filteredBlogs.find(b => b.featured) || filteredBlogs[0];
+  const featuredBlogsList = filteredBlogs.filter(b => b.featured);
+  const featuredBlog = featuredBlogsList.length > 0 
+    ? [...featuredBlogsList].sort((a, b) => new Date(b.updatedAt || b.publishedDate) - new Date(a.updatedAt || a.publishedDate))[0]
+    : filteredBlogs[0];
   const standardBlogs = filteredBlogs.filter(b => b.id !== (featuredBlog ? featuredBlog.id : null));
 
   return (

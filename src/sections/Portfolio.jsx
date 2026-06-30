@@ -288,7 +288,11 @@ export default function FullWidthTabs() {
         bookmarks: doc.bookmarks_count || 0,
         readTime: doc.read_time || null,
         date: formatDate(doc.published_date),
-        contentType: doc.content_type || 'article'
+        published_date: doc.published_date,
+        updatedAt: doc.updated_at,
+        contentType: doc.content_type || 'article',
+        pdfUrl: doc.pdf_url,
+        pageCount: doc.page_count
       }));
 
       setProjects(projectData);

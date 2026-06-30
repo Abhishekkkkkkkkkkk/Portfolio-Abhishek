@@ -60,9 +60,13 @@ const BlogRenderer = ({ content, lineNumbers, isHtml }) => {
         Array.from(script.attributes).forEach(attr => {
           newScript.setAttribute(attr.name, attr.value);
         });
-        // Copy inner code content wrapped in an IIFE to isolate scope and prevent redeclaration errors
+        // Copy inner code content.
+        // Replace let/const with var to prevent redeclaration SyntaxErrors in SPA navigation,
+        // while keeping declarations in the global scope so inline onclick handlers can access them.
         if (script.textContent.trim()) {
-          newScript.textContent = `(function(){\n${script.textContent}\n})();`;
+          newScript.textContent = script.textContent
+            .replace(/\blet\s+/g, "var ")
+            .replace(/\bconst\s+/g, "var ");
         }
         // Append to DOM to trigger execution
         document.body.appendChild(newScript);
