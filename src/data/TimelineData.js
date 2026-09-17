@@ -73,7 +73,7 @@ export const experienceData = [
     impact: "Led the backend engineering for a client form and PDF system that improved document processing speeds by 40%."
   },
   {
-    jobTitle: "Frontend Developer Intern",
+    jobTitle: "Frontend Developer",
     company: "SOFREGO PRIVATE LIMITED",
     duration: "Jul 2023 - Dec 2023",
     location: "Pune, Maharashtra",
