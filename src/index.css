@@ -356,3 +356,18 @@ body.light .hover\:text-gray-400:hover:not(.vscode-container *):not(pre *):not(c
 .animate-zoom-in {
   animation: zoomIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
+
+/* Yellow and Amber text contrast fixes in light mode */
+body.light .text-yellow-400,
+body.light .text-yellow-500,
+body.light .text-amber-400,
+body.light .text-amber-500,
+body.light .text-amber-200 {
+  color: #b45309 !important; /* High contrast amber-700 for light mode readability */
+}
+
+/* Light mode inline code block background adjustments */
+body.light code.bg-white\/10 {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+}

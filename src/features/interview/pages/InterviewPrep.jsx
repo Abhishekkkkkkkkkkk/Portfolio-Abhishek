@@ -6,6 +6,8 @@ import {
   Building2,
   HelpCircle as HelpIcon,
   ArrowRight,
+  Sun,
+  Moon,
 } from "lucide-react";
 import { supabase } from "../../../services/supabase";
 
@@ -147,6 +149,46 @@ const CATEGORIES = [
     color: "from-red-500/20 to-rose-500/10",
     border: "border-red-500/20 text-red-400",
   },
+  {
+    id: "aws",
+    name: "AWS",
+    emoji: "☁️",
+    desc: "EC2, S3, RDS, Lambda, IAM, VPC, CloudFront, Route53, ECS, EKS",
+    color: "from-orange-500/20 to-yellow-500/10",
+    border: "border-orange-500/20 text-orange-400",
+  },
+  {
+    id: "kubernetes",
+    name: "Kubernetes",
+    emoji: "☸️",
+    desc: "Pods, Deployments, Services, Ingress, ConfigMaps, Secrets, Volumes, HPA, Kubelet",
+    color: "from-blue-600/20 to-cyan-500/10",
+    border: "border-blue-600/20 text-blue-400",
+  },
+  {
+    id: "devops",
+    name: "DevOps",
+    emoji: "🚀",
+    desc: "CI/CD Pipelines, Jenkins, GitHub Actions, Terraform, Ansible, Monitoring & SRE",
+    color: "from-cyan-500/20 to-blue-500/10",
+    border: "border-cyan-500/20 text-cyan-400",
+  },
+  {
+    id: "testing",
+    name: "Testing",
+    emoji: "🧪",
+    desc: "JUnit 5, Mockito, Integration Testing, Testcontainers, TDD/BDD, Code Coverage",
+    color: "from-emerald-500/20 to-teal-500/10",
+    border: "border-emerald-500/20 text-emerald-400",
+  },
+  {
+    id: "behavioral",
+    name: "Behavioral (HR)",
+    emoji: "🤝",
+    desc: "STAR Technique, Leadership Principles, Conflict Resolution, Team Culture, Scenario Qs",
+    color: "from-purple-500/20 to-pink-500/10",
+    border: "border-purple-500/20 text-purple-400",
+  },
 ];
 
 // Map of page id to database category name (if they differ)
@@ -156,6 +198,10 @@ const DB_CAT_MAP = {
   "spring-boot": "Spring Boot",
   "spring-security": "Spring Security",
   "system-design": "System Design",
+  "devops": "DevOps",
+  "testing": "Testing",
+  "behavioral": "Behavioral",
+  "behavioral-hr": "Behavioral",
 };
 
 const POPULAR_COMPANIES = [
@@ -179,7 +225,6 @@ const POPULAR_COMPANIES = [
   "Wipro",
   "Cognizant",
   "Accenture",
-  "Accenture",
   "Zoho",
   "Paytm",
   "PhonePe",
@@ -195,6 +240,25 @@ const InterviewPrep = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryStats, setCategoryStats] = useState({});
   const [totalQuestions, setTotalQuestions] = useState(0);
+  const [theme, setTheme] = useState(() => localStorage.getItem("global-theme") || "dark");
+
+  useEffect(() => {
+    if (theme === "light") {
+      document.body.classList.add("light");
+    } else {
+      document.body.classList.remove("light");
+    }
+    localStorage.setItem("global-theme", theme);
+    window.dispatchEvent(new CustomEvent("global-theme-changed", { detail: theme }));
+  }, [theme]);
+
+  useEffect(() => {
+    const handleThemeChange = (e) => {
+      setTheme(e.detail);
+    };
+    window.addEventListener("global-theme-changed", handleThemeChange);
+    return () => window.removeEventListener("global-theme-changed", handleThemeChange);
+  }, []);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -250,17 +314,27 @@ const InterviewPrep = () => {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 relative z-10">
-        {/* Back Link */}
-        <button
-          onClick={() => {
-            sessionStorage.setItem("scrollToSection", "Portfolio");
-            navigate("/");
-          }}
-          className="inline-flex items-center gap-2 text-xs font-mono text-gray-500 hover:text-white transition-colors duration-200 mb-8 cursor-pointer group"
-        >
-          <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />{" "}
-          Back to Portfolio
-        </button>
+        {/* Top Header Actions Row */}
+        <div className="flex items-center justify-between mb-8">
+          <button
+            onClick={() => {
+              sessionStorage.setItem("scrollToSection", "Portfolio");
+              navigate("/");
+            }}
+            className="inline-flex items-center gap-2 text-xs font-mono text-gray-500 hover:text-white transition-colors duration-200 cursor-pointer group"
+          >
+            <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />{" "}
+            Back to Portfolio
+          </button>
+
+          <button
+            onClick={() => setTheme(prev => prev === "dark" ? "light" : "dark")}
+            className="p-2 rounded-lg border border-[#6366f1]/20 bg-[#6366f1]/5 text-indigo-300 hover:text-white hover:bg-[#6366f1]/15 hover:border-[#6366f1]/35 transition-all cursor-pointer"
+            title="Toggle theme mode"
+          >
+            {theme === "dark" ? <Sun size={14} /> : <Moon size={14} />}
+          </button>
+        </div>
 
         {/* Hero Header */}
         <div className="text-left mb-12 animate-fade-in flex flex-col md:flex-row md:items-end justify-between gap-6">

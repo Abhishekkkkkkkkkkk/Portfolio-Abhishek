@@ -217,7 +217,7 @@ export default function FullWidthTabs() {
       ] = await Promise.all([
         supabase.from("projects").select("*").order("created_at", { ascending: false }),
         supabase.from("certificates").select("*").order("issue_date", { ascending: false }),
-        supabase.from("interview_questions").select("id, category, subcategory, difficulty_level, company_tags"),
+        supabase.from("interview_questions").select("id, question, category, subcategory, difficulty_level, company_tags"),
         supabase.from("blogs").select("*").order("published_date", { ascending: false })
       ]);
 
@@ -266,6 +266,7 @@ export default function FullWidthTabs() {
 
       const questionsData = (questionsDataRaw || []).map((doc) => ({
         id: doc.id,
+        question: doc.question,
         category: doc.category,
         subcategory: doc.subcategory,
         difficultyLevel: doc.difficulty_level,

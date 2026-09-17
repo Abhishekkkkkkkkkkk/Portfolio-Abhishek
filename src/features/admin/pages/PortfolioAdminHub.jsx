@@ -30,7 +30,12 @@ const INTERVIEW_CATEGORIES = [
   { id: "Spring Security", name: "Spring Security" },
   { id: "System Design", name: "System Design" },
   { id: "Angular", name: "Angular" },
-  { id: "JavaScript", name: "JavaScript" }
+  { id: "JavaScript", name: "JavaScript" },
+  { id: "AWS", name: "AWS" },
+  { id: "Kubernetes", name: "Kubernetes" },
+  { id: "DevOps", name: "DevOps" },
+  { id: "Testing", name: "Testing" },
+  { id: "Behavioral", name: "Behavioral (HR)" }
 ];
 
 // Helper: Custom simple markdown parser to render interview Q&A preview

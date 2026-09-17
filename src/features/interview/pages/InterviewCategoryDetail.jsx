@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, Link, useLocation } from "react-router-dom";
-import { ArrowLeft, Search, HelpCircle, AlertCircle, MessageSquare, ChevronRight, ChevronDown, ExternalLink } from "lucide-react";
+import { ArrowLeft, Search, HelpCircle, AlertCircle, MessageSquare, ChevronRight, ChevronDown, ExternalLink, Sun, Moon } from "lucide-react";
 import { supabase } from "../../../services/supabase";
 
 const CATEGORY_NAME_MAP = {
@@ -27,7 +27,18 @@ const CATEGORY_NAME_MAP = {
   "Angular": "Angular",
   "angular": "Angular",
   "JavaScript": "JavaScript",
-  "javascript": "JavaScript"
+  "javascript": "JavaScript",
+  "aws": "AWS",
+  "kubernetes": "Kubernetes",
+  "devops": "DevOps",
+  "DevOps": "DevOps",
+  "testing": "Testing",
+  "Testing": "Testing",
+  "behavioral": "Behavioral",
+  "behavioral-hr": "Behavioral",
+  "behavioral_hr": "Behavioral",
+  "behavioral(hr)": "Behavioral",
+  "Behavioral": "Behavioral"
 };
 
 const DIFFICULTY_CLASSES = {
@@ -376,6 +387,264 @@ const renderMarkdown = (text) => {
   return elements;
 };
 
+const SUBTOPIC_ORDER = {
+  "dsa": [
+    "DSA Fundamentals",
+    "Time & Space Complexity",
+    "Complexity",
+    "Recursion",
+    "Bit Manipulation",
+    "Arrays",
+    "Basics",
+    "Prefix Sum",
+    "Sliding Window",
+    "Two Pointers",
+    "Binary Search on Arrays",
+    "Matrix",
+    "Advanced Array Problems",
+    "Strings",
+    "Linked Lists",
+    "Linked List",
+    "Stack",
+    "Queue",
+    "Hashing",
+    "Heap",
+    "Tree",
+    "Binary Search Tree",
+    "Trie",
+    "Graph",
+    "Greedy",
+    "Backtracking",
+    "Dynamic Programming",
+    "Segment Tree",
+    "Fenwick Tree",
+    "Disjoint Set Union",
+    "Advanced Algorithms"
+  ],
+  "java": [
+    "Java Fundamentals",
+    "Basics",
+    "OOPs Concepts",
+    "OOPS",
+    "Data Types & Operators",
+    "Control Flow",
+    "Strings",
+    "Exception Handling",
+    "Collections Framework",
+    "Collections",
+    "Generics",
+    "Multithreading & Concurrency",
+    "Multithreading",
+    "Concurrency",
+    "Java 8 Features",
+    "Java 8",
+    "JVM Architecture",
+    "JVM Memory Management",
+    "JVM",
+    "Garbage Collection",
+    "Java Internals",
+    "File I/O & Serialization",
+    "Serialization",
+    "Best Practices & Design Patterns"
+  ],
+  "spring-boot": [
+    "Spring Boot Fundamentals",
+    "Architecture",
+    "Auto-Configuration",
+    "Starter Dependencies",
+    "Dependency Injection",
+    "Spring Beans",
+    "Configuration & Properties",
+    "Spring Profiles",
+    "Spring Boot Actuator",
+    "Actuator",
+    "Spring Boot Testing",
+    "Testing",
+    "Performance & Optimization",
+    "Spring Boot Internals",
+    "Application Startup",
+    "Deployment"
+  ],
+  "spring-mvc": [
+    "Spring MVC Fundamentals",
+    "Architecture",
+    "Request Lifecycle",
+    "DispatcherServlet",
+    "Controllers",
+    "Request Mapping",
+    "Data Binding",
+    "Validation",
+    "Exception Handling",
+    "View Resolution",
+    "REST Controllers",
+    "Cross-Cutting Concerns",
+    "Filters",
+    "Interceptors",
+    "AOP",
+    "Spring MVC Internals",
+    "Performance & Best Practices",
+    "Common Interview Scenarios"
+  ],
+  "hibernate-jpa": [
+    "Hibernate Fundamentals",
+    "JPA Basics",
+    "Configuration",
+    "Entity Mapping",
+    "Session & Entity Lifecycle",
+    "CRUD Operations",
+    "Querying",
+    "JPQL & HQL",
+    "Criteria API",
+    "Native SQL",
+    "Relationships & Associations",
+    "OneToOne",
+    "OneToMany",
+    "ManyToOne",
+    "ManyToMany",
+    "Caching",
+    "First Level Cache",
+    "Second Level Cache",
+    "Performance Tuning",
+    "N+1 Query Problem",
+    "Transaction Management",
+    "Concurrency & Locking",
+    "Optimistic Locking",
+    "Pessimistic Locking",
+    "Hibernate Internals"
+  ],
+  "sql": [
+    "SQL Fundamentals",
+    "Basic Queries",
+    "Filtering & Sorting",
+    "Joins",
+    "Inner Join",
+    "Left Join",
+    "Right Join",
+    "Full Join",
+    "Aggregation & Grouping",
+    "Subqueries & CTEs",
+    "Window Functions",
+    "Indexes & Query Optimization",
+    "Transactions & ACID",
+    "Database Normalization",
+    "Stored Procedures & Triggers"
+  ],
+  "javascript": [
+    "JavaScript Fundamentals",
+    "Variables & Data Types",
+    "Functions & Scope",
+    "Closures",
+    "Objects & Prototypes",
+    "Prototypal Inheritance",
+    "Asynchronous JavaScript",
+    "Promises",
+    "Async/Await",
+    "Event Loop",
+    "DOM Manipulation",
+    "ES6+ Features",
+    "Error Handling",
+    "Memory Management & V8",
+    "Performance & Best Practices"
+  ],
+  "react": [
+    "React Fundamentals",
+    "Components & Props",
+    "State Management",
+    "Component Lifecycle",
+    "Hooks",
+    "useState",
+    "useEffect",
+    "useContext",
+    "useMemo & useCallback",
+    "Custom Hooks",
+    "Routing",
+    "Context API",
+    "State Management Libraries",
+    "Redux",
+    "Zustand",
+    "Performance Optimization",
+    "Virtual DOM & Reconciliation",
+    "React Internals",
+    "Server-Side Rendering",
+    "Next.js Basics"
+  ],
+  "system-design": [
+    "System Design Fundamentals",
+    "Scaling",
+    "Vertical vs Horizontal Scaling",
+    "Load Balancers",
+    "Caching Strategies",
+    "Database Sharding & Partitioning",
+    "Replication",
+    "ACID vs BASE",
+    "CAP Theorem",
+    "Consistent Hashing",
+    "Message Queues & Event Streaming",
+    "Microservices Architecture",
+    "API Gateway",
+    "Service Discovery",
+    "Distributed Transactions",
+    "Saga Pattern",
+    "System Design Case Studies"
+  ]
+};
+
+const getCategoryOrderIndex = (category, subcategoryName) => {
+  if (!category || !subcategoryName) return 9999;
+  const normalizedCategory = category.toLowerCase().replace(/_/g, "-");
+  const orderList = SUBTOPIC_ORDER[normalizedCategory];
+  if (!orderList) return 9999;
+  const nameLower = subcategoryName.toLowerCase().trim();
+  const idx = orderList.findIndex(item => {
+    const itemLower = item.toLowerCase().trim();
+    return itemLower === nameLower || nameLower.includes(itemLower) || itemLower.includes(nameLower);
+  });
+  return idx !== -1 ? idx : 9999;
+};
+
+const getQuestionProgressionScore = (q) => {
+  const text = (q.question || "").toLowerCase();
+  const tagsStr = (q.tags || []).map(t => t.toLowerCase()).join(" ");
+  const combined = `${text} ${tagsStr}`;
+
+  // 1. Check tags/text for Internal Working
+  const isInternal = combined.includes("internal") || 
+                     combined.includes("under the hood") || 
+                     combined.includes("how it works") || 
+                     combined.includes("mechanism") || 
+                     combined.includes("lifecycle") || 
+                     combined.includes("architecture");
+
+  // 2. Check tags/text for Scenario-Based
+  const isScenario = combined.includes("scenario") || 
+                     combined.includes("real-time") || 
+                     combined.includes("real world") || 
+                     combined.includes("design a") || 
+                     combined.includes("how would you");
+
+  // 3. Check tags/text for Practical
+  const isPractical = combined.includes("implement") || 
+                      combined.includes("coding") || 
+                      combined.includes("write") || 
+                      combined.includes("program") || 
+                      combined.includes("example") || 
+                      combined.includes("practical");
+
+  // 4. Check for Frequently Asked (based on frequency field or tag)
+  const isFreq = q.interview_frequency === "High" || combined.includes("frequent");
+
+  // Difficulty Mapping
+  const diff = q.difficulty_level || "Beginner";
+  
+  if (isFreq) return 6;
+  if (isPractical) return 5;
+  if (isScenario) return 4;
+  if (isInternal) return 3;
+  if (diff === "Advanced" || diff === "Expert") return 2;
+  if (diff === "Intermediate") return 1;
+  return 0; // Default / Basic / Beginner
+};
+
 const InterviewCategoryDetail = () => {
   const { categoryId } = useParams();
   const navigate = useNavigate();
@@ -386,6 +655,26 @@ const InterviewCategoryDetail = () => {
   
   // Dynamic display name
   const displayCategoryName = dbCategoryName.replace(/_/g, " & ");
+
+  const [theme, setTheme] = useState(() => localStorage.getItem("global-theme") || "dark");
+
+  useEffect(() => {
+    if (theme === "light") {
+      document.body.classList.add("light");
+    } else {
+      document.body.classList.remove("light");
+    }
+    localStorage.setItem("global-theme", theme);
+    window.dispatchEvent(new CustomEvent("global-theme-changed", { detail: theme }));
+  }, [theme]);
+
+  useEffect(() => {
+    const handleThemeChange = (e) => {
+      setTheme(e.detail);
+    };
+    window.addEventListener("global-theme-changed", handleThemeChange);
+    return () => window.removeEventListener("global-theme-changed", handleThemeChange);
+  }, []);
 
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -513,12 +802,22 @@ const InterviewCategoryDetail = () => {
           </span>
         </div>
 
-        <button
-          onClick={() => navigate("/interview-questions")}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#6366f1]/20 bg-[#6366f1]/5 text-[10px] font-mono font-bold text-indigo-300 hover:text-white hover:bg-[#6366f1]/15 transition-all cursor-pointer uppercase"
-        >
-          <ArrowLeft size={11} /> Dashboard
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setTheme(prev => prev === "dark" ? "light" : "dark")}
+            className="p-2 rounded-lg border border-[#6366f1]/20 bg-[#6366f1]/5 text-indigo-300 hover:text-white hover:bg-[#6366f1]/15 hover:border-[#6366f1]/35 transition-all cursor-pointer"
+            title="Toggle theme mode"
+          >
+            {theme === "dark" ? <Sun size={12} /> : <Moon size={12} />}
+          </button>
+
+          <button
+            onClick={() => navigate("/interview-questions")}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#6366f1]/20 bg-[#6366f1]/5 text-[10px] font-mono font-bold text-indigo-300 hover:text-white hover:bg-[#6366f1]/15 transition-all cursor-pointer uppercase"
+          >
+            <ArrowLeft size={11} /> Dashboard
+          </button>
+        </div>
       </header>
 
       {/* Main Workspace Layout */}
@@ -629,7 +928,14 @@ const InterviewCategoryDetail = () => {
                           {/* Render Children (Folders) */}
                           {hasChildren && (
                             <div className="space-y-1 w-full">
-                              {Object.values(node.children).map(childNode => renderTreeNode(childNode, depth + 1, currentPath))}
+                              {Object.values(node.children)
+                                .sort((a, b) => {
+                                  const idxA = getCategoryOrderIndex(categoryId, a.name);
+                                  const idxB = getCategoryOrderIndex(categoryId, b.name);
+                                  if (idxA !== idxB) return idxA - idxB;
+                                  return a.name.localeCompare(b.name);
+                                })
+                                .map(childNode => renderTreeNode(childNode, depth + 1, currentPath))}
                             </div>
                           )}
 
@@ -639,7 +945,15 @@ const InterviewCategoryDetail = () => {
                               className="border-l border-white/5 space-y-0.5"
                               style={{ marginLeft: `${depth * 8 + (node.name === "Root" ? 4 : 12)}px`, paddingLeft: "8px" }}
                             >
-                              {node.questions.map((item) => {
+                              {node.questions
+                                .sort((a, b) => {
+                                  const scoreA = getQuestionProgressionScore(a);
+                                  const scoreB = getQuestionProgressionScore(b);
+                                  if (scoreA !== scoreB) return scoreA - scoreB;
+                                  if (a.sort_order !== b.sort_order) return (a.sort_order || 0) - (b.sort_order || 0);
+                                  return a.question.localeCompare(b.question);
+                                })
+                                .map((item) => {
                                 const isCurrent = activeQuestion && activeQuestion.id === item.id;
                                 return (
                                   <button
@@ -702,31 +1016,50 @@ const InterviewCategoryDetail = () => {
           ) : (
             <div className="max-w-3xl w-full mx-auto flex-1 flex flex-col text-left animate-fade-in">
               
-              {/* Question badges */}
-              <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/6 pb-4 mb-6">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className={`px-2 py-0.5 border rounded-md text-[9px] font-mono font-bold uppercase tracking-wider ${DIFFICULTY_CLASSES[activeQuestion.difficulty_level]}`}>
-                    ⚡ {activeQuestion.difficulty_level}
-                  </span>
-                  <span className={`px-2 py-0.5 border rounded-md text-[9px] font-mono font-bold uppercase tracking-wider ${FREQUENCY_CLASSES[activeQuestion.interview_frequency]}`}>
-                    🔥 Frequency: {activeQuestion.interview_frequency}
-                  </span>
-                  <span className="px-2 py-0.5 border border-white/5 bg-white/4 rounded-md text-[9px] font-mono text-gray-400">
-                    📁 {activeQuestion.subcategory}
-                  </span>
+              {/* Question metadata header */}
+              <div className="border-b border-white/5 pb-4 mb-6 space-y-3">
+                {/* Row 1: Core Badges & Company Tags */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  {/* Left: Core Stats */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className={`px-2 py-0.5 border rounded-md text-[9px] font-mono font-bold uppercase tracking-wider ${DIFFICULTY_CLASSES[activeQuestion.difficulty_level]}`}>
+                      ⚡ {activeQuestion.difficulty_level}
+                    </span>
+                    <span className={`px-2 py-0.5 border rounded-md text-[9px] font-mono font-bold uppercase tracking-wider ${FREQUENCY_CLASSES[activeQuestion.interview_frequency]}`}>
+                      🔥 Frequency: {activeQuestion.interview_frequency}
+                    </span>
+                    <span className="px-2 py-0.5 border border-white/5 bg-white/4 rounded-md text-[9px] font-mono text-gray-400">
+                      📁 {activeQuestion.subcategory}
+                    </span>
+                  </div>
+
+                  {/* Right: Company Tags */}
+                  {activeQuestion.company_tags && activeQuestion.company_tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 max-w-md sm:justify-end">
+                      {activeQuestion.company_tags.map(comp => (
+                        <span
+                          key={comp}
+                          onClick={() => navigate(`/interview-questions/company/${comp.toLowerCase().replace(/\s+/g, "-")}`)}
+                          className="px-2 py-0.5 bg-[#0e0d21] border border-cyan-500/25 hover:border-cyan-500/50 hover:bg-[#22d3ee]/5 text-[9px] font-mono text-[#22d3ee] rounded-md transition-all cursor-pointer"
+                          title={`View other ${comp} questions`}
+                        >
+                          🏢 {comp}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
-                {/* Company Tag Badges */}
-                {activeQuestion.company_tags && activeQuestion.company_tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 max-w-sm justify-end">
-                    {activeQuestion.company_tags.map(comp => (
+                {/* Row 2: Custom Tags */}
+                {activeQuestion.tags && activeQuestion.tags.length > 0 && (
+                  <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                    <span className="text-[9px] font-mono text-gray-500 uppercase tracking-widest mr-1">Tags:</span>
+                    {activeQuestion.tags.map(tag => (
                       <span
-                        key={comp}
-                        onClick={() => navigate(`/interview-questions/company/${comp.toLowerCase().replace(/\s+/g, "-")}`)}
-                        className="px-2 py-0.5 bg-[#0e0d21] border border-cyan-500/25 hover:border-cyan-500/50 hover:bg-[#22d3ee]/5 text-[9px] font-mono text-[#22d3ee] rounded-md transition-all cursor-pointer"
-                        title={`View other ${comp} questions`}
+                        key={tag}
+                        className="px-2 py-0.5 bg-[#12072b]/40 border border-[#818cf8]/15 hover:border-[#818cf8]/35 text-[9px] font-mono text-[#a5b4fc] rounded-md transition-all uppercase tracking-wider"
                       >
-                        🏢 {comp}
+                        # {tag}
                       </span>
                     ))}
                   </div>
